@@ -1,0 +1,46 @@
+.pascoa-hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.5;
+    mix-blend-mode: luminosity;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-delay-0 {
+    animation: fadeInUp 0.6s ease-out both;
+    animation-delay: 0ms;
+}
+
+.hero-delay-1 {
+    animation: fadeInUp 0.6s ease-out both;
+    animation-delay: 100ms;
+}
+
+.hero-delay-2 {
+    animation: fadeInUp 0.6s ease-out both;
+    animation-delay: 200ms;
+}
+
+.hero-delay-3 {
+    animation: fadeInUp 0.6s ease-out both;
+    animation-delay: 300ms;
+}
+
+.hero-delay-4 {
+    animation: fadeInUp 0.6s ease-out both;
+    animation-delay: 400ms;
+}
