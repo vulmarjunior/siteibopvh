@@ -15,11 +15,11 @@ const SLIDES = [
   */
   {
     id: 1,
-    image: '/images/majedouragolgota.jpg',
-    subtitle: 'Série Expositiva',
-    title: 'Da manjedoura ao Gólgota',
-    description: 'Uma jornada expositiva da vida de Jesus, preparando corações para a Páscoa através de cada etapa de Sua missão redentora.',
-    cta: 'Assistir Sermões',
+    image: '/images/familia-serie.jpg',
+    subtitle: 'Nova Série',
+    title: 'Família: Design, Ruptura e Restauração',
+    description: 'O que Deus criou, o pecado feriu, mas Cristo restaura.',
+    cta: 'Assista as Mensagens',
     link: '#sermoes'
   },
   {

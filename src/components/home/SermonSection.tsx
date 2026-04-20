@@ -98,6 +98,8 @@ const SermonSection: React.FC = () => {
 
     const fetchVideos = async () => {
       const services = [
+        // 0. Local API Proxy (Most reliable as it's our own server)
+        `/api/youtube-proxy?channelId=${CHANNEL_ID}`,
         // 1. rss2json (Serviço dedicado)
         `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(`https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`)}&api_key=`,
         // 2. allorigins (Proxy JSON)

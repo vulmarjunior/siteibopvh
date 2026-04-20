@@ -80,6 +80,26 @@ export async function seed() {
 }
 
 // API Routes
+apiRouter.get("/youtube-proxy", async (req, res) => {
+  const channelId = req.query.channelId;
+  if (!channelId) {
+    return res.status(400).json({ error: "channelId is required" });
+  }
+  try {
+    const url = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      return res.status(response.status).json({ error: `YouTube RSS returned ${response.status}` });
+    }
+    const xml = await response.text();
+    res.set("Content-Type", "text/xml");
+    res.send(xml);
+  } catch (error) {
+    console.error("YouTube Proxy Error:", error);
+    res.status(500).json({ error: "Failed to fetch YouTube RSS" });
+  }
+});
+
 apiRouter.get("/health", (req, res) => {
   res.json({ status: "ok", message: "Relógio de Oração API is running" });
 });
