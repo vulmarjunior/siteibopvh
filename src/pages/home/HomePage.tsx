@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 import Navbar from '../../components/layout/Navbar';
 import Hero from '../../components/home/Hero';
 import IdentitySection from '../../components/home/IdentitySection';
@@ -19,6 +21,31 @@ export default function HomePage() {
     <div className="min-h-screen font-sans bg-white text-stone-800 flex flex-col">
       <Navbar />
       <main className="flex-grow">
+        <Link
+          to="/moldanos"
+          className="block relative w-full h-[300px] md:h-[400px] overflow-hidden group"
+        >
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-500 group-hover:scale-105"
+            style={{ backgroundImage: "url('/images/banner-niver-slide.jpg')" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-stone-900/80 via-stone-900/50 to-stone-900/70" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+            <span className="text-amber-400 font-bold tracking-[0.3em] uppercase text-xs md:text-sm mb-2">
+              Conferência • 05 a 07 de junho • 19h
+            </span>
+            <h2 className="text-3xl md:text-5xl font-serif font-bold text-white mb-2">
+              Molda-nos
+            </h2>
+            <p className="text-amber-400/80 text-sm md:text-base italic mb-4 font-serif">
+              para servir no Reino
+            </p>
+            <span className="group inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-stone-900 font-bold text-sm py-3 px-6 rounded-lg transition-all duration-300">
+              Quero Participar
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </span>
+          </div>
+        </Link>
         <Hero />
         <IdentitySection />
         <ScheduleSection />

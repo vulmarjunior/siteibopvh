@@ -29,6 +29,7 @@ const Navbar: React.FC = () => {
 
   const navLinks = [
     { name: 'Home', href: '/' },
+    { name: 'Molda-nos', href: '/moldanos' },
     { name: 'Relógio de Oração', href: '/relogio' },
     { name: 'A Igreja', href: '/#identidade' },
     { name: 'Sermões', href: '/#sermoes' },
@@ -37,10 +38,11 @@ const Navbar: React.FC = () => {
   ];
 
   const isRelogioPage = location.pathname === '/relogio';
+  const isMoldaNosPage = location.pathname === '/moldanos';
 
   return (
     <nav
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled || isMobileMenuOpen || isRelogioPage
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled || isMobileMenuOpen || isRelogioPage || isMoldaNosPage
         ? 'bg-stone-900/95 backdrop-blur-md shadow-sm border-b border-white/5 py-3'
         : 'bg-transparent py-6'
         }`}
@@ -63,7 +65,7 @@ const Navbar: React.FC = () => {
               <a
                 key={link.name}
                 href={link.href}
-                className={`text-[14px] font-bold uppercase tracking-[0.2em] transition-colors duration-300 hover:text-amber-500 ${isScrolled || isRelogioPage ? 'text-stone-300' : 'text-stone-200 drop-shadow-sm'
+                className={`text-[14px] font-bold uppercase tracking-[0.2em] transition-colors duration-300 hover:text-amber-500 ${isScrolled || isRelogioPage || isMoldaNosPage ? 'text-stone-300' : 'text-stone-200 drop-shadow-sm'
                   }`}
               >
                 {link.name}
@@ -72,7 +74,7 @@ const Navbar: React.FC = () => {
               <Link
                 key={link.name}
                 to={link.href}
-                className={`text-[14px] font-bold uppercase tracking-[0.2em] transition-colors duration-300 hover:text-amber-500 ${isScrolled || isRelogioPage ? 'text-stone-300' : 'text-stone-200 drop-shadow-sm'
+                className={`text-[14px] font-bold uppercase tracking-[0.2em] transition-colors duration-300 hover:text-amber-500 ${isScrolled || isRelogioPage || isMoldaNosPage ? 'text-stone-300' : 'text-stone-200 drop-shadow-sm'
                   }`}
               >
                 {link.name}
@@ -88,7 +90,7 @@ const Navbar: React.FC = () => {
         >
           {isMobileMenuOpen
             ? <X className="w-8 h-8 text-white" />
-            : <Menu className={`w-8 h-8 ${isScrolled || isRelogioPage ? 'text-white' : 'text-white drop-shadow-md'}`} />
+            : <Menu className={`w-8 h-8 ${isScrolled || isRelogioPage || isMoldaNosPage ? 'text-white' : 'text-white drop-shadow-md'}`} />
           }
         </button>
 
