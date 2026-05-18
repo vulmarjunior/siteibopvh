@@ -32,16 +32,19 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-r from-stone-900/80 via-stone-900/50 to-stone-900/70" />
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
             <span className="text-amber-400 font-bold tracking-[0.3em] uppercase text-xs md:text-sm mb-2">
-              Conferência • 05 a 07 de junho • 19h
+              57 anos • Conferência de Aniversário
             </span>
             <h2 className="text-3xl md:text-5xl font-serif font-bold text-white mb-2">
               Molda-nos
             </h2>
-            <p className="text-amber-400/80 text-sm md:text-base italic mb-4 font-serif">
+            <p className="text-amber-400/80 text-sm md:text-base italic mb-1 font-serif">
               para servir no Reino
             </p>
+            <p className="text-stone-400 text-xs md:text-sm mb-4">
+              57 anos moldando discípulos para o Reino • 05 a 07 de junho • 19h
+            </p>
             <span className="group inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-stone-900 font-bold text-sm py-3 px-6 rounded-lg transition-all duration-300">
-              Quero Participar
+              Celebre Conosco
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </span>
           </div>

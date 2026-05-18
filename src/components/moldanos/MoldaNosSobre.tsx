@@ -31,9 +31,10 @@ const MoldaNosSobre: React.FC = () => {
             Moldados para Servir
           </h2>
           <p className="text-stone-600 max-w-3xl mx-auto text-lg leading-relaxed">
-            A Igreja Batista Olaria convida você para três noites de reflexão sobre o propósito 
-            do serviço cristão. Seremos desafiados a permitir que Deus nos molde — como o oleiro 
-            molda o vaso — para cumprirmos nossa vocação no Reino de Deus.
+            Em comemoração aos seus <strong>57 anos</strong>, a Igreja Batista Olaria convida você 
+            para três noites de reflexão sobre o propósito do serviço cristão. Seremos desafiados 
+            a permitir que Deus nos molde — como o oleiro molda o vaso — para cumprirmos nossa 
+            vocação no Reino de Deus.
           </p>
         </div>
 

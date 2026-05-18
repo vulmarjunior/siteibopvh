@@ -12,15 +12,19 @@ const MoldaNosHero: React.FC = () => {
 
       <div className="relative z-10 container mx-auto px-4 text-center pt-32 pb-20">
         <span className="inline-block text-amber-400 font-bold tracking-[0.3em] uppercase text-sm md:text-base mb-6">
-          Conferência • Junho 2026
+          57 anos • Conferência de Aniversário
         </span>
 
         <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif font-bold text-white leading-none mb-4 tracking-tight">
           Molda-nos
         </h1>
 
-        <p className="text-xl md:text-2xl text-amber-400/90 font-serif italic mb-8">
+        <p className="text-xl md:text-2xl text-amber-400/90 font-serif italic mb-4">
           para servir no Reino
+        </p>
+
+        <p className="text-stone-500 text-sm md:text-base mb-8 max-w-md mx-auto font-medium">
+          57 anos moldando discípulos para o Reino
         </p>
 
         <div className="flex items-center justify-center gap-4 text-stone-400 text-sm md:text-base mb-10">
