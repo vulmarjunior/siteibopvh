@@ -15,12 +15,12 @@ const SLIDES = [
   */
   {
     id: 1,
-    image: '/images/familia-serie.jpg',
-    subtitle: 'Nova Série',
-    title: 'Família: Design, Ruptura e Restauração',
-    description: 'O que Deus criou, o pecado feriu, mas Cristo restaura.',
-    cta: 'Assista as Mensagens',
-    link: '#sermoes'
+    image: '/images/serie-da-ascensao-a-parousia/arte-principal.png',
+    subtitle: 'Nova Série de Mensagens',
+    title: 'Da Ascensão à Parousia',
+    description: 'Acompanhe a caminhada da Igreja desde a ascensão de Cristo até a esperança final da Nova Jerusalém.',
+    cta: 'Ver Roteiro e Mensagens',
+    link: '/da-ascensao-a-parousia'
   },
   {
     id: 2,
