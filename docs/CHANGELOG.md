@@ -4,6 +4,51 @@
 
 ---
 
+## 2026-06-08 - Hotsite Da Ascensão à Parousia (Série de Mensagens)
+
+### Adicionado
+- Hotsite da série de mensagens "Da Ascensão à Parousia" em `/da-ascensao-a-parousia`
+- Roteiro de leitura semanal interativo com checklist persistido localmente (`localStorage`) dentro dos cards dos sermões
+- Seção de "Materiais de Apoio" para download de guias de leitura em PDF e pacote de artes de divulgação (Feed e Story)
+- Novo slide promocional da série no carrossel da homepage (direcionando para o hotsite)
+- Integração de script NodeJS `merge-leituras.cjs` para processamento automático do guia de leitura em markdown e mesclagem em `sermoes.json`
+- Tags Open Graph (OG) customizadas em `index.html` com imagem de feed otimizada para pré-visualização de link (link preview) no WhatsApp
+
+### Modificado / Removido
+- Removido o banner promocional do aniversário de 57 anos ("Molda-nos") da homepage principal (com preservação de todos os seus arquivos estruturais no repositório para reaproveitamento nos próximos anos)
+- Removido o link direto "Molda-nos" da barra de navegação (Navbar) principal
+- Removido o slide antigo da série de "Família" do carrossel da homepage principal
+
+### Arquivos Criados
+- `src/pages/parousia/ParousiaPage.tsx`
+- `src/components/parousia/HeroSerie.tsx`
+- `src/components/parousia/SobreSerie.tsx`
+- `src/components/parousia/MapaPeregrinacao.tsx`
+- `src/components/parousia/ProgramacaoSermoes.tsx`
+- `src/components/parousia/SermonCard.tsx`
+- `src/components/parousia/MensagensDisponiveis.tsx`
+- `src/components/parousia/MateriaisApoio.tsx`
+- `src/components/parousia/ConvideAlguem.tsx`
+- `src/components/parousia/FooterParousia.tsx`
+- `src/components/parousia/FooterSerie.tsx`
+- `src/components/parousia/HeaderSerie.tsx`
+- `src/components/parousia/StatusBadge.tsx`
+- `src/types/parousia.ts`
+- `src/lib/parousia-utils.ts`
+- `src/data/sermoes.json`
+- `merge-leituras.cjs`
+
+### Arquivos Modificados
+- `src/App.tsx` — Adicionada a rota `/da-ascensao-a-parousia`
+- `src/components/layout/Navbar.tsx` — Removido o link de aniversário e adaptado estilo geral
+- `src/pages/home/HomePage.tsx` — Removido banner de aniversário
+- `src/components/home/Hero.tsx` — Atualizado carrossel (removido slide de família, adicionado slide Parousia)
+- `index.html` — Adicionada descrição SEO e metatags para compartilhamento no WhatsApp
+- `netlify.toml` — Conflito resolvido para o build de produção com Prisma
+- `package.json` — Conflito resolvido para o script dev (`--env-file`)
+
+---
+
 ## 2026-05-18 - Hotsite Molda-nos (Conferência de Aniversário)
 
 ### Adicionado
