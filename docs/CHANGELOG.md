@@ -2,6 +2,14 @@
 
 ## [Em Desenvolvimento]
 
+### Adicionado
+- Favicon com bordas arredondadas e fundo dourado/oliva (`favicon.svg`) com imagem PNG embutida em Base64 para máxima compatibilidade e contorno redondo em todas as resoluções de navegadores.
+- Arquivo `site.webmanifest` em `public/` para configuração PWA e cor do tema da barra de ferramentas do navegador.
+- Tags de favicon específicas para dispositivos móveis (`apple-touch-icon`) e fallbacks de imagem PNG/ICO no `index.html`.
+
+### Modificado
+- `index.html` para substituir o ícone padrão anterior pelo novo sistema de favicon arredondado.
+
 ---
 
 ## 2026-06-08 - Hotsite Da Ascensão à Parousia (Série de Mensagens)

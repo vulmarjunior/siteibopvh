@@ -171,8 +171,11 @@ e:\Site IBO\
 ├── public/
 │   ├── robots.txt
 │   ├── sitemap.xml               # ⚠️ DESATUALIZADO — Falta /relogio, /moldanos, /da-ascensao-a-parousia
+│   ├── favicon.svg               # Favicon principal (SVG com bordas arredondadas e base64 embutido)
+│   ├── site.webmanifest          # Manifest PWA (referenciando favicon_ibo)
 │   ├── images/
-│   │   ├── logo.png              # Logo da igreja (favicon + header)
+│   │   ├── logo.png              # Logo da igreja (usado no header/footer)
+│   │   ├── favicon_ibo/          # Pasta com assets do favicon e fallbacks (ico, png, apple-touch)
 │   │   ├── qrcode-pix.svg        # QR Code para doações PIX
 │   │   ├── preletor.jpg          # Foto do preletor convidado
 │   │   ├── serie-da-ascensao-a-parousia/
