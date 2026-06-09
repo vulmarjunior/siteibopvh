@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+  --color-olaria-50: #fbf9f4;
+  --color-olaria-100: #f5f0e4;
+  --color-olaria-200: #ebe0c7;
+  --color-olaria-300: #dec9a0;
+  --color-olaria-400: #d3be88;
+  --color-olaria-500: #bf9e5e;
+  --color-olaria-600: #a37e46;
+  --color-olaria-700: #826039;
+  --color-olaria-800: #6c4f34;
+  --color-olaria-900: #59412e;
+  --color-olaria: var(--color-olaria-400);
+
+  --color-clay-50: #fbf7f6;
+  --color-clay-100: #f5eeeb;
+  --color-clay-200: #eadbd6;
+  --color-clay-300: #dabbb2;
+  --color-clay-400: #c59285;
+  --color-clay-500: #b06d5d;
+  --color-clay-600: #965244;
+  --color-clay-700: #7d4136;
+  --color-clay-800: #68372f;
+  --color-clay-900: #562f2a;
+
+  --color-stone-850: #1c1917;
+
+  --font-serif: "Cinzel", serif;
+  --font-sans: "Lato", sans-serif;
+
+  --animate-fade-in-up: fade-in-up 0.8s ease-out forwards;
+  --animate-fade-in-left: fade-in-left 0.8s ease-out forwards;
+  --animate-fade-in: fade-in 1s ease-out forwards;
+
+  @keyframes fade-in-up {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade-in-left {
+    0% { opacity: 0; transform: translateX(-20px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+}
+
+@layer base {
+  body {
+    background-color: #ffffff;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  details > summary {
+    list-style: none;
+  }
+
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+}

@@ -1,0 +1,1015 @@
+# Prompt final para agente de codificação — Hotsite da série “Da Ascensão à Parousia”
+
+Você é um agente de codificação responsável por criar um hotsite responsivo para uma série de mensagens de uma igreja local.
+
+O site principal da igreja já existe, é uma landing page simples, está hospedado no Netlify e está conectado a um repositório no GitHub. Não há CMS atualmente.
+
+O objetivo é criar um hotsite estático, bonito, leve, responsivo, fácil de atualizar e anexável ao site da igreja.
+
+---
+
+# 1. Objetivo do projeto
+
+Criar um hotsite para a série de mensagens:
+
+**Da Ascensão à Parousia — O Livro da Longa Peregrinação**
+
+Subtítulo:
+
+**A Igreja entre o Reino inaugurado e a Cidade que vem.**
+
+O hotsite deve funcionar como:
+
+1. Guia pastoral para a membresia acompanhar a série;
+2. Arquivo vivo com mensagens já pregadas, links, PDFs e materiais de apoio;
+3. Ferramenta de divulgação para que membros compartilhem a série com convidados.
+
+O hotsite será versionado no GitHub e publicado automaticamente pelo Netlify a cada commit na branch principal.
+
+---
+
+# 2. Conceito teológico e editorial
+
+A série parte da ideia de que a Igreja vive entre a ascensão de Cristo e sua volta gloriosa. Cristo reina, mas a consumação ainda é aguardada. Enquanto isso, a Igreja caminha em missão, perseverança e esperança.
+
+Preserve o seguinte princípio editorial:
+
+**Atos narra a caminhada.**
+**As Epístolas interpretam a caminhada.**
+**O Apocalipse revela o destino da caminhada.**
+
+O arco geral da série é:
+
+**Ascensão → Pentecostes → Peregrinação → Deserto → Missão → Perseverança → Parousia → Nova Jerusalém**
+
+Resumo teológico-poético da série:
+
+**Cristo reina.**
+**O Espírito conduz.**
+**A Igreja caminha.**
+**O deserto prova.**
+**A missão se alarga.**
+**A promessa demora.**
+**O Cordeiro vence.**
+**A estrada termina em casa.**
+
+A frase conceitual que deve orientar o tom visual e textual é:
+
+**Esperar é caminhar.**
+
+---
+
+# 3. Direção visual
+
+O hotsite deve usar como inspiração a arte padrão da série já criada.
+
+Características visuais desejadas:
+
+* estética minimalista;
+* atmosfera bíblica, sóbria e contemplativa;
+* sensação de peregrinação;
+* horizonte, caminho, estrada, deserto ou luz distante;
+* referência sutil à cidade futura/Nova Jerusalém;
+* bastante espaço negativo;
+* boa legibilidade;
+* visual adequado para igreja reformada/conservadora;
+* evitar excesso de elementos decorativos;
+* evitar aparência genérica de evento gospel moderno;
+* evitar cores excessivamente vibrantes.
+
+Sugestão de paleta:
+
+* fundo escuro, grafite, preto ou azul profundo;
+* tons terrosos, areia, bege ou dourado envelhecido;
+* branco ou off-white para textos;
+* acentos dourados discretos.
+
+Tipografia sugerida:
+
+* títulos com fonte serifada elegante ou display clássica;
+* textos com fonte sem serifa limpa e legível;
+* boa hierarquia entre título, subtítulo, corpo e botões.
+
+A arte-base da série deve poder ser usada como imagem de fundo, imagem Open Graph, fallback visual dos cards, hero, materiais de divulgação e thumbnails.
+
+---
+
+# 4. Stack técnica sugerida
+
+Preferencialmente usar:
+
+* Next.js;
+* React;
+* TypeScript;
+* Tailwind CSS;
+* componentes reutilizáveis;
+* dados centralizados em arquivo estático;
+* SEO básico;
+* Open Graph;
+* responsividade completa;
+* boa acessibilidade;
+* boa performance.
+
+Caso o site atual use outra stack, adaptar mantendo a mesma arquitetura de dados, a mesma lógica de atualização e a mesma organização de arquivos.
+
+---
+
+# 5. Estrutura esperada de arquivos
+
+Organize o projeto de forma semelhante à estrutura abaixo:
+
+```txt
+/site-da-igreja
+  package.json
+  next.config.js ou vite.config.ts
+  tailwind.config.ts
+  tsconfig.json
+  README.md
+
+  /public
+    /images
+      /serie-da-ascensao-a-parousia
+        arte-principal.png
+        og-image.png
+        thumb-padrao.png
+
+    /sermoes
+      .gitkeep
+
+    /divulgacao
+      /serie
+        serie-feed.png
+        serie-story.png
+        serie-cartaz.png
+        serie-thumb.png
+
+      /sermoes
+        .gitkeep
+
+  /src
+    /app ou /pages
+      /da-ascensao-a-parousia
+        page.tsx
+        layout.tsx ou metadata.ts
+
+        /[slug]
+          page.tsx
+
+    /components
+      /hotsite-serie
+        HeroSerie.tsx
+        SobreSerie.tsx
+        MapaPeregrinacao.tsx
+        ProgramacaoSermoes.tsx
+        SermonCard.tsx
+        MensagensDisponiveis.tsx
+        MateriaisApoio.tsx
+        ConvideAlguem.tsx
+        DownloadArtCard.tsx
+        StatusBadge.tsx
+        FooterSerie.tsx
+
+    /data
+      sermoes.json
+      materiais.json
+      divulgacao.json
+
+    /lib
+      sermon-status.ts
+      youtube.ts
+      share.ts
+      date.ts
+      slug.ts
+```
+
+O conteúdo deve ficar separado do layout.
+
+O principal arquivo de atualização será:
+
+```txt
+/src/data/sermoes.json
+```
+
+Os PDFs públicos devem ficar em:
+
+```txt
+/public/sermoes/
+```
+
+As artes de divulgação devem ficar em:
+
+```txt
+/public/divulgacao/
+```
+
+As imagens gerais da série devem ficar em:
+
+```txt
+/public/images/serie-da-ascensao-a-parousia/
+```
+
+---
+
+# 6. Atualização via GitHub e Netlify
+
+Como não há CMS, o hotsite deve ser atualizado por arquivos estáticos no repositório.
+
+Fluxo esperado:
+
+```txt
+Editar arquivo no GitHub
+↓
+Salvar commit
+↓
+Netlify detecta a alteração
+↓
+Netlify executa novo deploy
+↓
+Hotsite atualizado no ar
+```
+
+A manutenção semanal deve exigir apenas:
+
+1. Adicionar o PDF do sermão na pasta correta, se houver;
+2. Adicionar artes de divulgação, se houver;
+3. Inserir o ID ou link do vídeo do YouTube no arquivo `sermoes.json`;
+4. Salvar o commit;
+5. Aguardar o deploy automático do Netlify.
+
+Não implementar banco de dados, login administrativo ou painel complexo neste primeiro momento.
+
+---
+
+# 7. Arquivos de mídia obrigatórios e opcionais
+
+No lançamento do hotsite, devem existir pelo menos estas imagens gerais:
+
+```txt
+/public/images/serie-da-ascensao-a-parousia/arte-principal.png
+/public/images/serie-da-ascensao-a-parousia/og-image.png
+/public/images/serie-da-ascensao-a-parousia/thumb-padrao.png
+```
+
+Também é recomendável haver artes gerais de divulgação:
+
+```txt
+/public/divulgacao/serie/serie-feed.png
+/public/divulgacao/serie/serie-story.png
+/public/divulgacao/serie/serie-cartaz.png
+/public/divulgacao/serie/serie-thumb.png
+```
+
+As artes específicas de cada sermão são opcionais.
+
+O site deve funcionar normalmente mesmo que ainda não existam artes específicas em:
+
+```txt
+/public/divulgacao/sermoes/
+```
+
+Se um sermão não tiver `artes.thumb`, usar automaticamente:
+
+```txt
+/public/images/serie-da-ascensao-a-parousia/thumb-padrao.png
+```
+
+Se um sermão não tiver `artes.feed`, `artes.story`, `artes.cartaz` ou `artes.thumb`, simplesmente ocultar os botões correspondentes.
+
+Não exigir que todos os thumbs dos 23 sermões estejam criados antes do lançamento.
+
+---
+
+# 8. Dados dos sermões
+
+Criar o arquivo:
+
+```txt
+/src/data/sermoes.json
+```
+
+Cada sermão deve conter os seguintes campos:
+
+```json
+{
+  "numero": "01",
+  "slug": "o-rei-que-partiu-para-reinar",
+  "data": "2026-06-14",
+  "titulo": "O Rei que Partiu para Reinar",
+  "textoBiblico": "Atos 1.1–11",
+  "ato": "ATO I — O Rei Subiu ao Trono",
+  "movimento": "Ascensão",
+  "descricao": "Cristo não se ausenta da história; Ele sobe ao trono para governá-la. A Igreja não fica olhando passivamente para o céu, mas recebe uma missão na terra.",
+  "youtubeId": "",
+  "youtubeUrl": "",
+  "audioUrl": "",
+  "pdfUrl": "",
+  "statusManual": "",
+  "artes": {
+    "feed": "",
+    "story": "",
+    "cartaz": "",
+    "thumb": ""
+  },
+  "materiais": []
+}
+```
+
+O campo `statusManual` deve ser opcional e só deve ser usado se for necessário sobrescrever o status automático.
+
+O campo `materiais` deve aceitar uma lista de materiais adicionais, por exemplo:
+
+```json
+"materiais": [
+  {
+    "titulo": "Guia de leitura",
+    "tipo": "PDF",
+    "url": "/sermoes/guia-leitura-sermao-01.pdf"
+  }
+]
+```
+
+---
+
+# 9. Status automático dos sermões
+
+Implementar uma função para calcular automaticamente o status do sermão com base na data e na existência de links.
+
+Regras:
+
+1. Se a data do sermão ainda não chegou, exibir:
+
+**Em breve**
+
+2. Se a data já passou e não existe `youtubeId`, `youtubeUrl`, `audioUrl` nem `pdfUrl`, exibir:
+
+**Pregado — materiais em breve**
+
+3. Se existe `youtubeId`, `youtubeUrl`, `audioUrl` ou `pdfUrl`, exibir:
+
+**Disponível**
+
+4. Se houver `statusManual`, ele pode sobrescrever o status automático.
+
+Sugestão de função:
+
+```ts
+export function getSermonStatus(sermao: Sermon) {
+  if (sermao.statusManual) {
+    return sermão.statusManual;
+  }
+
+  const hoje = new Date();
+  const dataSermao = new Date(sermao.data);
+
+  const temMaterial =
+    sermão.youtubeId ||
+    sermão.youtubeUrl ||
+    sermão.audioUrl ||
+    sermão.pdfUrl;
+
+  if (dataSermao > hoje) {
+    return "em_breve";
+  }
+
+  if (!temMaterial) {
+    return "pregado_materiais_em_breve";
+  }
+
+  return "disponivel";
+}
+```
+
+Corrigir nomes de variáveis conforme o padrão do projeto.
+
+Criar também um componente visual para status:
+
+```txt
+StatusBadge.tsx
+```
+
+Mapeamento sugerido:
+
+```txt
+em_breve → Em breve
+pregado_materiais_em_breve → Pregado — materiais em breve
+disponivel → Disponível
+```
+
+---
+
+# 10. Botões condicionais
+
+Os botões dos cards devem aparecer apenas se houver dados preenchidos.
+
+Regras:
+
+* Exibir **Assistir mensagem** apenas se houver `youtubeId` ou `youtubeUrl`;
+* Exibir **Baixar sermão em PDF** apenas se houver `pdfUrl`;
+* Exibir **Ouvir áudio** apenas se houver `audioUrl`;
+* Exibir **Baixar arte para feed** apenas se houver `artes.feed`;
+* Exibir **Baixar arte para story/status** apenas se houver `artes.story`;
+* Exibir **Baixar cartaz** apenas se houver `artes.cartaz`;
+* Exibir **Baixar thumb** apenas se houver `artes.thumb`.
+
+Se não houver nenhum material disponível, exibir uma mensagem elegante:
+
+**Os materiais deste sermão serão disponibilizados em breve.**
+
+Se não houver imagem específica do sermão, usar a imagem padrão:
+
+```txt
+/public/images/serie-da-ascensao-a-parousia/thumb-padrao.png
+```
+
+---
+
+# 11. YouTube
+
+Permitir duas formas de cadastro:
+
+```json
+"youtubeId": "ABC123XYZ"
+```
+
+ou:
+
+```json
+"youtubeUrl": "https://www.youtube.com/watch?v=ABC123XYZ"
+```
+
+Criar utilitários para:
+
+* gerar link público do YouTube;
+* gerar embed do YouTube;
+* gerar thumbnail do YouTube, se possível;
+* exibir botão para assistir no YouTube;
+* incorporar o vídeo na seção “Mensagens já pregadas”, quando houver `youtubeId`.
+
+Exemplo:
+
+```ts
+export function getYoutubeWatchUrl(youtubeId?: string, youtubeUrl?: string) {
+  if (youtubeUrl) return youtubeUrl;
+  if (youtubeId) return `https://www.youtube.com/watch?v=${youtubeId}`;
+  return "";
+}
+
+export function getYoutubeEmbedUrl(youtubeId?: string) {
+  if (!youtubeId) return "";
+  return `https://www.youtube.com/embed/${youtubeId}`;
+}
+
+export function getYoutubeThumbnailUrl(youtubeId?: string) {
+  if (!youtubeId) return "";
+  return `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+}
+```
+
+---
+
+# 12. PDFs dos sermões
+
+Os PDFs finais dos sermões devem poder ser armazenados em:
+
+```txt
+/public/sermoes/
+```
+
+Exemplo:
+
+```txt
+/public/sermoes/sermao-01-o-rei-que-partiu-para-reinar.pdf
+```
+
+No JSON:
+
+```json
+"pdfUrl": "/sermoes/sermao-01-o-rei-que-partiu-para-reinar.pdf"
+```
+
+Ao preencher `pdfUrl`, o botão **Baixar sermão em PDF** deve aparecer automaticamente.
+
+Permitir também links externos, como Google Drive, se eventualmente forem usados.
+
+---
+
+# 13. Artes de divulgação
+
+O hotsite deve ter uma seção para materiais de divulgação da série e também permitir artes específicas por sermão.
+
+Organização sugerida:
+
+```txt
+/public/divulgacao/serie/
+  serie-feed.png
+  serie-story.png
+  serie-cartaz.png
+  serie-thumb.png
+
+/public/divulgacao/sermoes/
+  sermiao-01-feed.png
+  sermiao-01-story.png
+  sermiao-01-cartaz.png
+  sermiao-01-thumb.png
+```
+
+Formatos recomendados:
+
+* Feed Instagram/Facebook: 1080×1080;
+* Story/Status/WhatsApp: 1080×1920;
+* Cartaz digital 3:4: 1080×1440;
+* Thumbnail YouTube: 1280×720.
+
+As artes específicas por sermão são opcionais.
+
+Cada card de sermão deve poder exibir artes específicas, se cadastradas:
+
+```json
+"artes": {
+  "feed": "/divulgacao/sermoes/sermao-01-feed.png",
+  "story": "/divulgacao/sermoes/sermao-01-story.png",
+  "cartaz": "/divulgacao/sermoes/sermao-01-cartaz.png",
+  "thumb": "/divulgacao/sermoes/sermao-01-thumb.png"
+}
+```
+
+Criar botões:
+
+* Baixar arte para feed;
+* Baixar arte para story/status;
+* Baixar cartaz;
+* Baixar thumb;
+* Compartilhar convite no WhatsApp.
+
+Se uma arte específica não estiver cadastrada, o botão não deve aparecer.
+
+---
+
+# 14. Compartilhamento
+
+Criar uma seção chamada:
+
+**Convide alguém para caminhar conosco**
+
+Texto base:
+
+“Esta série é um convite para olhar a história à luz de Cristo: sua ascensão, seu governo presente, a missão da Igreja e a esperança da sua volta. Compartilhe esta página com alguém que precisa ouvir sobre a esperança cristã.”
+
+Botões:
+
+* Compartilhar no WhatsApp;
+* Copiar link da série;
+* Baixar artes de divulgação.
+
+Mensagem padrão para compartilhar a série:
+
+```txt
+Olá! Quero te convidar para acompanhar uma série de mensagens da nossa igreja: “Da Ascensão à Parousia — O Livro da Longa Peregrinação”.
+
+A série fala sobre a caminhada da Igreja entre a ascensão de Cristo e sua volta gloriosa.
+
+Esperar é caminhar.
+
+Veja aqui:
+[URL_DO_HOTSITE]
+```
+
+Mensagem padrão para compartilhar um sermão específico:
+
+```txt
+Olá! Quero te convidar para acompanhar uma mensagem da série “Da Ascensão à Parousia — O Livro da Longa Peregrinação”.
+
+Tema: [TITULO_DO_SERMAO]
+Texto: [TEXTO_BIBLICO]
+
+A série fala sobre a caminhada da Igreja entre a ascensão de Cristo e sua volta gloriosa.
+
+Veja aqui:
+[URL_DO_SERMAO]
+```
+
+Implementar:
+
+* geração automática do link de WhatsApp;
+* uso da URL atual da página;
+* botão de copiar link usando Clipboard API;
+* feedback visual: “Link copiado”.
+
+---
+
+# 15. Estrutura da página
+
+Criar as seguintes seções.
+
+---
+
+## 15.1. Hero
+
+A primeira seção deve ocupar grande parte da tela inicial.
+
+Conteúdo:
+
+Título:
+
+**Da Ascensão à Parousia**
+
+Subtítulo:
+
+**O Livro da Longa Peregrinação**
+
+Frase de apoio:
+
+**A Igreja entre o Reino inaugurado e a Cidade que vem.**
+
+Lead curto:
+
+“Entre a ascensão de Cristo e sua volta gloriosa, a Igreja atravessa a história como povo peregrino: anunciando o Reino, perseverando no deserto e caminhando rumo à Cidade que vem.”
+
+Botões:
+
+* Ver programação da série;
+* Assistir mensagens;
+* Compartilhar com um convidado.
+
+---
+
+## 15.2. Sobre a série
+
+Texto base:
+
+“Esta série acompanha a caminhada da Igreja desde a ascensão de Cristo até a esperança final da Nova Jerusalém. Atos narra a caminhada do povo de Deus no mundo; as Epístolas interpretam essa caminhada à luz do evangelho; e o Apocalipse revela o destino glorioso da peregrinação. Não esperamos parados. Esperamos caminhando, servindo, sofrendo, testemunhando e aguardando o Rei que voltará.”
+
+---
+
+## 15.3. Mapa da peregrinação
+
+Criar uma seção visual em formato de linha do tempo, mapa ou trilha.
+
+Etapas:
+
+1. Ascensão;
+2. Pentecostes;
+3. Peregrinação;
+4. Deserto;
+5. Missão;
+6. Perseverança;
+7. Parousia;
+8. Nova Jerusalém.
+
+No desktop, a linha pode ser horizontal. No mobile, deve se adaptar para uma linha vertical.
+
+---
+
+## 15.4. Programação dos sermões
+
+Criar uma seção com cards para todos os sermões.
+
+Cada card deve exibir:
+
+* número;
+* data;
+* título;
+* texto bíblico;
+* ato;
+* movimento;
+* descrição;
+* status calculado;
+* botões condicionais.
+
+Os cards devem ser responsivos e visualmente consistentes com a identidade da série.
+
+---
+
+## 15.5. Mensagens já pregadas
+
+Criar uma seção que destaque sermões disponíveis.
+
+Exibir apenas sermões cujo status seja:
+
+* `pregado_materiais_em_breve`;
+* `disponivel`.
+
+Se houver YouTube, permitir vídeo incorporado ou botão para assistir.
+
+Se não houver mensagens disponíveis ainda, exibir:
+
+**As mensagens serão disponibilizadas aqui à medida que forem pregadas.**
+
+---
+
+## 15.6. Materiais de apoio
+
+Criar uma seção para downloads gerais da série.
+
+Itens previstos:
+
+* cronograma da série;
+* guia de leitura bíblica;
+* textos dos sermões;
+* esboços;
+* perguntas para pequenos grupos;
+* artes de divulgação.
+
+Usar cards simples com ícone, título, descrição curta e botão de download.
+
+Caso ainda não haja arquivo vinculado, permitir estado:
+
+**Em breve**
+
+---
+
+## 15.7. Convide alguém
+
+Criar uma seção pastoral e visualmente destacada para compartilhamento.
+
+Título:
+
+**Convide alguém para caminhar conosco**
+
+Elementos:
+
+* texto pastoral;
+* botão WhatsApp;
+* botão copiar link;
+* artes gerais da série;
+* mensagem pronta de convite.
+
+---
+
+## 15.8. Chamada final
+
+Título:
+
+**A estrada ainda não terminou. A Cidade vem.**
+
+Texto:
+
+“Enquanto aguardamos a volta do Rei, caminhamos em fé, missão e esperança. Junte-se a nós nessa peregrinação.”
+
+Botão:
+
+**Ver próximo sermão**
+
+Esse botão deve rolar até o próximo sermão futuro ou até o próximo sermão sem materiais disponíveis.
+
+---
+
+# 16. Dados iniciais da série
+
+Cadastrar inicialmente os 23 sermões no arquivo `sermoes.json`.
+
+Usar a seguinte estrutura para todos:
+
+```json
+{
+  "numero": "01",
+  "slug": "o-rei-que-partiu-para-reinar",
+  "data": "2026-06-14",
+  "titulo": "O Rei que Partiu para Reinar",
+  "textoBiblico": "Atos 1.1–11",
+  "ato": "ATO I — O Rei Subiu ao Trono",
+  "movimento": "Ascensão",
+  "descricao": "Cristo não se ausenta da história; Ele sobe ao trono para governá-la. A Igreja não fica olhando passivamente para o céu, mas recebe uma missão na terra.",
+  "youtubeId": "",
+  "youtubeUrl": "",
+  "audioUrl": "",
+  "pdfUrl": "",
+  "statusManual": "",
+  "artes": {
+    "feed": "",
+    "story": "",
+    "cartaz": "",
+    "thumb": ""
+  },
+  "materiais": []
+}
+```
+
+A lista completa dos sermões é:
+
+1. 14/06/2026 — Atos 1.1–11 — **O Rei que Partiu para Reinar** — Ascensão;
+2. 21/06/2026 — Atos 2.1–47 — **A Coluna de Fogo Desce** — Pentecostes;
+3. 12/07/2026 — Atos 2.42–47 — **O Acampamento dos Santos** — Comunidade;
+4. 19/07/2026 — 1 Pedro 1.1–9 — **Eleitos, Peregrinos e Exultantes** — Identidade;
+5. 26/07/2026 — Atos 4.1–31 — **Quando o Deserto se Torna Hostil** — Perseguição;
+6. 02/08/2026 — Atos 7.51–60 — **O Preço da Jornada** — Martírio;
+7. 09/08/2026 — Atos 8.1–8 — **Espalhados, Mas Não Perdidos** — Dispersão;
+8. 16/08/2026 — Romanos 8.18–39 — **A Glória Além do Horizonte** — Sofrimento e esperança;
+9. 23/08/2026 — Atos 9.1–31 — **Quando o Inimigo Encontra o Rei** — Graça soberana;
+10. 30/08/2026 — Atos 10.1–48 — **Portas Abertas para as Nações** — Gentios;
+11. 06/09/2026 — Efésios 2.11–22 — **Uma Só Casa no Deserto** — Novo povo;
+12. 13/09/2026 — Atos 13.1–52 — **Chamados para a Estrada** — Missão;
+13. 20/09/2026 — Atos 15.1–35 — **Guardando o Evangelho na Estrada** — Doutrina;
+14. 27/09/2026 — Gálatas 5.1–26 — **Livres para Caminhar** — Liberdade e Espírito;
+15. 04/10/2026 — 2 Coríntios 5.11–21 — **Embaixadores do Rei** — Reconciliação;
+16. 11/10/2026 — 1 Tessalonicenses 4.13–5.11 — **Os que Dormiram no Deserto** — Ressurreição;
+17. 18/10/2026 — Hebreus 11.8–16; 12.1–13 — **Correndo com Perseverança** — Fé e disciplina;
+18. 25/10/2026 — Tiago 5.7–11 — **A Paciência do Lavrador** — Espera paciente;
+19. 01/11/2026 — 2 Pedro 3.1–18 — **A Demora que é Misericórdia** — Parousia;
+20. 08/11/2026 — Tito 2.11–14 — **Vivendo Entre Duas Aparições** — Ética escatológica;
+21. 15/11/2026 — Apocalipse 1.9–20 — **O Rei Caminha Entre os Candeeiros** — Cristo presente;
+22. 22/11/2026 — Apocalipse 5.1–14 — **O Trono e o Cordeiro** — Governo da história;
+23. 29/11/2026 — Apocalipse 21.1–22.21 — **A Estrada Termina em Casa** — Nova Jerusalém.
+
+---
+
+# 17. SEO e Open Graph
+
+Implementar metadados básicos.
+
+Title:
+
+**Da Ascensão à Parousia — O Livro da Longa Peregrinação**
+
+Description:
+
+**Hotsite da série de mensagens sobre a caminhada da Igreja entre a ascensão de Cristo e sua volta gloriosa. Uma jornada bíblica por Atos, Epístolas e Apocalipse.**
+
+Palavras-chave conceituais:
+
+* Ascensão;
+* Parousia;
+* Igreja;
+* Peregrinação;
+* Reino de Deus;
+* Atos dos Apóstolos;
+* Epístolas;
+* Apocalipse;
+* Nova Jerusalém;
+* Esperança cristã.
+
+Implementar Open Graph para compartilhamento:
+
+* título;
+* descrição;
+* imagem padrão da série;
+* URL canônica;
+* tipo `website`.
+
+Usar como imagem Open Graph padrão:
+
+```txt
+/public/images/serie-da-ascensao-a-parousia/og-image.png
+```
+
+Se houver páginas individuais por sermão, cada sermão deve ter Open Graph próprio com título, descrição e imagem específica, quando disponível. Se não houver imagem específica, usar a imagem Open Graph padrão da série.
+
+---
+
+# 18. Rotas
+
+Implementar pelo menos uma rota principal:
+
+```txt
+/da-ascensao-a-parousia
+```
+
+Opcionalmente, implementar rotas individuais para sermões:
+
+```txt
+/da-ascensao-a-parousia/o-rei-que-partiu-para-reinar
+/da-ascensao-a-parousia/a-coluna-de-fogo-desce
+```
+
+Se implementar rotas individuais, cada card deve linkar para sua página específica.
+
+A rota individual deve conter:
+
+* título;
+* texto bíblico;
+* data;
+* descrição;
+* vídeo, se houver;
+* PDF, se houver;
+* artes de divulgação, se houver;
+* botão para compartilhar;
+* botão para voltar à série.
+
+---
+
+# 19. README para manutenção
+
+Criar um arquivo `README.md` com instruções simples para uma pessoa não técnica atualizar o hotsite.
+
+O README deve explicar:
+
+1. Como editar o arquivo `src/data/sermoes.json`;
+2. Como adicionar o link ou ID do YouTube;
+3. Como adicionar um PDF em `public/sermoes/`;
+4. Como preencher `pdfUrl`;
+5. Como adicionar artes em `public/divulgacao/`;
+6. Como preencher os campos `artes.feed`, `artes.story`, `artes.cartaz` e `artes.thumb`;
+7. Como salvar alterações no GitHub;
+8. Como verificar se o Netlify fez o deploy;
+9. O que fazer se o site quebrar por erro de JSON;
+10. Como funciona o fallback de imagem quando não houver thumb específica.
+
+Incluir exemplos práticos.
+
+---
+
+# 20. Validação e robustez
+
+Como o conteúdo será atualizado manualmente, adotar cuidados:
+
+* garantir que o site não quebre se algum campo estiver vazio;
+* tratar arrays vazios;
+* tratar links ausentes;
+* tratar imagens ausentes;
+* evitar erro caso `artes` ou `materiais` estejam vazios;
+* validar datas;
+* exibir fallback visual quando não houver imagem;
+* exibir fallback textual quando não houver material;
+* não exigir que todas as artes existam;
+* não exigir que todos os PDFs existam;
+* não exigir que todos os vídeos existam.
+
+Se possível, criar uma validação simples do JSON em tempo de build, com mensagens claras no console.
+
+---
+
+# 21. Decap CMS como possibilidade futura
+
+Não implementar CMS agora, a menos que seja simples e não atrase o projeto.
+
+Mas deixar o projeto organizado de forma que possa receber futuramente o Decap CMS, antigo Netlify CMS.
+
+A ideia futura seria criar uma área:
+
+```txt
+/admin
+```
+
+Na qual uma pessoa poderia editar sermões por formulário, preenchendo:
+
+* título;
+* data;
+* texto bíblico;
+* YouTube;
+* PDF;
+* artes;
+* status manual.
+
+Por ora, apenas documentar essa possibilidade no README ou manter a estrutura preparada para essa evolução.
+
+---
+
+# 22. Critérios de aceitação
+
+O hotsite estará pronto quando:
+
+1. Exibir corretamente a identidade da série;
+2. Ser responsivo em desktop, tablet e celular;
+3. Exibir os 23 sermões em cards;
+4. Calcular status automaticamente;
+5. Exibir botões apenas quando houver links;
+6. Permitir inserir YouTube por `youtubeId` ou `youtubeUrl`;
+7. Permitir baixar PDFs do diretório `/public/sermoes/`;
+8. Permitir baixar artes de divulgação;
+9. Usar imagem fallback quando não houver thumb específica;
+10. Não exigir que todos os thumbs individuais estejam criados;
+11. Ter botão de compartilhamento no WhatsApp;
+12. Ter botão de copiar link;
+13. Ter seção de materiais de apoio;
+14. Ter SEO e Open Graph básicos;
+15. Ter README explicando a manutenção;
+16. Fazer deploy corretamente no Netlify;
+17. Manter a estética minimalista, sóbria, pastoral e coerente com a arte da série.
+
+---
+
+# 23. Tom textual
+
+Evitar linguagem exageradamente publicitária.
+
+O tom deve ser:
+
+* bíblico;
+* pastoral;
+* sóbrio;
+* acolhedor;
+* literário;
+* esperançoso.
+
+Evitar expressões genéricas de evento.
+
+A página deve parecer uma extensão pastoral da série, não apenas um folder digital.
+
+---
+
+# 24. Resultado esperado
+
+O resultado esperado é um hotsite que permita que uma pessoa:
+
+1. Entenda rapidamente o tema da série;
+2. Veja o cronograma completo;
+3. Acompanhe o próximo sermão;
+4. Assista às mensagens já pregadas;
+5. Baixe o texto do sermão em PDF;
+6. Baixe artes para divulgar;
+7. Compartilhe a série com convidados;
+8. Perceba visualmente a ideia de peregrinação, esperança e caminhada.
+
+A experiência final deve comunicar:
+
+**Cristo subiu. Cristo reina. Cristo voltará. Enquanto isso, a Igreja caminha.**
