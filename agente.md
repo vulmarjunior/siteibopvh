@@ -487,6 +487,7 @@ APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
 
 | Data | Mudança |
 |------|---------|
+| 2026-06-11 | Organização: limpeza de lixo, duplicatas e docs obsoletos |
 | 2026-06-11 | Indicador de calendário litúrgico na Navbar |
 | 2026-06-08 | Hotsite "Da Ascensão à Parousia" + roteiro de leitura |
 | 2026-05-18 | Hotsite "Molda-nos" (conferência 57 anos) |

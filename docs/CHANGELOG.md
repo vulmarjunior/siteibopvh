@@ -7,13 +7,23 @@
 - Arquivo `site.webmanifest` em `public/` para configuração PWA e cor do tema da barra de ferramentas do navegador.
 - Tags de favicon específicas para dispositivos móveis (`apple-touch-icon`) e fallbacks de imagem PNG/ICO no `index.html`.
 - Indicador de calendário litúrgico na Navbar — faixa sutil de 4px no topo com a cor da estação litúrgica atual (Advento, Natal, Tempo Comum, Quaresma, Páscoa, Pentecostes). Tooltip no hover com semana e contagem regressiva para a próxima estação.
+- `docs/archived/` com README para documentos obsoletos mantidos como referência histórica.
 
 ### Modificado
 - `index.html` para substituir o ícone padrão anterior pelo novo sistema de favicon arredondado.
 - `src/components/layout/Navbar.tsx` — Adicionada faixa litúrgica no topo.
+- `public/sitemap.xml` — Domínio corrigido para `ibopvh.com.br`; adicionadas rotas `/relogio`, `/moldanos`, `/da-ascensao-a-parousia`.
+- `agente.md` — Removidas notas sobre `consts.txt` e duplicata PascoaPage (resolvidos).
+
+### Removido
+- `consts.txt` — Arquivo lixo com 274 linhas de "const ".
+- `src/pages/pascoa/PascoaPage.tsx` — Duplicata exata de `src/pages/pascoa-page/PascoaPage.tsx`.
+- `docs/PLAN-seo-optimization.md` — Movido para `docs/archived/` (plano já executado).
+- `docs/hotsite-pascoa.md` — Movido para `docs/archived/` (referenciava Next.js, implementado em Vite/React).
 
 ### Arquivos Criados
 - `src/lib/liturgical-calendar.ts` — Utilitário com algoritmo de Computus (cálculo da Páscoa), detecção de estação litúrgica, contagem de semanas e contagem regressiva.
+- `docs/archived/README.md` — Explica cada documento arquivado.
 
 ---
 
