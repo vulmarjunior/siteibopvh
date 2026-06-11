@@ -193,11 +193,13 @@ e:\Site IBO\
 │
 ├── docs/
 │   ├── CHANGELOG.md              # Histórico detalhado de mudanças
-│   ├── PLAN-seo-optimization.md
 │   ├── PRD Relogio Oração V4.md  # Documento de requisitos do Relógio
 │   ├── e-mail-oração.md
 │   ├── hotsite-guide.md
-│   ├── hotsite-pascoa.md
+│   ├── archived/                 # Documentos obsoletos (ref. histórica)
+│   │   ├── README.md
+│   │   ├── hotsite-pascoa.md
+│   │   └── PLAN-seo-optimization.md
 │   └── planos/
 │       └── deploy-netlify.md     # Guia de deploy + variáveis de ambiente
 │
@@ -407,10 +409,7 @@ APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
 
 ### Arquitetônicos
 7. **Tailwind v4** — Usa a nova sintaxe `@theme {}` no CSS (não `tailwind.config.js`). O plugin é `@tailwindcss/vite`.
-8. **PascoaPage existe em duas pastas** — `src/pages/pascoa-page/PascoaPage.tsx` (importado no App) e `src/pages/pascoa/PascoaPage.tsx` (aparentemente duplicata).
-9. **Prisma schema diz `postgresql`** mas há um `dev.db` (SQLite) local — O SQLite só funciona se mudar o provider.
-10. **`sitemap.xml` está desatualizado** — Faltam as rotas `/relogio`, `/moldanos`, `/da-ascensao-a-parousia`.
-11. **`consts.txt`** na raiz é um arquivo vazio/lixo (275 linhas de "const ") — Pode ser ignorado/removido.
+8. **Prisma schema diz `postgresql`** mas há um `dev.db` (SQLite) local — O SQLite só funciona se mudar o provider.
 
 ### Dados
 12. **Sermões da série Parousia** estão em `src/data/sermoes.json` — Para atualizar roteiros de leitura, editar `PAROUSIA/reoteiro de leitura.md` e rodar `node merge-leituras.cjs`.
