@@ -1,6 +1,6 @@
 # 🤖 Contexto do Projeto — Guia para Agentes de IA
 
-> **Última atualização:** 2026-06-09
+> **Última atualização:** 2026-06-11
 > **Propósito:** Fornecer contexto completo para qualquer agente de codificação que trabalhe neste projeto, eliminando a necessidade de re-análise.
 
 ---
@@ -416,6 +416,9 @@ APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
 12. **Sermões da série Parousia** estão em `src/data/sermoes.json` — Para atualizar roteiros de leitura, editar `PAROUSIA/reoteiro de leitura.md` e rodar `node merge-leituras.cjs`.
 13. **YouTube RSS** é fetched via proxy server-side (`/api/youtube-proxy`) para evitar CORS.
 
+### Litúrgico
+14. **Indicador de calendário litúrgico** em `src/lib/liturgical-calendar.ts` — Usa algoritmo de Computus para calcular a Páscoa. As 6 estações têm cores mapeadas à paleta IBO. A função `getCurrentSeasonInfo()` é chamada na Navbar em tempo de renderização (lado cliente). Para testar outras estações, basta forçar uma data diferente no topo da função.
+
 ---
 
 ## 🧩 Padrões e Convenções
@@ -473,12 +476,19 @@ APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
 - QR Code PIX para contribuição
 - Documentos doutrinários em modais com accordion
 
+### Indicador Litúrgico (Navbar)
+- Faixa sutil de **4px** no topo da Navbar com a cor da estação litúrgica atual
+- 6 estações: Advento (`olaria-600`), Natal (`olaria-400`), Tempo Comum (`stone-400`), Quaresma (`clay-400`), Páscoa (`amber-400`), Pentecostes (`olaria-500`)
+- Tooltip ao hover (desktop) / toque (mobile) com: estação, semana atual e contagem regressiva para a próxima estação
+- Utilitário em `src/lib/liturgical-calendar.ts` com Computus algorithm
+
 ---
 
 ## 📝 Changelog Resumido
 
 | Data | Mudança |
 |------|---------|
+| 2026-06-11 | Indicador de calendário litúrgico na Navbar |
 | 2026-06-08 | Hotsite "Da Ascensão à Parousia" + roteiro de leitura |
 | 2026-05-18 | Hotsite "Molda-nos" (conferência 57 anos) |
 | 2026-04-20 | Deploy inicial (Home + Relógio de Oração + Páscoa) |

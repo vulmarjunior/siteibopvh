@@ -6,9 +6,14 @@
 - Favicon com bordas arredondadas e fundo dourado/oliva (`favicon.svg`) com imagem PNG embutida em Base64 para máxima compatibilidade e contorno redondo em todas as resoluções de navegadores.
 - Arquivo `site.webmanifest` em `public/` para configuração PWA e cor do tema da barra de ferramentas do navegador.
 - Tags de favicon específicas para dispositivos móveis (`apple-touch-icon`) e fallbacks de imagem PNG/ICO no `index.html`.
+- Indicador de calendário litúrgico na Navbar — faixa sutil de 4px no topo com a cor da estação litúrgica atual (Advento, Natal, Tempo Comum, Quaresma, Páscoa, Pentecostes). Tooltip no hover com semana e contagem regressiva para a próxima estação.
 
 ### Modificado
 - `index.html` para substituir o ícone padrão anterior pelo novo sistema de favicon arredondado.
+- `src/components/layout/Navbar.tsx` — Adicionada faixa litúrgica no topo.
+
+### Arquivos Criados
+- `src/lib/liturgical-calendar.ts` — Utilitário com algoritmo de Computus (cálculo da Páscoa), detecção de estação litúrgica, contagem de semanas e contagem regressiva.
 
 ---
 
