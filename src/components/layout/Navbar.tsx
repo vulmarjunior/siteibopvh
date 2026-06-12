@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Church, Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import LiturgicalTimeline from './LiturgicalTimeline';
+import LiturgicalBookmark from './LiturgicalBookmark';
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -47,7 +47,6 @@ const Navbar: React.FC = () => {
         : 'bg-transparent py-6'
         }`}
     >
-      <LiturgicalTimeline />
       <div className="container mx-auto px-4 flex justify-between items-center">
         <div className="flex items-center z-[60]">
           <Link to="/">
@@ -82,6 +81,7 @@ const Navbar: React.FC = () => {
               </Link>
             )
           ))}
+          <LiturgicalBookmark />
         </div>
 
         {/* Mobile Toggle */}
@@ -121,6 +121,9 @@ const Navbar: React.FC = () => {
               </Link>
             )
           ))}
+          <div className="mt-4">
+            <LiturgicalBookmark />
+          </div>
         </div>
       </div>
     </nav>
