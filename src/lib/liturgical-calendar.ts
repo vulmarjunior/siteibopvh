@@ -3,10 +3,28 @@ import { addDays } from 'date-fns';
 export interface SeasonInfo {
   id: string;
   label: string;
+  technical: string;
   color: string;
   week: number;
   nextSeasonLabel: string;
   nextSeasonDays: number;
+}
+
+export interface LiturgicalSegment {
+  id: string;
+  label: string;
+  shortLabel: string;
+  color: string;
+  startFraction: number;
+  endFraction: number;
+}
+
+export interface LiturgicalYearProgress {
+  progress: number;
+  currentSeason: SeasonInfo;
+  segments: LiturgicalSegment[];
+  yearStart: Date;
+  yearEnd: Date;
 }
 
 interface SeasonRange {
@@ -15,14 +33,23 @@ interface SeasonRange {
   end: Date;
 }
 
-const SEASONS: Record<string, { label: string; color: string }> = {
-  advent: { label: 'Advento', color: '#a37e46' },
-  christmas: { label: 'Natal', color: '#d3be88' },
-  ordinary: { label: 'Tempo Comum', color: '#a8a29e' },
-  lent: { label: 'Quaresma', color: '#c59285' },
-  easter: { label: 'Páscoa', color: '#fbbf24' },
-  pentecost: { label: 'Pentecostes', color: '#bf9e5e' },
+const MACRO_SEASONS: Record<string, { label: string; technical: string; color: string; shortLabel: string }> = {
+  advent: { label: 'Preparação', technical: 'Advento', color: '#a37e46', shortLabel: 'Prep' },
+  christmas: { label: 'Natal', technical: 'Natal', color: '#d3be88', shortLabel: 'Natal' },
+  easter: { label: 'Páscoa', technical: 'Páscoa', color: '#fbbf24', shortLabel: 'Pás' },
+  ordinary: { label: 'Caminhada', technical: 'Tempo Comum', color: '#a8a29e', shortLabel: 'Camin' },
 };
+
+function aggregateToMacro(seasonId: string): string {
+  switch (seasonId) {
+    case 'lent':
+      return 'easter';
+    case 'pentecost':
+      return 'ordinary';
+    default:
+      return seasonId;
+  }
+}
 
 function getEaster(year: number): Date {
   const a = year % 19;
@@ -69,15 +96,14 @@ function getSeasonsForLiturgicalYear(ly: number): SeasonRange[] {
   ];
 }
 
-export function getCurrentSeasonInfo(): SeasonInfo {
-  const now = new Date();
-  const y = now.getFullYear();
+function findSeasonForDate(date: Date): { season: SeasonRange; macroId: string; next: SeasonRange; nextMacroId: string; week: number; daysUntilNext: number } | null {
+  const y = date.getFullYear();
 
   for (const ly of [y - 1, y, y + 1]) {
     const seasons = getSeasonsForLiturgicalYear(ly);
     for (let i = 0; i < seasons.length; i++) {
       const s = seasons[i];
-      if (now >= s.start && now <= s.end) {
+      if (date >= s.start && date <= s.end) {
         let next: SeasonRange;
         if (i === seasons.length - 1) {
           const nextSeasons = getSeasonsForLiturgicalYear(ly + 1);
@@ -87,30 +113,120 @@ export function getCurrentSeasonInfo(): SeasonInfo {
         }
 
         const msPerDay = 86400000;
-        const week = Math.floor((now.getTime() - s.start.getTime()) / (7 * msPerDay)) + 1;
-        const daysUntilNext = Math.ceil((next.start.getTime() - now.getTime()) / msPerDay);
-        const season = SEASONS[s.id];
+        const week = Math.floor((date.getTime() - s.start.getTime()) / (7 * msPerDay)) + 1;
+        const daysUntilNext = Math.ceil((next.start.getTime() - date.getTime()) / msPerDay);
 
         return {
-          id: s.id,
-          label: season.label,
-          color: season.color,
+          season: s,
+          macroId: aggregateToMacro(s.id),
+          next,
+          nextMacroId: aggregateToMacro(next.id),
           week,
-          nextSeasonLabel: SEASONS[next.id].label,
-          nextSeasonDays: daysUntilNext,
+          daysUntilNext,
         };
       }
     }
   }
 
+  return null;
+}
+
+export function getCurrentSeasonInfo(): SeasonInfo {
+  const now = new Date();
+  const result = findSeasonForDate(now);
+
+  if (!result) {
+    return {
+      id: 'ordinary',
+      label: 'Caminhada',
+      technical: 'Tempo Comum',
+      color: '#a8a29e',
+      week: 1,
+      nextSeasonLabel: 'Preparação',
+      nextSeasonDays: 0,
+    };
+  }
+
+  const currentMacro = MACRO_SEASONS[result.macroId];
+  const nextMacro = MACRO_SEASONS[result.nextMacroId];
+
   return {
-    id: 'ordinary',
-    label: 'Tempo Comum',
-    color: '#a8a29e',
-    week: 1,
-    nextSeasonLabel: 'Advento',
-    nextSeasonDays: 0,
+    id: result.macroId,
+    label: currentMacro.label,
+    technical: currentMacro.technical,
+    color: currentMacro.color,
+    week: result.week,
+    nextSeasonLabel: nextMacro.label,
+    nextSeasonDays: result.daysUntilNext,
   };
+}
+
+export function getLiturgicalYearProgress(): LiturgicalYearProgress {
+  const now = new Date();
+  const y = now.getFullYear();
+
+  let yearStart: Date;
+  let yearEnd: Date;
+
+  const advY = getAdventSunday(y);
+  if (now >= advY) {
+    yearStart = advY;
+    yearEnd = addDays(getAdventSunday(y + 1), -1);
+  } else {
+    yearStart = getAdventSunday(y - 1);
+    yearEnd = addDays(advY, -1);
+  }
+
+  const yearMs = yearEnd.getTime() - yearStart.getTime();
+  const progress = Math.max(0, Math.min(1, (now.getTime() - yearStart.getTime()) / yearMs));
+
+  const seasons = getSeasonsForLiturgicalYear(yearStart.getFullYear());
+  const msPerDay = 86400000;
+
+  const segments: LiturgicalSegment[] = [];
+  for (const s of seasons) {
+    const macroId = aggregateToMacro(s.id);
+    const macro = MACRO_SEASONS[macroId];
+    const startFraction = Math.max(0, (s.start.getTime() - yearStart.getTime()) / yearMs);
+    const endFraction = Math.min(1, (s.end.getTime() + msPerDay - yearStart.getTime()) / yearMs);
+    segments.push({
+      id: macroId,
+      label: macro.label,
+      shortLabel: macro.shortLabel,
+      color: macro.color,
+      startFraction,
+      endFraction,
+    });
+  }
+
+  const merged = mergeSegments(segments);
+  const currentSeason = getCurrentSeasonInfo();
+
+  return {
+    progress,
+    currentSeason,
+    segments: merged,
+    yearStart,
+    yearEnd,
+  };
+}
+
+function mergeSegments(segments: LiturgicalSegment[]): LiturgicalSegment[] {
+  if (segments.length === 0) return [];
+
+  const sorted = [...segments].sort((a, b) => a.startFraction - b.startFraction);
+  const merged: LiturgicalSegment[] = [];
+
+  for (const seg of sorted) {
+    const last = merged[merged.length - 1];
+    if (last && last.id === seg.id && seg.startFraction <= last.endFraction + 0.001) {
+      last.endFraction = Math.max(last.endFraction, seg.endFraction);
+    } else {
+      merged.push({ ...seg });
+    }
+  }
+
+  return merged;
 }
 
 export function formatSeasonTooltip(info: SeasonInfo): string {

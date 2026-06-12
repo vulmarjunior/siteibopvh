@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Church, Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { getCurrentSeasonInfo, formatSeasonTooltip } from '../../lib/liturgical-calendar';
+import LiturgicalTimeline from './LiturgicalTimeline';
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -28,21 +28,6 @@ const Navbar: React.FC = () => {
     };
   }, [isMobileMenuOpen]);
 
-  const seasonInfo = getCurrentSeasonInfo();
-  const seasonTooltip = formatSeasonTooltip(seasonInfo);
-  const [showSeasonTooltip, setShowSeasonTooltip] = useState(false);
-  const seasonRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (seasonRef.current && !seasonRef.current.contains(e.target as Node)) {
-        setShowSeasonTooltip(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'Relógio de Oração', href: '/relogio' },
@@ -62,20 +47,7 @@ const Navbar: React.FC = () => {
         : 'bg-transparent py-6'
         }`}
     >
-      <div
-        ref={seasonRef}
-        className="absolute top-0 left-0 right-0 z-10 h-4 cursor-default"
-        onMouseEnter={() => setShowSeasonTooltip(true)}
-        onMouseLeave={() => setShowSeasonTooltip(false)}
-        onClick={() => setShowSeasonTooltip((prev) => !prev)}
-      >
-        <div className="h-1" style={{ backgroundColor: seasonInfo.color }} />
-        {showSeasonTooltip && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-stone-900 text-white text-xs px-3 py-1.5 rounded shadow-lg whitespace-nowrap pointer-events-none z-50">
-            {seasonTooltip}
-          </div>
-        )}
-      </div>
+      <LiturgicalTimeline />
       <div className="container mx-auto px-4 flex justify-between items-center">
         <div className="flex items-center z-[60]">
           <Link to="/">
