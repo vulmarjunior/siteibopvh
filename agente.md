@@ -1,6 +1,6 @@
 # 🤖 Contexto do Projeto — Guia para Agentes de IA
 
-> **Última atualização:** 2026-06-11
+> **Última atualização:** 2026-06-12
 > **Propósito:** Fornecer contexto completo para qualquer agente de codificação que trabalhe neste projeto, eliminando a necessidade de re-análise.
 
 ---
@@ -98,7 +98,8 @@ e:\Site IBO\
 │   ├── components/
 │   │   ├── layout/
 │   │   │   ├── Navbar.tsx        # Barra de navegação global
-│   │   │   └── Footer.tsx        # Rodapé global
+│   │   │   ├── Footer.tsx        # Rodapé global
+│   │   │   └── LiturgicalTimeline.tsx  # Timeline do ano litúrgico (rodapé da Navbar)
 │   │   │
 │   │   ├── home/
 │   │   │   ├── Hero.tsx          # Carrossel hero da home
@@ -416,7 +417,7 @@ APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
 13. **YouTube RSS** é fetched via proxy server-side (`/api/youtube-proxy`) para evitar CORS.
 
 ### Litúrgico
-14. **Indicador de calendário litúrgico** em `src/lib/liturgical-calendar.ts` — Usa algoritmo de Computus para calcular a Páscoa. As 6 estações têm cores mapeadas à paleta IBO. A função `getCurrentSeasonInfo()` é chamada na Navbar em tempo de renderização (lado cliente). Para testar outras estações, basta forçar uma data diferente no topo da função.
+14. **Jornada do Ano Litúrgico** em `src/lib/liturgical-calendar.ts` — O sistema trabalha com **4 estações macro** (Preparação/Advento, Natal, Páscoa, Caminhada/Tempo Comum) em vez das 6 tradicionais. Internamente o cálculo de Computus gera 6 estações (incluindo Quaresma e Pentecostes), mas a função `aggregateToMacro()` mapeia Quaresma → Páscoa e Pentecostes → Caminhada para a exibição. O componente `LiturgicalTimeline.tsx` renderiza a barra de progresso com indicador pulsante. Para testar outras datas, basta forçar uma `Date` no topo da função.
 
 ---
 
@@ -476,10 +477,11 @@ APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
 - Documentos doutrinários em modais com accordion
 
 ### Indicador Litúrgico (Navbar)
-- Faixa sutil de **4px** no topo da Navbar com a cor da estação litúrgica atual
-- 6 estações: Advento (`olaria-600`), Natal (`olaria-400`), Tempo Comum (`stone-400`), Quaresma (`clay-400`), Páscoa (`amber-400`), Pentecostes (`olaria-500`)
-- Tooltip ao hover (desktop) / toque (mobile) com: estação, semana atual e contagem regressiva para a próxima estação
-- Utilitário em `src/lib/liturgical-calendar.ts` com Computus algorithm
+- Timeline de progresso "Jornada do Ano" no rodapé da Navbar, dentro do padding existente
+- 4 estações macro com rótulos acessíveis protestantes (Preparação, Natal, Páscoa, Caminhada) e sub-rótulo técnico entre parênteses (Advento, Natal, Páscoa, Tempo Comum) quando diferente
+- Indicador pulsante na posição atual do ano, marcos visíveis em desktop, tooltip com contagem regressiva
+- Componente em `src/components/layout/LiturgicalTimeline.tsx`
+- Lógica em `src/lib/liturgical-calendar.ts` com Computus algorithm e agregação de 6 estações em 4 macros
 
 ---
 
@@ -487,6 +489,7 @@ APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
 
 | Data | Mudança |
 |------|---------|
+| 2026-06-12 | Jornada do Ano Litúrgico: timeline 4 estações macro na Navbar |
 | 2026-06-11 | Organização: limpeza de lixo, duplicatas e docs obsoletos |
 | 2026-06-11 | Indicador de calendário litúrgico na Navbar |
 | 2026-06-08 | Hotsite "Da Ascensão à Parousia" + roteiro de leitura |

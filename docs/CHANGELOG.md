@@ -6,12 +6,13 @@
 - Favicon com bordas arredondadas e fundo dourado/oliva (`favicon.svg`) com imagem PNG embutida em Base64 para máxima compatibilidade e contorno redondo em todas as resoluções de navegadores.
 - Arquivo `site.webmanifest` em `public/` para configuração PWA e cor do tema da barra de ferramentas do navegador.
 - Tags de favicon específicas para dispositivos móveis (`apple-touch-icon`) e fallbacks de imagem PNG/ICO no `index.html`.
-- Indicador de calendário litúrgico na Navbar — faixa sutil de 4px no topo com a cor da estação litúrgica atual (Advento, Natal, Tempo Comum, Quaresma, Páscoa, Pentecostes). Tooltip no hover com semana e contagem regressiva para a próxima estação.
+- **Jornada do Ano Litúrgico** — Timeline de progresso na Navbar mostrando 4 estações macro (Preparação/Advento, Natal, Páscoa, Caminhada/Tempo Comum) com indicador pulsante, marcos visíveis em desktop, e tooltip com contagem regressiva. Rótulos em linguagem acessível protestante, com sub-rótulo técnico entre parênteses.
 - `docs/archived/` com README para documentos obsoletos mantidos como referência histórica.
 
 ### Modificado
 - `index.html` para substituir o ícone padrão anterior pelo novo sistema de favicon arredondado.
-- `src/components/layout/Navbar.tsx` — Adicionada faixa litúrgica no topo.
+- `src/components/layout/Navbar.tsx` — Integra o novo componente `LiturgicalTimeline` no lugar da faixa discreta anterior.
+- `src/lib/liturgical-calendar.ts` — Refatorado para sistema de 4 estações macro com agregação (Quaresma → Páscoa, Pentecostes → Caminhada) e funções de timeline (`getLiturgicalYearProgress`).
 - `public/sitemap.xml` — Domínio corrigido para `ibopvh.com.br`; adicionadas rotas `/relogio`, `/moldanos`, `/da-ascensao-a-parousia`.
 - `agente.md` — Removidas notas sobre `consts.txt` e duplicata PascoaPage (resolvidos).
 
@@ -22,7 +23,8 @@
 - `docs/hotsite-pascoa.md` — Movido para `docs/archived/` (referenciava Next.js, implementado em Vite/React).
 
 ### Arquivos Criados
-- `src/lib/liturgical-calendar.ts` — Utilitário com algoritmo de Computus (cálculo da Páscoa), detecção de estação litúrgica, contagem de semanas e contagem regressiva.
+- `src/lib/liturgical-calendar.ts` — Utilitário com algoritmo de Computus (cálculo da Páscoa), agregação de 6 estações em 4 macros, detecção de estação, contagem de semanas, contagem regressiva e cálculo de progresso anual.
+- `src/components/layout/LiturgicalTimeline.tsx` — Componente da timeline de progresso com barra, indicador pulsante, marcos e tooltip.
 - `docs/archived/README.md` — Explica cada documento arquivado.
 
 ---
