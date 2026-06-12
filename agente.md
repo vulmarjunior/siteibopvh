@@ -90,6 +90,16 @@ e:\Site IBO\
 │   │   └── parousia.ts           # Interfaces: Sermon, RoteiroSemanal, LeituraDiaria, etc.
 │   │
 │   ├── lib/
+│   │   ├── liturgical/           # Módulo litúrgico (cálculos, cores, testes)
+│   │   │   ├── types.ts
+│   │   │   ├── config.ts
+│   │   │   ├── calculateEaster.ts
+│   │   │   ├── calculateAdvent.ts
+│   │   │   ├── getLiturgicalDates.ts
+│   │   │   ├── interpolateColor.ts
+│   │   │   ├── getLiturgicalState.ts
+│   │   │   ├── index.ts
+│   │   │   └── __tests__/
 │   │   └── parousia-utils.ts     # Helpers: getSermonStatus, YouTube URL parsers
 │   │
 │   ├── data/
@@ -99,7 +109,7 @@ e:\Site IBO\
 │   │   ├── layout/
 │   │   │   ├── Navbar.tsx        # Barra de navegação global
 │   │   │   ├── Footer.tsx        # Rodapé global
-│   │   │   └── LiturgicalTimeline.tsx  # Timeline do ano litúrgico (rodapé da Navbar)
+│   │   │   └── LiturgicalBookmark.tsx  # Marcador litúrgico na Navbar
 │   │   │
 │   │   ├── home/
 │   │   │   ├── Hero.tsx          # Carrossel hero da home
@@ -417,7 +427,7 @@ APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
 13. **YouTube RSS** é fetched via proxy server-side (`/api/youtube-proxy`) para evitar CORS.
 
 ### Litúrgico
-14. **Jornada do Ano Litúrgico** em `src/lib/liturgical-calendar.ts` — O sistema trabalha com **4 estações macro** (Preparação/Advento, Natal, Páscoa, Caminhada/Tempo Comum) em vez das 6 tradicionais. Internamente o cálculo de Computus gera 6 estações (incluindo Quaresma e Pentecostes), mas a função `aggregateToMacro()` mapeia Quaresma → Páscoa e Pentecostes → Caminhada para a exibição. O componente `LiturgicalTimeline.tsx` renderiza a barra de progresso com indicador pulsante. Para testar outras datas, basta forçar uma `Date` no topo da função.
+14. **Marcador Litúrgico Bookmark** em `src/lib/liturgical/` — Sistema modular com 4 macroestações (Advento, Natal, Páscoa, Tempo Comum) e 11 fases internas. O Tríduo Pascal tem prioridade máxima: Sexta-feira da Paixão (vermelho), Sábado de Aleluia (preto), Domingo de Páscoa (dourado). Transições graduais de cor entre estações via interpolação RGB. Fuso horário `America/Porto_Velho` normalizado para meia-noite local. 52 testes unitários com Vitest. Para testar outras datas, passe um `Date` arbitrário para `getLiturgicalState(date)`.
 
 ---
 
@@ -477,11 +487,14 @@ APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
 - Documentos doutrinários em modais com accordion
 
 ### Indicador Litúrgico (Navbar)
-- Timeline de progresso "Jornada do Ano" no rodapé da Navbar, dentro do padding existente
-- 4 estações macro com rótulos acessíveis protestantes (Preparação, Natal, Páscoa, Caminhada) e sub-rótulo técnico entre parênteses (Advento, Natal, Páscoa, Tempo Comum) quando diferente
-- Indicador pulsante na posição atual do ano, marcos visíveis em desktop, tooltip com contagem regressiva
-- Componente em `src/components/layout/LiturgicalTimeline.tsx`
-- Lógica em `src/lib/liturgical-calendar.ts` com Computus algorithm e agregação de 6 estações em 4 macros
+- Marcador de página (bookmark) na Navbar com cor dinâmica baseada na estação litúrgica
+- 4 macroestações: Advento (roxo→azul), Natal (azul), Páscoa (cinza→vermelho→preto→dourado), Tempo Comum (verde)
+- Tríduo Pascal com cores especiais: Sexta-feira da Paixão (vermelho), Sábado de Aleluia (preto), Domingo de Páscoa (dourado)
+- Transições graduais de cor entre estações (interpolação RGB)
+- Tooltip com fase específica ao hover (ex: "Quaresma", "Semana Santa", "Sexta-feira da Paixão")
+- Componente em `src/components/layout/LiturgicalBookmark.tsx`
+- Módulo litúrgico em `src/lib/liturgical/` com 52 testes unitários (Vitest)
+- Fuso horário: `America/Porto_Velho` (normalizado para meia-noite local)
 
 ---
 
@@ -489,6 +502,7 @@ APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
 
 | Data | Mudança |
 |------|---------|
+| 2026-06-12 | Marcador Litúrgico Bookmark: ícone com cores dinâmicas e Tríduo Pascal |
 | 2026-06-12 | Jornada do Ano Litúrgico: timeline 4 estações macro na Navbar |
 | 2026-06-11 | Organização: limpeza de lixo, duplicatas e docs obsoletos |
 | 2026-06-11 | Indicador de calendário litúrgico na Navbar |

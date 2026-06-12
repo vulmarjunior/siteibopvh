@@ -6,25 +6,36 @@
 - Favicon com bordas arredondadas e fundo dourado/oliva (`favicon.svg`) com imagem PNG embutida em Base64 para máxima compatibilidade e contorno redondo em todas as resoluções de navegadores.
 - Arquivo `site.webmanifest` em `public/` para configuração PWA e cor do tema da barra de ferramentas do navegador.
 - Tags de favicon específicas para dispositivos móveis (`apple-touch-icon`) e fallbacks de imagem PNG/ICO no `index.html`.
-- **Jornada do Ano Litúrgico** — Timeline de progresso na Navbar mostrando 4 estações macro (Preparação/Advento, Natal, Páscoa, Caminhada/Tempo Comum) com indicador pulsante, marcos visíveis em desktop, e tooltip com contagem regressiva. Rótulos em linguagem acessível protestante, com sub-rótulo técnico entre parênteses.
+- **Marcador Litúrgico Bookmark** — Ícone de marcador de página na Navbar com cores litúrgicas dinâmicas e 4 macroestações (Advento, Natal, Páscoa, Tempo Comum). Tríduo Pascal com cores especiais: vermelho (Sexta-feira da Paixão), preto (Sábado de Aleluia), dourado (Domingo de Páscoa). Transições graduais de cor entre estações. Tooltip com fase específica ao hover.
+- **Módulo litúrgico** (`src/lib/liturgical/`) — Sistema modular com cálculo automático de datas (Computus), interpolação de cores, e 52 testes unitários com Vitest.
 - `docs/archived/` com README para documentos obsoletos mantidos como referência histórica.
+- **Vitest** instalado como framework de testes unitários.
 
 ### Modificado
 - `index.html` para substituir o ícone padrão anterior pelo novo sistema de favicon arredondado.
-- `src/components/layout/Navbar.tsx` — Integra o novo componente `LiturgicalTimeline` no lugar da faixa discreta anterior.
-- `src/lib/liturgical-calendar.ts` — Refatorado para sistema de 4 estações macro com agregação (Quaresma → Páscoa, Pentecostes → Caminhada) e funções de timeline (`getLiturgicalYearProgress`).
+- `src/components/layout/Navbar.tsx` — Integra o componente `LiturgicalBookmark` no menu desktop e mobile.
 - `public/sitemap.xml` — Domínio corrigido para `ibopvh.com.br`; adicionadas rotas `/relogio`, `/moldanos`, `/da-ascensao-a-parousia`.
 - `agente.md` — Removidas notas sobre `consts.txt` e duplicata PascoaPage (resolvidos).
 
 ### Removido
 - `consts.txt` — Arquivo lixo com 274 linhas de "const ".
 - `src/pages/pascoa/PascoaPage.tsx` — Duplicata exata de `src/pages/pascoa-page/PascoaPage.tsx`.
+- `src/components/layout/LiturgicalTimeline.tsx` — Substituído por `LiturgicalBookmark.tsx`.
+- `src/lib/liturgical-calendar.ts` — Substituído pelo módulo `src/lib/liturgical/`.
 - `docs/PLAN-seo-optimization.md` — Movido para `docs/archived/` (plano já executado).
 - `docs/hotsite-pascoa.md` — Movido para `docs/archived/` (referenciava Next.js, implementado em Vite/React).
 
 ### Arquivos Criados
-- `src/lib/liturgical-calendar.ts` — Utilitário com algoritmo de Computus (cálculo da Páscoa), agregação de 6 estações em 4 macros, detecção de estação, contagem de semanas, contagem regressiva e cálculo de progresso anual.
-- `src/components/layout/LiturgicalTimeline.tsx` — Componente da timeline de progresso com barra, indicador pulsante, marcos e tooltip.
+- `src/lib/liturgical/types.ts` — Tipos: MacroSeason, LiturgicalPhase, LiturgicalState, LiturgicalDates.
+- `src/lib/liturgical/config.ts` — Cores litúrgicas, janelas de transição, labels de estações e fases.
+- `src/lib/liturgical/calculateEaster.ts` — Algoritmo de Computus + datas derivadas (Quaresma, Semana Santa, Pentecostes).
+- `src/lib/liturgical/calculateAdvent.ts` — Cálculo do Domingo de Advento.
+- `src/lib/liturgical/getLiturgicalDates.ts` — Agregador de todas as datas litúrgicas de um ano.
+- `src/lib/liturgical/interpolateColor.ts` — Interpolação RGB para transições graduais de cor.
+- `src/lib/liturgical/getLiturgicalState.ts` — Lógica principal com prioridade do Tríduo Pascal e transições graduais.
+- `src/lib/liturgical/index.ts` — Exportações públicas do módulo.
+- `src/lib/liturgical/__tests__/` — 52 testes unitários (calculateEaster, interpolateColor, getLiturgicalState).
+- `src/components/layout/LiturgicalBookmark.tsx` — Componente do marcador litúrgico com ícone Bookmark (lucide-react).
 - `docs/archived/README.md` — Explica cada documento arquivado.
 
 ---
