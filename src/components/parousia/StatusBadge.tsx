@@ -16,7 +16,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
 
   if (status === 'pregado_materiais_em_breve') {
     return (
-      <span className="inline-block px-3 py-1 bg-[#d4af37]/10 text-[#d4af37] text-xs font-medium rounded-full border border-[#d4af37]/20">
+      <span className="inline-block px-3 py-1 bg-[#0f1115]/80 text-[#d4af37] text-xs font-medium rounded-full border border-[#d4af37]/40">
         Pregado — materiais em breve
       </span>
     );
