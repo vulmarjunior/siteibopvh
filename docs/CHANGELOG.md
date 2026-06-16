@@ -3,7 +3,18 @@
 ## [Em Desenvolvimento]
 
 ### Adicionado
-- Favicon com bordas arredondadas e fundo dourado/oliva (`favicon.svg`) com imagem PNG embutida em Base64 para máxima compatibilidade e contorno redondo em todas as resoluções de navegadores.
+- Sermão 01 da série Parousia ("O Rei que Partiu para Reinar") disponível com vídeo (YouTube) e thumbnail
+- `public/parousia/artes/sermão-01.jpg` — thumbnail do sermão
+
+### Corrigido
+- Tags de status dos sermões no hotsite Parousia agora com fundo escuro (`bg-[#0f1115]/80`) para visibilidade sobre thumbnails claras, tanto "Pregado — materiais em breve" quanto "Disponível"
+
+### Modificado
+- `src/data/sermoes.json` — youtubeId, youtubeUrl e artes.thumb do sermão 01 preenchidos
+- `src/components/parousia/StatusBadge.tsx` — fundo opaco nas tags de status
+- `agente.md` — data de última atualização
+
+### Favicon com bordas arredondadas e fundo dourado/oliva (`favicon.svg`) com imagem PNG embutida em Base64 para máxima compatibilidade e contorno redondo em todas as resoluções de navegadores.
 - Arquivo `site.webmanifest` em `public/` para configuração PWA e cor do tema da barra de ferramentas do navegador.
 - Tags de favicon específicas para dispositivos móveis (`apple-touch-icon`) e fallbacks de imagem PNG/ICO no `index.html`.
 - **Marcador Litúrgico Bookmark** — Ícone de marcador de página na Navbar com cores litúrgicas dinâmicas e 4 macroestações (Advento, Natal, Páscoa, Tempo Comum). Tríduo Pascal com cores especiais: vermelho (Sexta-feira da Paixão), preto (Sábado de Aleluia), dourado (Domingo de Páscoa). Transições graduais de cor entre estações. Tooltip com fase específica ao hover.

@@ -1,6 +1,6 @@
 # 🤖 Contexto do Projeto — Guia para Agentes de IA
 
-> **Última atualização:** 2026-06-12
+> **Última atualização:** 2026-06-16
 > **Propósito:** Fornecer contexto completo para qualquer agente de codificação que trabalhe neste projeto, eliminando a necessidade de re-análise.
 
 ---
@@ -502,7 +502,7 @@ APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
 
 | Data | Mudança |
 |------|---------|
-| 2026-06-12 | Marcador Litúrgico Bookmark: ícone com cores dinâmicas e Tríduo Pascal |
+| 2026-06-16 | Sermão 01 da Parousia disponível com vídeo e thumbnail; correção visibilidade das tags de status |
 | 2026-06-12 | Jornada do Ano Litúrgico: timeline 4 estações macro na Navbar |
 | 2026-06-11 | Organização: limpeza de lixo, duplicatas e docs obsoletos |
 | 2026-06-11 | Indicador de calendário litúrgico na Navbar |
