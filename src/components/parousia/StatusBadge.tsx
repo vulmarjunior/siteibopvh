@@ -24,7 +24,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
 
   if (status === 'disponivel') {
     return (
-      <span className="inline-block px-3 py-1 bg-green-900/30 text-green-400 text-xs font-medium rounded-full border border-green-800/50">
+      <span className="inline-block px-3 py-1 bg-[#0f1115]/80 text-green-400 text-xs font-medium rounded-full border border-green-500/40">
         Disponível
       </span>
     );
