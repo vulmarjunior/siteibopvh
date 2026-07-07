@@ -4,7 +4,9 @@
 
 ### Adicionado
 - Sermão 01 da série Parousia ("O Rei que Partiu para Reinar") disponível com vídeo (YouTube) e thumbnail
-- `public/parousia/artes/sermão-01.jpg` — thumbnail do sermão
+- Sermão 02 da série Parousia ("A Coluna de Fogo Desce") disponível com vídeo (YouTube: `a867Y4Yer48`) e thumbnail
+- `public/parousia/artes/sermão-01.jpg` — thumbnail do sermão 01
+- `public/parousia/artes/sermão-02.jpg` — thumbnail do sermão 02
 
 ### Corrigido
 - Tags de status dos sermões no hotsite Parousia agora com fundo escuro (`bg-[#0f1115]/80`) para visibilidade sobre thumbnails claras, tanto "Pregado — materiais em breve" quanto "Disponível"
