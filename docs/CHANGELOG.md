@@ -7,12 +7,15 @@
 - Sermão 02 da série Parousia ("A Coluna de Fogo Desce") disponível com vídeo (YouTube: `a867Y4Yer48`) e thumbnail
 - `public/parousia/artes/sermão-01.jpg` — thumbnail do sermão 01
 - `public/parousia/artes/sermão-02.jpg` — thumbnail do sermão 02
+- `src/components/parousia/VideoModal.tsx` — modal com player YouTube carregado sob demanda
+- `src/components/parousia/MessageCard.tsx` — card compacto com thumbnail + play overlay para a grid de mensagens
 
 ### Corrigido
 - Tags de status dos sermões no hotsite Parousia agora com fundo escuro (`bg-[#0f1115]/80`) para visibilidade sobre thumbnails claras, tanto "Pregado — materiais em breve" quanto "Disponível"
 
 ### Modificado
 - `src/data/sermoes.json` — youtubeId, youtubeUrl e artes.thumb do sermão 01 preenchidos
+- `src/components/parousia/MensagensDisponiveis.tsx` — refatorado para grid de cards com thumbnail + modal de vídeo (evita carregar todos os iframes simultaneamente com 23 sermões)
 - `src/components/parousia/StatusBadge.tsx` — fundo opaco nas tags de status
 - `agente.md` — data de última atualização
 
