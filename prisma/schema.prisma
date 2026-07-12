@@ -39,3 +39,18 @@ model PrayerTheme {
   active Boolean @default(true)
   order  Int     @default(0)
 }
+
+model EbfRegistration {
+  id            Int       @id @default(autoincrement())
+  childName     String
+  age           Int
+  colorGroup    String
+  guardianName  String
+  phone         String
+  visitor       Boolean
+  createdAt     DateTime  @default(now())
+  cancelledAt   DateTime?
+
+  @@index([colorGroup])
+  @@index([createdAt])
+}

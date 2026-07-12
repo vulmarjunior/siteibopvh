@@ -14,6 +14,15 @@ const SLIDES = [
   },
   */
   {
+    id: 4,
+    image: '/images/ebf-2026-banner.jpeg',
+    subtitle: 'Escola Bíblica de Férias • 18 de julho às 16h',
+    title: 'Em Busca do Maior Tesouro',
+    description: 'Uma aventura inesquecível para crianças de 3 a 12 anos descobrirem o maior tesouro de todos: Jesus!',
+    cta: 'Inscrever uma criança',
+    link: '/ebf'
+  },
+  {
     id: 1,
     image: '/images/serie-da-ascensao-a-parousia/arte-principal.png',
     subtitle: 'Nova Série de Mensagens',

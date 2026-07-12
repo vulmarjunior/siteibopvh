@@ -784,3 +784,51 @@ apiRouter.post("/admin/test-email", async (req, res) => {
     res.status(500).json({ error: error.message || "Erro ao enviar e-mail de teste." });
   }
 });
+
+const ebfColor = (age: number) => age <= 5 ? "Amarelo" : age <= 7 ? "Verde" : age <= 9 ? "Azul" : "Vermelho";
+
+apiRouter.post("/ebf/registrations", async (req, res) => {
+  const childName = String(req.body.childName || "").trim();
+  const guardianName = String(req.body.guardianName || "").trim();
+  const phone = String(req.body.phone || "").replace(/\D/g, "");
+  const age = Number(req.body.age);
+  const visitor = req.body.visitor;
+  if (childName.length < 3 || guardianName.length < 3 || !Number.isInteger(age) || age < 3 || age > 12 || phone.length < 10 || phone.length > 11 || typeof visitor !== "boolean") {
+    return res.status(400).json({ error: "Revise os dados informados." });
+  }
+  try {
+    const colorGroup = ebfColor(age);
+    const registration = await prisma.ebfRegistration.create({ data: { childName, age, colorGroup, guardianName, phone, visitor } });
+    const resend = getResend();
+    if (resend) {
+      try {
+        await resend.emails.send({
+          from: "EBF IBO <contato@ibopvh.com.br>", to: "contato@ibopvh.com.br",
+          subject: `Nova inscrição EBF — ${childName}`,
+          html: `<h2>Nova inscrição — EBF 2026</h2><p><b>Criança:</b> ${childName}</p><p><b>Idade:</b> ${age} anos</p><p><b>Grupo:</b> ${colorGroup}</p><p><b>Responsável:</b> ${guardianName}</p><p><b>Telefone:</b> ${phone}</p><p><b>Visitante:</b> ${visitor ? "Sim" : "Não"}</p>`
+        });
+      } catch (emailError) { console.error("EBF email error:", emailError); }
+    }
+    res.status(201).json({ success: true, id: registration.id, colorGroup });
+  } catch (error) { console.error("EBF registration error:", error); res.status(500).json({ error: "Não foi possível concluir a inscrição." }); }
+});
+
+apiRouter.get("/ebf/admin/registrations", async (req, res) => {
+  if (req.query.password !== process.env.ADMIN_PASSWORD) return res.status(401).json({ error: "Não autorizado" });
+  const registrations = await prisma.ebfRegistration.findMany({ where: { cancelledAt: null }, orderBy: [{ colorGroup: "asc" }, { childName: "asc" }] });
+  res.json(registrations);
+});
+
+apiRouter.delete("/ebf/admin/registrations/:id", async (req, res) => {
+  if (req.query.password !== process.env.ADMIN_PASSWORD) return res.status(401).json({ error: "Não autorizado" });
+  await prisma.ebfRegistration.update({ where: { id: Number(req.params.id) }, data: { cancelledAt: new Date() } });
+  res.json({ success: true });
+});
+
+apiRouter.get("/ebf/admin/export.csv", async (req, res) => {
+  if (req.query.password !== process.env.ADMIN_PASSWORD) return res.status(401).send("Não autorizado");
+  const rows = await prisma.ebfRegistration.findMany({ where: { cancelledAt: null }, orderBy: { childName: "asc" } });
+  const escape = (v: unknown) => `"${String(v).replace(/"/g, '""')}"`;
+  const csv = ["Nome,Idade,Grupo,Responsável,Telefone,Visitante,Inscrição", ...rows.map(r => [r.childName,r.age,r.colorGroup,r.guardianName,r.phone,r.visitor ? "Sim":"Não",r.createdAt.toISOString()].map(escape).join(","))].join("\n");
+  res.setHeader("Content-Type", "text/csv; charset=utf-8"); res.setHeader("Content-Disposition", "attachment; filename=inscricoes-ebf-2026.csv"); res.send("\uFEFF" + csv);
+});
