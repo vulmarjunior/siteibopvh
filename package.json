@@ -16,6 +16,8 @@
     "dayjs": "^1.11.20",
     "express": "^5.2.1",
     "ical-generator": "^10.1.0",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
