@@ -6,6 +6,8 @@ import RelogioPage from './pages/relogio/RelogioPage';
 import AdminPage from './pages/relogio/AdminPage';
 import { ParousiaPage } from './pages/parousia/ParousiaPage';
 import MoldaNosPage from './pages/moldanos/MoldaNosPage';
+import EbfPage from './pages/ebf/EbfPage';
+import EbfAdminPage from './pages/ebf/EbfAdminPage';
 
 const App: React.FC = () => (
   <BrowserRouter>
@@ -16,6 +18,8 @@ const App: React.FC = () => (
       <Route path="/relogio/admin" element={<AdminPage />} />
       <Route path="/da-ascensao-a-parousia" element={<ParousiaPage />} />
       <Route path="/moldanos" element={<MoldaNosPage />} />
+      <Route path="/ebf" element={<EbfPage />} />
+      <Route path="/ebf/admin" element={<EbfAdminPage />} />
     </Routes>
   </BrowserRouter>
 );
