@@ -1,6 +1,6 @@
 # 🤖 Contexto do Projeto — Guia para Agentes de IA
 
-> **Última atualização:** 2026-06-16
+> **Última atualização:** 2026-07-12
 > **Propósito:** Fornecer contexto completo para qualquer agente de codificação que trabalhe neste projeto, eliminando a necessidade de re-análise.
 
 ---
@@ -22,7 +22,7 @@ Portal institucional de uma igreja batista, composto por:
 2. **Relógio de Oração** (`/relogio`) — Sistema de reserva de horários de oração 24h com calendário, e-mail transacional e painel admin
 3. **Hotsite Parousia** (`/da-ascensao-a-parousia`) — 🟢 **ATIVO** — Série de mensagens "Da Ascensão à Parousia" com roteiro de leitura interativo
 4. **Hotsite Páscoa** (`/pascoa`) — 🟡 **DORMENTE** — Evento sazonal de Páscoa (programação Trevas + Ressurreição). Arquivos preservados para reuso anual.
-5. **Hotsite Molda-nos** (`/moldanos`) — 🟡 **DORMENTE** — Conferência de aniversário 57 anos (2026). Arquivos preservados como template para conferências futuras.
+5. **Hotsite Molda-nos** (`/moldanos`) — 🟡 **DORMENTE** — Conferência de aniversário 57 anos (2026). Arquivos preservados como template para conferências futuras.\n6. **Hotsite EBF 2026** (`/ebf`) — 🟢 **ATIVO** — Inscrições para a Escola Bíblica de Férias, com persistência no Supabase, envio via Resend e painel administrativo em `/ebf/admin`.
 
 ---
 
@@ -231,7 +231,7 @@ e:\Site IBO\
 | `/relogio/admin` | `AdminPage` | 🟢 Ativo | Painel administrativo (requer senha via query param) |
 | `/da-ascensao-a-parousia` | `ParousiaPage` | 🟢 Ativo | Hotsite da série de mensagens |
 | `/pascoa` | `PascoaPage` | 🟡 Dormente | Hotsite da Páscoa (sazonal) |
-| `/moldanos` | `MoldaNosPage` | 🟡 Dormente | Hotsite conferência de aniversário (sazonal) |
+| `/moldanos` | `MoldaNosPage` | 🟡 Dormente | Hotsite conferência de aniversário (sazonal) |\n| `/ebf` | `EbfPage` | 🟢 Ativo | Hotsite e formulário de inscrições da EBF 2026 |\n| `/ebf/admin` | `EbfAdminPage` | 🔒 Administrativo | Gestão, filtros e exportações CSV/PDF das inscrições |
 
 > **Nota:** As rotas dormentes ainda existem no `App.tsx` e são acessíveis por URL direta, mas não possuem links de navegação visíveis (Navbar/Hero) na versão atual.
 
@@ -247,7 +247,7 @@ O portal segue um padrão de **hotsites sazonais** ligados ao calendário litúr
 |---------|------|-------------|---------|-------------------|
 | **Parousia** | `/da-ascensao-a-parousia` | 🟢 Ativo | Jun/2026 | Série em andamento |
 | **Páscoa** | `/pascoa` | 🟡 Dormente | Abr/2026 | Reativado anualmente na Semana Santa, com atualização de datas e programação |
-| **Molda-nos** | `/moldanos` | 🟡 Dormente | Mai/2026 | Template para conferências de aniversário futuras (atualizar ano, tema, preletor, programação) |
+| **Molda-nos** | `/moldanos` | 🟡 Dormente | Mai/2026 | Template para conferências de aniversário futuras (atualizar ano, tema, preletor, programação) |\n| **EBF 2026** | `/ebf` | 🟢 Ativo | Jul/2026 | Inscrições e organização das crianças por faixa etária/cor |
 
 ### O que significa "Dormente"?
 - ✅ A rota ainda existe no `App.tsx` (acessível por URL direta)
@@ -502,7 +502,7 @@ APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
 
 | Data | Mudança |
 |------|---------|
-| 2026-06-16 | Sermão 01 da Parousia disponível com vídeo e thumbnail; correção visibilidade das tags de status |
+| 2026-07-12 | Hotsite EBF 2026, inscrições no Supabase, painel administrativo, CSV/PDF e banner na home |\n| 2026-06-16 | Sermão 01 da Parousia disponível com vídeo e thumbnail; correção visibilidade das tags de status |
 | 2026-06-12 | Jornada do Ano Litúrgico: timeline 4 estações macro na Navbar |
 | 2026-06-11 | Organização: limpeza de lixo, duplicatas e docs obsoletos |
 | 2026-06-11 | Indicador de calendário litúrgico na Navbar |
