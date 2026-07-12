@@ -1,6 +1,6 @@
 # Changelog - IBOPVH Portal
 
-## [Em Desenvolvimento]
+## [Em Desenvolvimento]\n\n### 2026-07-12 — Hotsite EBF 2026\n\n#### Adicionado\n- Hotsite público **Em Busca do Maior Tesouro** em `/ebf`, para a EBF de 18/07/2026 às 16h.\n- Formulário individual por criança, máscara de telefone e classificação automática por faixa etária/cor.\n- Persistência das inscrições no PostgreSQL/Supabase e aviso por e-mail via Resend.\n- Painel protegido em `/ebf/admin`, com indicadores, pesquisa, filtros, WhatsApp e cancelamento.\n- Exportações em CSV e PDF A4 estruturado por grupos de cor.\n- Banner da EBF no carrossel da página inicial, com link para o hotsite.\n- Modelo Prisma `EbfRegistration`, migração SQL e arte em `public/images/ebf-2026-banner.jpeg`.\n\n#### Corrigido\n- Confirmação visual após envio bem-sucedido do formulário.\n- Acesso ao painel administrativo quando ainda não existem inscrições.\n\n#### Decisão de navegação\n- O acesso público à EBF é feito pelo slide em destaque na página inicial; não foi criado item adicional na Navbar para evitar sobrecarregar o menu.
 
 ### Adicionado
 - Sermão 01 da série Parousia ("O Rei que Partiu para Reinar") disponível com vídeo (YouTube) e thumbnail
