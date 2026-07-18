@@ -835,6 +835,46 @@ apiRouter.get("/ebf/admin/export.csv", async (req, res) => {
 
 // ── Parousia: Inscrição para leitura semanal por e-mail ──
 
+async function sendWelcomeEmail(email: string, subscriberToken: string) {
+  try {
+    const { buildWeeklyReadingEmail } = await import("./lib/email-templates/weekly-reading");
+    const sermoes = await import("./data/sermoes.json").then((m) => m.default);
+
+    const hoje = new Date();
+    const sermoeVigente = sermoes
+      .filter((s: any) => s.leituras && s.leituras.dias.length > 0 && new Date(`${s.data}T00:00:00`) <= hoje)
+      .sort((a: any, b: any) => new Date(b.data).getTime() - new Date(a.data).getTime())[0];
+
+    if (!sermoeVigente || !sermoeVigente.leituras) return;
+
+    const siteUrl = process.env.APP_URL || "https://www.ibopvh.com.br";
+    const unsubscribeUrl = `${siteUrl}/api/parousia/unsubscribe?token=${subscriberToken}`;
+
+    const html = buildWeeklyReadingEmail({
+      sermoeNumero: sermoeVigente.numero,
+      sermoeTitulo: sermoeVigente.titulo,
+      tema: sermoeVigente.leituras.tema,
+      dias: sermoeVigente.leituras.dias,
+      unsubscribeUrl,
+      siteUrl,
+    });
+
+    const resend = getResend();
+    if (!resend) return;
+
+    await resend.emails.send({
+      from: "IBO Parousia <contato@ibopvh.com.br>",
+      to: email,
+      subject: `Leitura da Semana — #${sermoeVigente.numero} ${sermoeVigente.titulo}`,
+      html,
+    });
+
+    console.log(`[parousia] Welcome email sent to ${email} (sermon #${sermoeVigente.numero})`);
+  } catch (err) {
+    console.error(`[parousia] Failed to send welcome email to ${email}:`, err);
+  }
+}
+
 apiRouter.post("/parousia/subscribe", async (req, res) => {
   const email = String(req.body.email || "").trim().toLowerCase();
   const name = req.body.name ? String(req.body.name).trim() : null;
@@ -850,21 +890,27 @@ apiRouter.post("/parousia/subscribe", async (req, res) => {
       return res.json({ success: true, message: "Este e-mail já está inscrito." });
     }
 
+    let subscriberToken: string;
+
     if (existing && !existing.active) {
-      // Reativar inscrição
       await prisma.readingSubscriber.update({
         where: { email },
         data: { active: true, unsubscribedAt: null, name: name || existing.name },
       });
-      return res.json({ success: true, message: "Inscrição reativada com sucesso!" });
+      subscriberToken = existing.token;
+      res.json({ success: true, message: "Inscrição reativada com sucesso!" });
+    } else {
+      const token = crypto.randomBytes(32).toString("hex");
+      await prisma.readingSubscriber.create({
+        data: { email, name, token },
+      });
+      subscriberToken = token;
+      res.json({ success: true, message: "Inscrição realizada com sucesso!" });
     }
 
-    const token = crypto.randomBytes(32).toString("hex");
-    await prisma.readingSubscriber.create({
-      data: { email, name, token },
+    sendWelcomeEmail(email, subscriberToken).catch((err) => {
+      console.error("Error sending welcome email:", err);
     });
-
-    res.json({ success: true, message: "Inscrição realizada com sucesso!" });
   } catch (error) {
     console.error("Error subscribing:", error);
     res.status(500).json({ error: "Não foi possível concluir a inscrição." });
