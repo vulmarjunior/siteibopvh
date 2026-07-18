@@ -56,3 +56,12 @@ export function getYoutubeThumbnailUrl(youtubeId?: string) {
   if (!youtubeId) return '';
   return `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
 }
+
+export function parseSermoes(data: unknown): Sermon[] {
+  if (!Array.isArray(data)) return [];
+  return data.filter((s): s is Sermon =>
+    typeof s === 'object' && s !== null &&
+    'numero' in s && 'slug' in s && 'data' in s &&
+    'titulo' in s && 'textoBiblico' in s && 'movimento' in s
+  );
+}

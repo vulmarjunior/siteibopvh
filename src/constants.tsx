@@ -640,3 +640,32 @@ export const CHURCH_DOCUMENTS: DocumentSection[] = [
         )
     }
 ];
+
+// Dados compartilhados da igreja (usado nos footers do portal e do Parousia)
+export const churchInfo = {
+  name: 'Igreja Batista Olaria',
+  slogan: '"Moldando discípulos para o Reino"',
+  description: 'Uma comunidade de fé comprometida com as Escrituras, a adoração reverente e o serviço ao próximo. Sendo moldados pelo Oleiro dia após dia para a glória de Deus.',
+  social: {
+    facebook: 'https://facebook.com/ibopvh',
+    instagram: 'https://instagram.com/ibopvh',
+    youtube: 'https://youtube.com/@ibopvh',
+  },
+  app: {
+    android: 'https://play.google.com/store/apps/details?id=br.com.igrejasmart.batistaolaria25&pcampaignid=web_share',
+    ios: 'https://apps.apple.com/br/app/ibo-pvh-app/id6751505500',
+  },
+  schedule: [
+    { day: 'Domingo - Oração', time: '09:00' },
+    { day: 'Domingo - EBD', time: '09:30' },
+    { day: 'Domingo - Culto Solene', time: '19:00' },
+  ],
+  contact: {
+    address: 'R. Júlio de Castilho, 1368',
+    neighborhood: 'Olaria, Porto Velho - RO',
+    mapsUrl: 'https://maps.app.goo.gl/GbUQXWGH1AnqBzfL7',
+    phone: '(69) 99385-2595',
+    phoneUrl: 'https://wa.me/5569993852595',
+    email: 'contato@ibopvh.com.br',
+  },
+};

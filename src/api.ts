@@ -832,3 +832,155 @@ apiRouter.get("/ebf/admin/export.csv", async (req, res) => {
   const csv = ["Nome,Idade,Grupo,Responsável,Telefone,Visitante,Inscrição", ...rows.map(r => [r.childName,r.age,r.colorGroup,r.guardianName,r.phone,r.visitor ? "Sim":"Não",r.createdAt.toISOString()].map(escape).join(","))].join("\n");
   res.setHeader("Content-Type", "text/csv; charset=utf-8"); res.setHeader("Content-Disposition", "attachment; filename=inscricoes-ebf-2026.csv"); res.send("\uFEFF" + csv);
 });
+
+// ── Parousia: Inscrição para leitura semanal por e-mail ──
+
+apiRouter.post("/parousia/subscribe", async (req, res) => {
+  const email = String(req.body.email || "").trim().toLowerCase();
+  const name = req.body.name ? String(req.body.name).trim() : null;
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: "E-mail inválido." });
+  }
+
+  try {
+    const existing = await prisma.readingSubscriber.findUnique({ where: { email } });
+
+    if (existing && existing.active) {
+      return res.json({ success: true, message: "Este e-mail já está inscrito." });
+    }
+
+    if (existing && !existing.active) {
+      // Reativar inscrição
+      await prisma.readingSubscriber.update({
+        where: { email },
+        data: { active: true, unsubscribedAt: null, name: name || existing.name },
+      });
+      return res.json({ success: true, message: "Inscrição reativada com sucesso!" });
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+    await prisma.readingSubscriber.create({
+      data: { email, name, token },
+    });
+
+    res.json({ success: true, message: "Inscrição realizada com sucesso!" });
+  } catch (error) {
+    console.error("Error subscribing:", error);
+    res.status(500).json({ error: "Não foi possível concluir a inscrição." });
+  }
+});
+
+apiRouter.get("/parousia/unsubscribe", async (req, res) => {
+  const token = String(req.query.token || "");
+  if (!token) {
+    return res.status(400).send("<html><body><h1>Token inválido</h1></body></html>");
+  }
+
+  try {
+    const subscriber = await prisma.readingSubscriber.findUnique({ where: { token } });
+    if (!subscriber) {
+      return res.status(404).send("<html><body><h1>Assinatura não encontrada</h1></body></html>");
+    }
+
+    await prisma.readingSubscriber.update({
+      where: { token },
+      data: { active: false, unsubscribedAt: new Date() },
+    });
+
+    res.send(`<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Inscrição cancelada</title>
+<style>body{font-family:sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#0f1115;color:#d4af37;}
+.box{text-align:center;padding:3rem;}.box h1{font-size:1.5rem;margin-bottom:1rem;}.box p{color:#9ca3af;font-size:0.9rem;}</style>
+</head><body><div class="box"><h1>Inscrição cancelada</h1><p>Você não receberá mais e-mails com as leituras semanais.</p><p><a href="/da-ascensao-a-parousia" style="color:#d4af37;">Voltar ao hotsite</a></p></div></body></html>`);
+  } catch (error) {
+    console.error("Error unsubscribing:", error);
+    res.status(500).send("<html><body><h1>Erro ao cancelar inscrição</h1></body></html>");
+  }
+});
+
+apiRouter.get("/parousia/today", async (_req, res) => {
+  try {
+    const sermoes = await import("./data/sermoes.json").then(m => m.default);
+    const hoje = new Date();
+    const diaSemana = hoje.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+
+    // Encontrar o sermão mais recente cuja data <= hoje
+    const sermoeVigente = sermoes
+      .filter((s: any) => new Date(`${s.data}T00:00:00`) <= hoje)
+      .sort((a: any, b: any) => new Date(b.data).getTime() - new Date(a.data).getTime())[0];
+
+    if (!sermoeVigente || !sermoeVigente.leituras) {
+      return res.json({ message: "Nenhuma leitura disponível para hoje." });
+    }
+
+    const diasSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+    const diaAtual = diasSemana[diaSemana];
+    const leitura = sermoeVigente.leituras.dias.find((d: any) => d.dia === diaAtual);
+
+    res.json({
+      sermoe: { numero: sermoeVigente.numero, titulo: sermoeVigente.titulo },
+      tema: sermoeVigente.leituras.tema,
+      dia: diaAtual,
+      leitura: leitura || null,
+    });
+  } catch (error) {
+    console.error("Error fetching today reading:", error);
+    res.status(500).json({ error: "Erro ao buscar leitura do dia." });
+  }
+});
+
+// ── Parousia: Teste de envio de e-mail semanal ──
+
+apiRouter.post("/parousia/test-email", async (req, res) => {
+  if (req.body.password !== process.env.ADMIN_PASSWORD) {
+    return res.status(401).json({ error: "Não autorizado" });
+  }
+
+  const { email } = req.body;
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: "E-mail inválido." });
+  }
+
+  try {
+    const { buildWeeklyReadingEmail } = await import("./lib/email-templates/weekly-reading");
+    const sermoes = await import("./data/sermoes.json").then(m => m.default);
+
+    // Encontrar sermão vigente: o mais recente cuja data já passou e tem leituras
+    const hoje = new Date();
+    const sermoeVigente = sermoes
+      .filter((s: any) => s.leituras && s.leituras.dias.length > 0 && new Date(`${s.data}T00:00:00`) <= hoje)
+      .sort((a: any, b: any) => new Date(b.data).getTime() - new Date(a.data).getTime())[0];
+
+    if (!sermoeVigente || !sermoeVigente.leituras) {
+      return res.status(404).json({ error: "Nenhum sermão com leituras encontrado." });
+    }
+
+    const siteUrl = process.env.APP_URL || "https://www.ibopvh.com.br";
+    const html = buildWeeklyReadingEmail({
+      sermoeNumero: sermoeVigente.numero,
+      sermoeTitulo: sermoeVigente.titulo,
+      tema: sermoeVigente.leituras.tema,
+      dias: sermoeVigente.leituras.dias,
+      unsubscribeUrl: "#teste",
+      siteUrl,
+    });
+
+    const resend = getResend();
+    await resend.emails.send({
+      from: "IBO Parousia <contato@ibopvh.com.br>",
+      to: email,
+      subject: `[TESTE] Leitura da Semana — #${sermoeVigente.numero} ${sermoeVigente.titulo}`,
+      html,
+    });
+
+    res.json({
+      success: true,
+      message: `E-mail de teste enviado para ${email}`,
+      sermoe: `#${sermoeVigente.numero} ${sermoeVigente.titulo}`,
+    });
+  } catch (error: any) {
+    console.error("Error sending test email:", error);
+    res.status(500).json({ error: error.message || "Erro ao enviar e-mail de teste." });
+  }
+});

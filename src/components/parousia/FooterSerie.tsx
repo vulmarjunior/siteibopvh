@@ -2,8 +2,8 @@ import React from 'react';
 import { ArrowUp } from 'lucide-react';
 
 export const FooterSerie: React.FC = () => {
-  const handleScrollToNext = () => {
-    document.getElementById('programacao')?.scrollIntoView({ behavior: 'smooth' });
+  const handleScrollToMensagens = () => {
+    document.getElementById('mensagens')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -21,12 +21,12 @@ export const FooterSerie: React.FC = () => {
           Junte-se a nós nessa peregrinação.”
         </p>
 
-        <button 
-          onClick={handleScrollToNext}
+        <button
+          onClick={handleScrollToMensagens}
           className="inline-flex items-center gap-2 px-6 py-3 bg-transparent text-[#d4af37] border border-[#d4af37] rounded hover:bg-[#d4af37]/10 transition-colors font-medium mb-16"
         >
           <ArrowUp className="w-4 h-4" />
-          Ver próximo sermão
+          Ver mensagens disponíveis
         </button>
       </div>
     </footer>

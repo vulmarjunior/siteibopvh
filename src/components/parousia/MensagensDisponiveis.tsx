@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import sermoesData from '../../data/sermoes.json';
 import { Sermon } from '../../types/parousia';
-import { getSermonStatus, getYoutubeEmbedUrl } from '../../lib/parousia-utils';
+import { getSermonStatus, getYoutubeEmbedUrl, parseSermoes } from '../../lib/parousia-utils';
 import { MessageCard } from './MessageCard';
 import { VideoModal } from './VideoModal';
 
 export const MensagensDisponiveis: React.FC = () => {
   const [sermonAtivo, setSermonAtivo] = useState<Sermon | null>(null);
-  const sermoes: Sermon[] = sermoesData as Sermon[];
+  const sermoes = parseSermoes(sermoesData);
 
   const pregados = sermoes.filter(s => {
     const status = getSermonStatus(s);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowDown, Share2, Play } from 'lucide-react';
+import { ArrowDown, Mail, Play } from 'lucide-react';
 
 export const HeroSerie: React.FC = () => {
   const handleScrollToProgramacao = () => {
@@ -10,7 +10,7 @@ export const HeroSerie: React.FC = () => {
     document.getElementById('mensagens')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleShare = () => {
+  const handleScrollToLeituras = () => {
     document.getElementById('convite')?.scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -61,12 +61,12 @@ export const HeroSerie: React.FC = () => {
             Assistir mensagens
           </button>
           
-          <button 
-            onClick={handleShare}
+          <button
+            onClick={handleScrollToLeituras}
             className="flex items-center justify-center gap-2 px-8 py-4 bg-transparent text-gray-300 hover:text-white transition-colors w-full sm:w-auto"
           >
-            <Share2 className="w-5 h-5" />
-            Compartilhar
+            <Mail className="w-5 h-5" />
+            Receber leituras
           </button>
         </div>
       </div>

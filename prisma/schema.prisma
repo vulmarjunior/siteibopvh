@@ -54,3 +54,13 @@ model EbfRegistration {
   @@index([colorGroup])
   @@index([createdAt])
 }
+
+model ReadingSubscriber {
+  id             Int        @id @default(autoincrement())
+  email          String     @unique
+  name           String?
+  token          String     @unique
+  active         Boolean    @default(true)
+  subscribedAt   DateTime   @default(now())
+  unsubscribedAt DateTime?
+}

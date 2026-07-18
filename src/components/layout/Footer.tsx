@@ -1,5 +1,6 @@
 import React from 'react';
 import { MapPin, Mail, Phone, Facebook, Instagram, Youtube, Smartphone, Apple } from 'lucide-react';
+import { churchInfo } from '../../constants';
 
 const Footer: React.FC = () => {
   return (
@@ -7,20 +8,15 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-4 grid md:grid-cols-4 gap-12">
         <div className="md:col-span-1">
           <div className="mb-6">
-            <span className="font-serif font-bold text-2xl text-white block">Igreja Batista Olaria</span>
-            <span className="text-olaria text-sm font-medium italic mt-1 block">"Moldando discípulos para o Reino"</span>
+            <span className="font-serif font-bold text-2xl text-white block">{churchInfo.name}</span>
+            <span className="text-olaria text-sm font-medium italic mt-1 block">{churchInfo.slogan}</span>
           </div>
           <p className="text-sm leading-relaxed mb-6 text-stone-400">
-            Uma comunidade de fé comprometida com as Escrituras, a adoração reverente e o serviço ao próximo. Sendo moldados pelo Oleiro dia após dia para a glória de Deus.
+            {churchInfo.description}
           </p>
-          {/* 
-             LINKS SOCIAIS:
-             - Certificar que todos apontam para @ibopvh.
-             - Manter target="_blank".
-          */}
           <div className="flex gap-4">
             <a
-              href="https://facebook.com/ibopvh"
+              href={churchInfo.social.facebook}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Facebook da Igreja Batista Olaria"
@@ -29,7 +25,7 @@ const Footer: React.FC = () => {
               <Facebook className="w-5 h-5" />
             </a>
             <a
-              href="https://instagram.com/ibopvh"
+              href={churchInfo.social.instagram}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram da Igreja Batista Olaria"
@@ -38,7 +34,7 @@ const Footer: React.FC = () => {
               <Instagram className="w-5 h-5" />
             </a>
             <a
-              href="https://youtube.com/@ibopvh"
+              href={churchInfo.social.youtube}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="YouTube da Igreja Batista Olaria"
@@ -52,7 +48,7 @@ const Footer: React.FC = () => {
             <p className="text-xs uppercase tracking-widest text-stone-500 font-bold mb-1">Baixe nosso App</p>
             <div className="flex flex-wrap gap-3">
               <a
-                href="https://play.google.com/store/apps/details?id=br.com.igrejasmart.batistaolaria25&pcampaignid=web_share"
+                href={churchInfo.app.android}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 bg-stone-800 hover:bg-stone-700 text-white px-4 py-2 rounded-lg transition-all border border-stone-700"
@@ -64,7 +60,7 @@ const Footer: React.FC = () => {
                 </div>
               </a>
               <a
-                href="https://apps.apple.com/br/app/ibo-pvh-app/id6751505500"
+                href={churchInfo.app.ios}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 bg-stone-800 hover:bg-stone-700 text-white px-4 py-2 rounded-lg transition-all border border-stone-700"
@@ -82,19 +78,12 @@ const Footer: React.FC = () => {
         <div>
           <h4 className="text-white font-serif font-bold text-lg mb-6">Programação</h4>
           <ul className="space-y-3 text-sm">
-            <li className="flex justify-between border-b border-stone-800 pb-2">
-              <span>Domingo - Oração</span>
-              <span className="text-olaria">09:00</span>
-            </li>
-            <li className="flex justify-between border-b border-stone-800 pb-2">
-              <span>Domingo - EBD</span>
-              <span className="text-olaria">09:30</span>
-            </li>
-            <li className="flex justify-between border-b border-stone-800 pb-2">
-              <span>Domingo - Culto Solene</span>
-              <span className="text-olaria">19:00</span>
-            </li>
-            {/* Quarta - Estudo Bíblico removed as requested */}
+            {churchInfo.schedule.map((item, idx) => (
+              <li key={idx} className="flex justify-between border-b border-stone-800 pb-2">
+                <span>{item.day}</span>
+                <span className="text-olaria">{item.time}</span>
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -115,36 +104,36 @@ const Footer: React.FC = () => {
             <li className="flex items-start gap-3">
               <MapPin className="w-5 h-5 text-olaria shrink-0 mt-0.5" />
               <a
-                href="https://maps.app.goo.gl/GbUQXWGH1AnqBzfL7"
+                href={churchInfo.contact.mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-olaria transition-colors"
               >
-                R. Júlio de Castilho, 1368<br />Olaria, Porto Velho - RO
+                {churchInfo.contact.address}<br />{churchInfo.contact.neighborhood}
               </a>
             </li>
             <li className="flex items-center gap-3">
               <Phone className="w-5 h-5 text-olaria shrink-0" />
               <a
-                href="https://wa.me/5569993852595"
+                href={churchInfo.contact.phoneUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-olaria transition-colors"
               >
-                (69) 99385-2595
+                {churchInfo.contact.phone}
               </a>
             </li>
             <li className="flex items-center gap-3">
               <Mail className="w-5 h-5 text-olaria shrink-0" />
-              <a href="mailto:contato@ibopvh.com.br" className="hover:text-olaria transition-colors">
-                contato@ibopvh.com.br
+              <a href={`mailto:${churchInfo.contact.email}`} className="hover:text-olaria transition-colors">
+                {churchInfo.contact.email}
               </a>
             </li>
           </ul>
         </div>
       </div>
       <div className="text-center mt-16 pt-8 border-t border-stone-800 text-xs text-stone-500">
-        &copy; {new Date().getFullYear()} Igreja Batista Olaria. Todos os direitos reservados.
+        &copy; {new Date().getFullYear()} {churchInfo.name}. Todos os direitos reservados.
       </div>
     </footer>
   );

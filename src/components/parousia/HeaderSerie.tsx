@@ -24,7 +24,7 @@ export const HeaderSerie: React.FC = () => {
           <button onClick={() => scrollTo('programacao')} className="text-sm font-medium text-gray-300 hover:text-[#d4af37] transition-colors">Programação</button>
           <button onClick={() => scrollTo('mensagens')} className="text-sm font-medium text-gray-300 hover:text-[#d4af37] transition-colors">Mensagens</button>
           <button onClick={() => scrollTo('materiais')} className="text-sm font-medium text-gray-300 hover:text-[#d4af37] transition-colors">Materiais</button>
-          <button onClick={() => scrollTo('convite')} className="text-sm font-medium text-gray-300 hover:text-[#d4af37] transition-colors">Compartilhar</button>
+          <button onClick={() => scrollTo('convite')} className="text-sm font-medium text-gray-300 hover:text-[#d4af37] transition-colors">Leituras</button>
         </nav>
       </div>
     </header>

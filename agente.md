@@ -22,7 +22,8 @@ Portal institucional de uma igreja batista, composto por:
 2. **Relógio de Oração** (`/relogio`) — Sistema de reserva de horários de oração 24h com calendário, e-mail transacional e painel admin
 3. **Hotsite Parousia** (`/da-ascensao-a-parousia`) — 🟢 **ATIVO** — Série de mensagens "Da Ascensão à Parousia" com roteiro de leitura interativo
 4. **Hotsite Páscoa** (`/pascoa`) — 🟡 **DORMENTE** — Evento sazonal de Páscoa (programação Trevas + Ressurreição). Arquivos preservados para reuso anual.
-5. **Hotsite Molda-nos** (`/moldanos`) — 🟡 **DORMENTE** — Conferência de aniversário 57 anos (2026). Arquivos preservados como template para conferências futuras.\n6. **Hotsite EBF 2026** (`/ebf`) — 🟢 **ATIVO** — Inscrições para a Escola Bíblica de Férias, com persistência no Supabase, envio via Resend e painel administrativo em `/ebf/admin`.
+5. **Hotsite Molda-nos** (`/moldanos`) — 🟡 **DORMENTE** — Conferência de aniversário 57 anos (2026). Arquivos preservados como template para conferências futuras.
+6. **Hotsite EBF 2026** (`/ebf`) — 🟢 **ATIVO** — Inscrições para a Escola Bíblica de Férias, com persistência no Supabase, envio via Resend e painel administrativo em `/ebf/admin`.
 
 ---
 
@@ -63,7 +64,7 @@ Portal institucional de uma igreja batista, composto por:
 ## 📂 Estrutura de Diretórios
 
 ```
-e:\Site IBO\
+siteibopvh/
 ├── index.html                    # Entry point HTML (meta tags OG, fontes)
 ├── server.ts                     # Servidor Express (dev + prod)
 ├── vite.config.ts                # Config Vite + React + Tailwind
@@ -181,7 +182,7 @@ e:\Site IBO\
 │
 ├── public/
 │   ├── robots.txt
-│   ├── sitemap.xml               # ⚠️ DESATUALIZADO — Falta /relogio, /moldanos, /da-ascensao-a-parousia
+│   ├── sitemap.xml               # Mapa do site (todas as rotas ativas)
 │   ├── favicon.svg               # Favicon principal (SVG com bordas arredondadas e base64 embutido)
 │   ├── site.webmanifest          # Manifest PWA (referenciando favicon_ibo)
 │   ├── images/
@@ -231,7 +232,9 @@ e:\Site IBO\
 | `/relogio/admin` | `AdminPage` | 🟢 Ativo | Painel administrativo (requer senha via query param) |
 | `/da-ascensao-a-parousia` | `ParousiaPage` | 🟢 Ativo | Hotsite da série de mensagens |
 | `/pascoa` | `PascoaPage` | 🟡 Dormente | Hotsite da Páscoa (sazonal) |
-| `/moldanos` | `MoldaNosPage` | 🟡 Dormente | Hotsite conferência de aniversário (sazonal) |\n| `/ebf` | `EbfPage` | 🟢 Ativo | Hotsite e formulário de inscrições da EBF 2026 |\n| `/ebf/admin` | `EbfAdminPage` | 🔒 Administrativo | Gestão, filtros e exportações CSV/PDF das inscrições |
+| `/moldanos` | `MoldaNosPage` | 🟡 Dormente | Hotsite conferência de aniversário (sazonal) |
+| `/ebf` | `EbfPage` | 🟢 Ativo | Hotsite e formulário de inscrições da EBF 2026 |
+| `/ebf/admin` | `EbfAdminPage` | 🔒 Administrativo | Gestão, filtros e exportações CSV/PDF das inscrições |
 
 > **Nota:** As rotas dormentes ainda existem no `App.tsx` e são acessíveis por URL direta, mas não possuem links de navegação visíveis (Navbar/Hero) na versão atual.
 
@@ -247,7 +250,8 @@ O portal segue um padrão de **hotsites sazonais** ligados ao calendário litúr
 |---------|------|-------------|---------|-------------------|
 | **Parousia** | `/da-ascensao-a-parousia` | 🟢 Ativo | Jun/2026 | Série em andamento |
 | **Páscoa** | `/pascoa` | 🟡 Dormente | Abr/2026 | Reativado anualmente na Semana Santa, com atualização de datas e programação |
-| **Molda-nos** | `/moldanos` | 🟡 Dormente | Mai/2026 | Template para conferências de aniversário futuras (atualizar ano, tema, preletor, programação) |\n| **EBF 2026** | `/ebf` | 🟢 Ativo | Jul/2026 | Inscrições e organização das crianças por faixa etária/cor |
+| **Molda-nos** | `/moldanos` | 🟡 Dormente | Mai/2026 | Template para conferências de aniversário futuras (atualizar ano, tema, preletor, programação) |
+| **EBF 2026** | `/ebf` | 🟢 Ativo | Jul/2026 | Inscrições e organização das crianças por faixa etária/cor |
 
 ### O que significa "Dormente"?
 - ✅ A rota ainda existe no `App.tsx` (acessível por URL direta)
@@ -362,13 +366,13 @@ model PrayerTheme {
 
 ## ⚙️ Variáveis de Ambiente
 
-```env
-DATABASE_URL=         # URL de conexão Supabase (pooling)
-DIRECT_URL=           # URL de conexão direta Supabase
-RESEND_API_KEY=       # Chave API do Resend para e-mails
-ADMIN_PASSWORD=       # Senha do painel admin
-APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
-```
+| Variável | Obrigatória | Descrição |
+|----------|:-----------:|-----------|
+| `DATABASE_URL` | Sim | URL de conexão Supabase (pooling) |
+| `DIRECT_URL` | Sim | URL de conexão direta Supabase |
+| `RESEND_API_KEY` | Sim | Chave API do Resend para e-mails |
+| `ADMIN_PASSWORD` | Sim | Senha do painel admin |
+| `APP_URL` | Não | URL base (ex: https://ibopvh.netlify.app) — usada em links de e-mail |
 
 - **Dev:** Arquivo `.env.local` (carregado via `tsx --env-file=.env.local`)
 - **Prod:** Configurado no dashboard do Netlify
@@ -384,6 +388,13 @@ APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
 | `npm run preview` | Preview do build de produção |
 | `npm run lint` | ESLint |
 | `npm run start` | Inicia servidor em modo produção |
+
+### Testes
+
+| Comando | Descrição |
+|---------|-----------|
+| `npx vitest run` | Roda todos os testes (módulo litúrgico) |
+| `npx vitest --watch` | Roda testes em modo watch |
 
 ---
 
@@ -411,8 +422,8 @@ APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
 ## ⚠️ Armadilhas e Pontos de Atenção
 
 ### Críticos
-1. **`src/api.ts` é monolítico (787 linhas)** — Toda a lógica backend está num único arquivo. Inclui rotas, lógica de negócio, templates HTML de e-mail e seed de dados.
-2. **`src/constants.tsx` é enorme (91KB, 642 linhas)** — Contém todo o conteúdo doutrinário da igreja em JSX. Qualquer alteração deve manter integridade teológica. **Nunca editar o conteúdo teológico sem instrução explícita do pastor.**
+1. **`src/api.ts` é monolítico (787 linhas)** — Toda a lógica backend está num único arquivo. Inclui rotas, lógica de negócio, templates HTML de e-mail e seed de dados. **Melhoria futura:** Refatorar em módulos (`relogio.routes.ts`, `admin.routes.ts`, `youtube.routes.ts`, `parousia.routes.ts`, `ebf.routes.ts`).
+2. **`src/constants.tsx` é enorme (91KB, 642 linhas)** — Contém todo o conteúdo doutrinário da igreja em JSX. Qualquer alteração deve manter integridade teológica. **Nunca editar o conteúdo teológico sem instrução explícita do pastor.** **Melhoria futura:** Migrar conteúdo para JSON/MDX e renderizar dinamicamente.
 3. **`AdminPage.tsx` é denso (33KB)** — Todo o painel admin está num único componente.
 4. **Autenticação admin é por senha simples** — Sem JWT, sem sessões. A senha vai em query params nos GETs.
 5. **Timezone:** O Relógio de Oração usa `America/Porto_Velho` (UTC-4, sem horário de verão). Dayjs com plugins `utc` e `timezone`.
@@ -502,7 +513,9 @@ APP_URL=              # URL base (ex: https://ibopvh.netlify.app)
 
 | Data | Mudança |
 |------|---------|
-| 2026-07-12 | Hotsite EBF 2026, inscrições no Supabase, painel administrativo, CSV/PDF e banner na home |\n| 2026-06-16 | Sermão 01 da Parousia disponível com vídeo e thumbnail; correção visibilidade das tags de status |
+| 2026-07-18 | Análise completa do hotsite Parousia + correções de código + plano de notificação semanal |
+| 2026-07-12 | Hotsite EBF 2026, inscrições no Supabase, painel administrativo, CSV/PDF e banner na home |
+| 2026-06-16 | Sermão 01 da Parousia disponível com vídeo e thumbnail; correção visibilidade das tags de status |
 | 2026-06-12 | Jornada do Ano Litúrgico: timeline 4 estações macro na Navbar |
 | 2026-06-11 | Organização: limpeza de lixo, duplicatas e docs obsoletos |
 | 2026-06-11 | Indicador de calendário litúrgico na Navbar |

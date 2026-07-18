@@ -1,10 +1,10 @@
 import React from 'react';
 import sermoesData from '../../data/sermoes.json';
-import { Sermon } from '../../types/parousia';
+import { parseSermoes } from '../../lib/parousia-utils';
 import { SermonCard } from './SermonCard';
 
 export const ProgramacaoSermoes: React.FC = () => {
-  const sermoes: Sermon[] = sermoesData as Sermon[];
+  const sermoes = parseSermoes(sermoesData);
 
   return (
     <section id="programacao" className="py-24 px-6 bg-[#0f1115]">
