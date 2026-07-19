@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Sparkles } from 'lucide-react';
 import type { GalleryManifest } from './ebf-gallery.types';
 import manifestData from '../../data/ebf-gallery.generated.json';

@@ -1,4 +1,4 @@
-﻿import type { GalleryImage, GalleryStage } from './ebf-gallery.types';
+import type { GalleryImage, GalleryStage } from './ebf-gallery.types';
 import { formatImageAlt } from '../../lib/ebf-gallery-utils';
 import { Star } from 'lucide-react';
 

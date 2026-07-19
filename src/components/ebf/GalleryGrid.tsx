@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Grid3x3, ArrowUpDown } from 'lucide-react';
 import type { GalleryImage, GalleryStage } from './ebf-gallery.types';
 import { formatImageAlt } from '../../lib/ebf-gallery-utils';

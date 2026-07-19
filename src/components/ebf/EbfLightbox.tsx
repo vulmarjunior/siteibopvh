@@ -1,4 +1,4 @@
-﻿import { useEffect, useCallback, useRef, useState } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Download, Share2 } from 'lucide-react';
 import type { GalleryImage } from './ebf-gallery.types';
 

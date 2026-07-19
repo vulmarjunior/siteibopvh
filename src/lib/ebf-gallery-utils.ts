@@ -1,4 +1,4 @@
-﻿import type { GalleryImage, GalleryStage } from '../components/ebf/ebf-gallery.types';
+import type { GalleryImage, GalleryStage } from '../components/ebf/ebf-gallery.types';
 
 const WHATSAPP_TS = /(\d{4})-(\d{2})-(\d{2})\s+at\s+(\d{2})\.(\d{2})\.(\d+)$/;
 

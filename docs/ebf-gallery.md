@@ -1,4 +1,4 @@
-﻿# Galeria Lúdica da EBF — O Mapa das Memórias
+# Galeria Lúdica da EBF — O Mapa das Memórias
 
 ## Visão Geral
 

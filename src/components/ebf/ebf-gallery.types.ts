@@ -1,4 +1,4 @@
-﻿export interface GalleryImage {
+export interface GalleryImage {
   id: string;
   src: string;
   thumb: string;

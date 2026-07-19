@@ -1,4 +1,4 @@
-﻿import { Heart, Map, Grid3x3, Home } from 'lucide-react';
+import { Heart, Map, Grid3x3, Home } from 'lucide-react';
 
 interface Props {
   onBackToMap: () => void;

@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env node
+#!/usr/bin/env node
 
 import { readdir, readFile, writeFile, mkdir, stat, access } from 'node:fs/promises';
 import { join, basename, extname } from 'node:path';

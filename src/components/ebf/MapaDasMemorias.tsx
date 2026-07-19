@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Map, Search, Footprints, Gem, Trophy, ArrowLeft, ChevronRight, Eye } from 'lucide-react';
 import type { GalleryImage, GalleryStage } from './ebf-gallery.types';
 import { formatImageAlt } from '../../lib/ebf-gallery-utils';
