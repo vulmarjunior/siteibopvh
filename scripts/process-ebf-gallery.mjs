@@ -3,7 +3,13 @@
 import { readdir, readFile, writeFile, mkdir, stat, access } from 'node:fs/promises';
 import { join, basename, extname } from 'node:path';
 import { createHash } from 'node:crypto';
-import sharp from 'sharp';
+let sharp;
+try {
+  sharp = (await import('sharp')).default;
+} catch {
+  console.log('  sharp not available — using original images (no WebP optimization)');
+  sharp = null;
+}
 
 const ROOT = process.cwd();
 const EBFIMG_DIR = join(ROOT, 'EBFIMG');
@@ -121,47 +127,75 @@ async function discoverImages() {
 
 async function processImage(image, cache, force) {
   const cached = cache[image.id];
+  
+  // Check cache
   if (!force && cached && cached.hash === image.hash) {
-    const thumbPath = join(OUTPUT_DIR, `thumb_${image.id}.webp`);
-    const optPath = join(OUTPUT_DIR, `optimized_${image.id}.webp`);
-    const phPath = join(OUTPUT_DIR, `placeholder_${image.id}.webp`);
-    if (await fileExists(thumbPath) && await fileExists(optPath) && await fileExists(phPath)) {
+    if (sharp) {
+      // With sharp: check if WebP files exist
+      const thumbPath = join(OUTPUT_DIR, `thumb_${image.id}.webp`);
+      const optPath = join(OUTPUT_DIR, `optimized_${image.id}.webp`);
+      const phPath = join(OUTPUT_DIR, `placeholder_${image.id}.webp`);
+      if (await fileExists(thumbPath) && await fileExists(optPath) && await fileExists(phPath)) {
+        return { ...cached, cached: true };
+      }
+    } else {
+      // Without sharp: just reuse cached metadata
       return { ...cached, cached: true };
     }
   }
 
   console.log(`  Processing: ${image.original}`);
 
-  const img = sharp(image.filePath);
-  const metadata = await img.metadata();
+  if (sharp) {
+    // Generate WebP variants with sharp
+    const baseImg = sharp(image.filePath).rotate();
+    const metadata = await sharp(image.filePath).metadata();
 
-  // Handle EXIF orientation
-  const baseImg = sharp(image.filePath).rotate(); // auto-rotate based on EXIF
+    const thumbPath = join(OUTPUT_DIR, `thumb_${image.id}.webp`);
+    const optPath = join(OUTPUT_DIR, `optimized_${image.id}.webp`);
+    const phPath = join(OUTPUT_DIR, `placeholder_${image.id}.webp`);
 
-  const thumbPath = join(OUTPUT_DIR, `thumb_${image.id}.webp`);
-  const optPath = join(OUTPUT_DIR, `optimized_${image.id}.webp`);
-  const phPath = join(OUTPUT_DIR, `placeholder_${image.id}.webp`);
+    await Promise.all([
+      baseImg.clone().resize(THUMB_WIDTH).webp({ quality: THUMB_QUALITY }).toFile(thumbPath),
+      baseImg.clone().resize(OPTIMIZED_WIDTH).webp({ quality: OPT_QUALITY }).toFile(optPath),
+      baseImg.clone().resize(PLACEHOLDER_SIZE).blur(10).webp({ quality: 20 }).toFile(phPath),
+    ]);
 
-  await Promise.all([
-    baseImg.clone().resize(THUMB_WIDTH).webp({ quality: THUMB_QUALITY }).toFile(thumbPath),
-    baseImg.clone().resize(OPTIMIZED_WIDTH).webp({ quality: OPT_QUALITY }).toFile(optPath),
-    baseImg.clone().resize(PLACEHOLDER_SIZE).blur(10).webp({ quality: 20 }).toFile(phPath),
-  ]);
+    return {
+      id: image.id,
+      src: `/images/ebf-gallery/optimized_${image.id}.webp`,
+      thumb: `/images/ebf-gallery/thumb_${image.id}.webp`,
+      placeholder: `/images/ebf-gallery/placeholder_${image.id}.webp`,
+      width: metadata.width || 0,
+      height: metadata.height || 0,
+      original: image.original,
+      timestamp: image.timestamp,
+      hash: image.hash,
+      cached: false,
+    };
+  }
 
-  const result = {
+  // Fallback without sharp: use original JPEG directly
+  const ext = extname(image.original).toLowerCase();
+  const outName = `${image.id}${ext}`;
+  const outPath = join(OUTPUT_DIR, outName);
+  if (!await fileExists(outPath)) {
+    const { copyFile } = await import('node:fs/promises');
+    await copyFile(image.filePath, outPath);
+  }
+
+  return {
     id: image.id,
-    src: `/images/ebf-gallery/optimized_${image.id}.webp`,
-    thumb: `/images/ebf-gallery/thumb_${image.id}.webp`,
-    placeholder: `/images/ebf-gallery/placeholder_${image.id}.webp`,
-    width: metadata.width || 0,
-    height: metadata.height || 0,
+    src: `/images/ebf-gallery/${outName}`,
+    thumb: `/images/ebf-gallery/${outName}`,
+    placeholder: `/images/ebf-gallery/${outName}`,
+    width: 0,
+    height: 0,
     original: image.original,
     timestamp: image.timestamp,
     hash: image.hash,
     cached: false,
   };
-
-  return result;
 }
 
 function distributeToStages(images, stageCount, config) {
