@@ -1,5 +1,8 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { CalendarDays, Clock, MapPin, Phone, Sparkles } from 'lucide-react';
+import { lazy, Suspense } from 'react';
+
+const EbfGallery = lazy(() => import('../../components/ebf/EbfGallery'));
 
 const groups = [{ages:'3 a 5',name:'Amarelo',bg:'bg-yellow-400'},{ages:'6 a 7',name:'Verde',bg:'bg-green-500'},{ages:'8 a 9',name:'Azul',bg:'bg-blue-500'},{ages:'10 a 12',name:'Vermelho',bg:'bg-red-500'}];
 
@@ -20,6 +23,9 @@ export default function EbfPage() {
       <div><h2 className="font-serif text-3xl font-black">Prepare o pequeno explorador!</h2><p className="mt-4 text-lg">As crianças serão separadas por idade nas atividades lúdicas, garantindo brincadeiras apropriadas e mais segurança.</p><div className="mt-6 grid grid-cols-2 gap-3">{groups.map(g=><div key={g.name} className={`${g.bg} rounded-2xl p-4 text-white shadow-md`}><b className="block text-xl">{g.ages} anos</b><span>Roupa {g.name.toLowerCase()}</span></div>)}</div><p className="mt-5 rounded-xl border border-amber-300 bg-amber-100 p-4"><Sparkles className="mr-2 inline"/>Se possível, a criança deve vir com uma roupa da cor correspondente à sua idade.</p></div>
       <div id="inscricao" className="rounded-3xl bg-white p-6 shadow-xl md:p-9"><h2 className="font-serif text-3xl font-black">Inscreva sua criança</h2><p className="mt-2 text-stone-600">Preencha um formulário para cada criança.</p>{status==='success'?<div className="mt-7 rounded-2xl bg-emerald-50 p-6 text-center"><h3 className="text-2xl font-bold text-emerald-800">Inscrição confirmada!</h3><p className="mt-2">O grupo da criança é <strong>{color}</strong>.</p><button onClick={()=>setStatus('idle')} className="mt-5 rounded-full bg-emerald-700 px-6 py-3 font-bold text-white">Inscrever outra criança</button></div>:<form onSubmit={submit} className="mt-6 space-y-4"><Field label="Nome completo da criança" name="childName"/><label className="block font-bold">Idade<select name="age" required defaultValue="" className="mt-1 w-full rounded-xl border border-stone-300 p-3 font-normal"><option value="" disabled>Selecione</option>{Array.from({length:10},(_,i)=>i+3).map(n=><option key={n}>{n}</option>)}</select></label><Field label="Nome do responsável" name="guardianName"/><Field label="Telefone/WhatsApp com DDD" name="phone" type="tel" icon={<Phone size={18}/>}/><fieldset><legend className="font-bold">A criança é visitante?</legend><div className="mt-2 flex gap-5"><label><input required type="radio" name="visitor" value="sim"/> Sim</label><label><input required type="radio" name="visitor" value="nao"/> Não</label></div></fieldset>{status==='error'&&<p className="text-red-700">Não foi possível enviar. Revise os dados e tente novamente.</p>}<button disabled={status==='sending'} className="w-full rounded-full bg-amber-500 px-6 py-4 text-lg font-black text-amber-950 shadow hover:bg-amber-400 disabled:opacity-60">{status==='sending'?'Enviando...':'Garantir a inscrição'}</button></form>}</div>
     </section>
+  <Suspense fallback={<div className='py-20 text-center text-stone-500'>Carregando galeria...</div>}>
+      <EbfGallery />
+    </Suspense>
   </main>
 }
 function Info({icon,title}:{icon:React.ReactNode,title:string}){return <div className="flex items-center justify-center gap-3 rounded-2xl bg-white p-5 font-bold shadow-lg">{icon}{title}</div>}

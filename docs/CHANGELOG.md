@@ -1,6 +1,38 @@
 # Changelog - IBOPVH Portal
 
 ## [Em Desenvolvimento]
+### 2026-07-19 — Galeria Lúdica da EBF (O Mapa das Memórias)
+
+#### Adicionado
+- Galeria de fotografias da EBF com experiência lúdica "O Mapa das Memórias" integrada à página `/ebf`.
+- Script de processamento automático de imagens (`scripts/process-ebf-gallery.mjs`) com cache incremental (SHA-256).
+- Conversão automática para WebP: thumbnails (400px), otimizadas (1200px), placeholders LQIP.
+- Manifesto gerado automaticamente (`src/data/ebf-gallery.generated.json`) com 47 imagens em 5 etapas cronológicas.
+- Mapa interativo com 5 etapas, progresso em localStorage e caça ao tesouro digital (pistas por etapa).
+- Galeria convencional ("Ver todas as fotos") com filtros por etapa e paginação (20 imagens/batch).
+- Lightbox com navegação por teclado (←/→/Escape), gestos no mobile, download e compartilhamento nativo.
+- Seção "Tesouros encontrados" com fotos destacadas.
+- Seção de encerramento com mensagem cristã e agradecimentos.
+- Configuração opcional (`EBFIMG/gallery.config.json`) para etapas, destaques, legendas e ocultação.
+- Lazy loading do componente da galeria via `React.lazy()` (chunk separado de ~23KB).
+- Documentação operacional (`docs/ebf-gallery.md`).
+
+#### Arquitetura
+- Processador: `scripts/process-ebf-gallery.mjs` (Node.js + sharp)
+- Manifesto: `src/data/ebf-gallery.generated.json` (gerado, importado pelo React)
+- Imagens derivadas: `public/images/ebf-gallery/` (gitignorado, gerado no build)
+- Cache: `.ebf-gallery-cache.json` (gitignorado)
+- Build: `netlify.toml` atualizado para rodar processamento antes do Vite build
+
+#### Componentes criados
+- `src/components/ebf/EbfGallery.tsx` — Orquestrador principal
+- `src/components/ebf/MapaDasMemorias.tsx` — Mapa interativo com 5 etapas
+- `src/components/ebf/EbfLightbox.tsx` — Visualizador ampliado
+- `src/components/ebf/GalleryGrid.tsx` — Grade convencional
+- `src/components/ebf/Highlights.tsx` — Destaques
+- `src/components/ebf/EbfClosing.tsx` — Encerramento
+
+
 
 ### 2026-07-18 — Notificação Semanal de Leitura (Parousia)
 

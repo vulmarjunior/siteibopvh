@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "start": "node server.ts",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "process-gallery": "node scripts/process-ebf-gallery.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

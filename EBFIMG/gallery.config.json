@@ -1,0 +1,31 @@
+﻿{
+  "settings": {
+    "sorting": "captureDate",
+    "journeyStages": 5,
+    "downloadsEnabled": true,
+    "batchSize": 20
+  },
+  "stages": {
+    "1": {
+      "name": "Início da Jornada",
+      "clue": "Uma chave antiga brilha no início do caminho..."
+    },
+    "2": {
+      "name": "Primeiras Pistas",
+      "clue": "A bússola aponta para a próxima descoberta..."
+    },
+    "3": {
+      "name": "Pelo Caminho",
+      "clue": "Moedas douradas marcam o caminho percorrido..."
+    },
+    "4": {
+      "name": "Grandes Descobertas",
+      "clue": "Uma pedra preciosa aguarda ser encontrada..."
+    },
+    "5": {
+      "name": "O Tesouro Encontrado",
+      "clue": "O maior tesouro estava no coração de cada criança!"
+    }
+  },
+  "photos": {}
+}

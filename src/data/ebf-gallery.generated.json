@@ -1,0 +1,244 @@
+{
+  "generated": "2026-07-19T01:30:58.351Z",
+  "totalImages": 47,
+  "stages": [
+    {
+      "id": 1,
+      "name": "Início da Jornada",
+      "clue": "Uma chave antiga brilha no início do caminho...",
+      "icon": "Map",
+      "images": [
+        {
+          "width": 1200,
+          "height": 1600
+        },
+        {
+          "width": 1200,
+          "height": 1600
+        },
+        {
+          "width": 1200,
+          "height": 1600
+        },
+        {
+          "width": 1200,
+          "height": 1600
+        },
+        {
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "width": 720,
+          "height": 1280
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Primeiras Pistas",
+      "clue": "A bússola aponta para a próxima descoberta...",
+      "icon": "Binoculars",
+      "images": [
+        {
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "width": 1280,
+          "height": 720
+        },
+        {
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "width": 1280,
+          "height": 785
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Pelo Caminho",
+      "clue": "Moedas douradas marcam o caminho percorrido...",
+      "icon": "Footprints",
+      "images": [
+        {
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "width": 1600,
+          "height": 900
+        },
+        {
+          "width": 1600,
+          "height": 900
+        },
+        {
+          "width": 1600,
+          "height": 900
+        },
+        {
+          "width": 1600,
+          "height": 900
+        },
+        {
+          "width": 1600,
+          "height": 900
+        },
+        {
+          "width": 1600,
+          "height": 900
+        },
+        {
+          "width": 1600,
+          "height": 1200
+        },
+        {
+          "width": 1600,
+          "height": 1200
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Grandes Descobertas",
+      "clue": "Uma pedra preciosa aguarda ser encontrada...",
+      "icon": "Gem",
+      "images": [
+        {
+          "width": 1600,
+          "height": 1200
+        },
+        {
+          "width": 1200,
+          "height": 1600
+        },
+        {
+          "width": 1600,
+          "height": 900
+        },
+        {
+          "width": 1600,
+          "height": 900
+        },
+        {
+          "width": 1600,
+          "height": 900
+        },
+        {
+          "width": 1200,
+          "height": 1600
+        },
+        {
+          "width": 1200,
+          "height": 1600
+        },
+        {
+          "width": 1200,
+          "height": 1600
+        },
+        {
+          "width": 1200,
+          "height": 1600
+        },
+        {
+          "width": 1200,
+          "height": 1600
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "O Tesouro Encontrado",
+      "clue": "O maior tesouro estava no coração de cada criança!",
+      "icon": "Trophy",
+      "images": [
+        {
+          "width": 1200,
+          "height": 1600
+        },
+        {
+          "width": 1200,
+          "height": 1600
+        },
+        {
+          "width": 1200,
+          "height": 1600
+        },
+        {
+          "width": 1600,
+          "height": 1200
+        },
+        {
+          "width": 1600,
+          "height": 1200
+        },
+        {
+          "width": 1600,
+          "height": 1200
+        },
+        {
+          "width": 1200,
+          "height": 1600
+        }
+      ]
+    }
+  ],
+  "highlights": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ]
+}

@@ -1,4 +1,4 @@
-# Logs
+﻿# Logs
 logs
 *.log
 npm-debug.log*
@@ -23,3 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 *.env
+
+# EBF Gallery (generated)
+.ebf-gallery-cache.json
+public/images/ebf-gallery/
+
+# EBF videos (not needed for gallery)
+EBFIMG/*.mp4
