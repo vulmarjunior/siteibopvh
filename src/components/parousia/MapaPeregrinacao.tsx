@@ -5,11 +5,11 @@ import { parseSermoes, getSermonStatus } from '../../lib/parousia-utils';
 const etapas = [
   { num: '1', titulo: 'Ascensão', movimentos: ['Ascensão'] },
   { num: '2', titulo: 'Pentecostes', movimentos: ['Pentecostes'] },
-  { num: '3', titulo: 'Peregrinação', movimentos: ['Peregrinação'] },
-  { num: '4', titulo: 'Deserto', movimentos: ['Deserto'] },
-  { num: '5', titulo: 'Missão', movimentos: ['Missão'] },
-  { num: '6', titulo: 'Perseverança', movimentos: ['Perseverança'] },
-  { num: '7', titulo: 'Parousia', movimentos: ['Parousia'] },
+  { num: '3', titulo: 'Peregrinação', movimentos: ['Peregrinação', 'Comunidade', 'Identidade'] },
+  { num: '4', titulo: 'Deserto', movimentos: ['Deserto', 'Perseguição', 'Martírio', 'Dispersão', 'Sofrimento e esperança', 'Graça soberana'] },
+  { num: '5', titulo: 'Missão', movimentos: ['Missão', 'Gentios', 'Novo povo'] },
+  { num: '6', titulo: 'Perseverança', movimentos: ['Perseverança', 'Doutrina', 'Liberdade e Espírito', 'Reconciliação', 'Ressurreição', 'Fé e disciplina', 'Espera paciente', 'Ética escatológica'] },
+  { num: '7', titulo: 'Parousia', movimentos: ['Parousia', 'Cristo presente', 'Governo da história'] },
   { num: '8', titulo: 'Nova Jerusalém', movimentos: ['Nova Jerusalém'] },
 ];
 
@@ -44,7 +44,6 @@ export const MapaPeregrinacao: React.FC = () => {
           {etapas.map((etapa, idx) => {
             const isPast = idx < etapaAtual;
             const isCurrent = idx === etapaAtual;
-            const isFuture = idx > etapaAtual;
 
             return (
               <div key={idx} className="relative z-10 flex flex-col items-center">
