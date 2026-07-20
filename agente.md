@@ -1,6 +1,6 @@
 # 🤖 Contexto do Projeto — Guia para Agentes de IA
 
-> **Última atualização:** 2026-07-18
+> **Última atualização:** 2026-07-20
 > **Propósito:** Fornecer contexto completo para qualquer agente de codificação que trabalhe neste projeto, eliminando a necessidade de re-análise.
 
 ---
@@ -162,6 +162,10 @@ siteibopvh/
 │   │       ├── DocumentCard.tsx
 │   │       └── DocumentModal.tsx
 │   │
+│   ├── components/ui/
+│   │   └── LoadingSpinner.tsx    # Componente de fallback para Suspense e Code-Splitting
+│   │
+
 │   ├── pages/
 │   │   ├── home/
 │   │   │   └── HomePage.tsx      # Compõe seções da home
@@ -174,8 +178,6 @@ siteibopvh/
 │   │   │   └── MoldaNosPage.tsx
 │   │   ├── pascoa-page/
 │   │   │   └── PascoaPage.tsx
-│   │   └── pascoa/
-│   │       └── PascoaPage.tsx    # Duplicata — mesmo arquivo em 2 pastas
 │   │
 │   └── assets/
 │       └── images/               # (vazio, imagens ficam em /public)

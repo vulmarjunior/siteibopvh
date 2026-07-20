@@ -1,6 +1,17 @@
 # Changelog - IBOPVH Portal
 
 ## [Em Desenvolvimento]
+
+### 2026-07-20 — Otimização de Desempenho e Experiência Mobile
+
+#### Adicionado
+- Implementação de Code Splitting e carregamento tardio de rotas no `App.tsx` usando `React.lazy()` e `<Suspense>`, gerando chunks separados para cada página.
+- Criação do componente `LoadingSpinner.tsx` para apresentar feedback visual amigável durante transições de rotas.
+- Preload do banner inicial (`arte-principal.png`) da série Parousia incluído no `index.html` para melhorar o tempo do Largest Contentful Paint (LCP) e prevenir flashes brancos (FOUC).
+
+#### Modificado
+- Expansão dos alvos de toque (Touch Targets) dos links no menu Mobile no componente `Navbar.tsx` para atender aos padrões de acessibilidade mobile, facilitando o clique em dispositivos touchscreen.
+
 ### 2026-07-19 — Galeria Lúdica da EBF (O Mapa das Memórias)
 
 #### Adicionado
