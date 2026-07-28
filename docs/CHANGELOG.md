@@ -2,6 +2,14 @@
 
 ## [Em Desenvolvimento]
 
+### 2026-07-28 — Atualização do Hotsite Parousia (Sermão 05)
+
+#### Adicionado
+- Arquivo de thumbnail público em `public/images/serie-da-ascensao-a-parousia/sermão-05.png`.
+
+#### Modificado
+- `src/data/sermoes.json` — Preenchidos `youtubeId`, `youtubeUrl` e `artes.thumb` para o Sermão 05 ("Quando o Deserto se Torna Hostil").
+
 ### 2026-07-20 — Otimização de Desempenho e Experiência Mobile
 
 #### Adicionado

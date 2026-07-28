@@ -1,6 +1,6 @@
 # 🤖 Contexto do Projeto — Guia para Agentes de IA
 
-> **Última atualização:** 2026-07-20
+> **Última atualização:** 2026-07-28
 > **Propósito:** Fornecer contexto completo para qualquer agente de codificação que trabalhe neste projeto, eliminando a necessidade de re-análise.
 
 ---
@@ -515,6 +515,7 @@ model PrayerTheme {
 
 | Data | Mudança |
 |------|---------|
+| 2026-07-28 | Atualização do Hotsite Parousia: Vídeo e Thumbnail do Sermão 05 ("Quando o Deserto se Torna Hostil") |
 | 2026-07-18 | Notificação semanal de leitura Parousia (subscribe, unsubscribe, e-mail automático no ato da inscrição) |
 | 2026-07-18 | Análise completa do hotsite Parousia + correções de código + plano de notificação semanal |
 | 2026-07-12 | Hotsite EBF 2026, inscrições no Supabase, painel administrativo, CSV/PDF e banner na home |
