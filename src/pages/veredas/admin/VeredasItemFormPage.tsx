@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { supabaseClient } from '../../../lib/veredas/supabaseClient';
-import { BookOpen, Film, ArrowLeft, Save, CheckCircle2, AlertCircle, Plus, Trash2 } from 'lucide-react';
+import { BookOpen, Film, ArrowLeft, Save, AlertCircle } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import { BookAccessFields, BookAccessFormData } from '../../../components/veredas/BookAccessFields';
 
 export const VeredasItemFormPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
@@ -32,6 +33,8 @@ export const VeredasItemFormPage: React.FC = () => {
     capaUrl: '',
     disponibilidade: 'DISPONIVEL',
   });
+  const [bookAccesses, setBookAccesses] = useState<BookAccessFormData[]>([]);
+
 
   // Internal Video State
   const [videoData, setVideoData] = useState({
@@ -82,6 +85,23 @@ export const VeredasItemFormPage: React.FC = () => {
                 capaUrl: item.livro.capaUrl || '',
                 disponibilidade: item.livro.disponibilidade || 'DISPONIVEL',
               });
+              setBookAccesses((item.livro.acessos || []).map((access: any, index: number) => ({
+                key: `access-${access.id || index}`,
+                tipo: access.tipo || 'COMPRA',
+                formato: access.formato || 'IMPRESSO',
+                provedor: access.provedor || 'OUTRO',
+                fornecedor: access.fornecedor || '',
+                url: access.url || '',
+                textoBotao: access.textoBotao || 'Acessar',
+                gratuito: Boolean(access.gratuito),
+                linkAssociado: Boolean(access.linkAssociado),
+                producaoIbo: Boolean(access.producaoIbo),
+                ativo: access.ativo !== false,
+                ordem: access.ordem ?? index,
+                observacaoPublica: access.observacaoPublica || '',
+                fonte: access.fonte || '',
+                affiliateTag: '',
+              })));
             }
             if (item.video) {
               setVideoData({
@@ -123,6 +143,44 @@ export const VeredasItemFormPage: React.FC = () => {
     }
   };
 
+  const handleAmazonParser = async (index: number) => {
+    const access = bookAccesses[index];
+    if (!access?.url) return;
+
+    setErrorMsg(null);
+    try {
+      const token = localStorage.getItem('veredas_access_token') || (await supabaseClient.auth.getSession()).data.session?.access_token;
+      const res = await fetch('/api/veredas/admin/importar/amazon', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ url: access.url, affiliateTag: access.affiliateTag || undefined }),
+      });
+      const parsed = await res.json();
+      if (!res.ok) throw new Error(parsed.error || 'Link da Amazon invalido');
+
+      setBookAccesses((current) =>
+        current.map((item, currentIndex) =>
+          currentIndex === index
+            ? {
+                ...item,
+                url: parsed.canonicalUrl || item.url,
+                linkAssociado: Boolean(item.affiliateTag) || /[?&]tag=/.test(parsed.canonicalUrl || item.url) || item.linkAssociado,
+                fornecedor: item.fornecedor || 'Amazon',
+              }
+            : item
+        )
+      );
+      if (parsed.asin) {
+        setBookData((current) => ({ ...current, asin: parsed.asin }));
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Falha ao validar link da Amazon');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -145,12 +203,13 @@ export const VeredasItemFormPage: React.FC = () => {
         status,
         destaque,
         categoriaIds,
-        livro: tipo === 'LIVRO' ? bookData : undefined,
+        livro: tipo === 'LIVRO' ? { ...bookData, acessos: bookAccesses } : undefined,
         video: tipo === 'VIDEO' ? videoData : undefined,
       };
 
-      const res = await fetch('/api/veredas/admin/items', {
-        method: 'POST',
+      const endpoint = isEditing ? `/api/veredas/admin/items/${id}` : '/api/veredas/admin/items';
+      const res = await fetch(endpoint, {
+        method: isEditing ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -349,7 +408,14 @@ export const VeredasItemFormPage: React.FC = () => {
 
           {/* INTERNAL FORM: BOOK OR VIDEO */}
           {tipo === 'LIVRO' ? (
-            <BookFormInternal data={bookData} onChange={setBookData} />
+            <>
+              <BookFormInternal data={bookData} onChange={setBookData} />
+              <BookAccessFields
+                accesses={bookAccesses}
+                onChange={setBookAccesses}
+                onNormalizeAmazon={handleAmazonParser}
+              />
+            </>
           ) : (
             <VideoFormInternal data={videoData} onChange={setVideoData} onParseYoutube={handleYoutubeParser} />
           )}

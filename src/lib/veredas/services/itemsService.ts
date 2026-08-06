@@ -292,6 +292,24 @@ export class ItemsService {
     });
   }
 
+  private buildAccessData(acessos: any[] = []) {
+    return acessos.map((acesso, index) => ({
+      tipo: acesso.tipo,
+      formato: acesso.formato || null,
+      provedor: acesso.provedor || null,
+      fornecedor: acesso.fornecedor?.trim() || null,
+      url: acesso.url.trim(),
+      textoBotao: acesso.textoBotao.trim(),
+      gratuito: Boolean(acesso.gratuito),
+      linkAssociado: Boolean(acesso.linkAssociado),
+      producaoIbo: Boolean(acesso.producaoIbo),
+      ativo: acesso.ativo !== false,
+      ordem: Number.isFinite(Number(acesso.ordem)) ? Number(acesso.ordem) : index,
+      observacaoPublica: acesso.observacaoPublica?.trim() || null,
+      fonte: acesso.fonte?.trim() || null,
+    }));
+  }
+
   /**
    * Administrative item creation (Book or Video).
    */
@@ -354,6 +372,9 @@ export class ItemsService {
               ordem: idx,
             })),
           },
+          acessos: {
+            create: this.buildAccessData(data.livro?.acessos),
+          },
         },
       };
     } else if (data.tipo === CuradoriaTipoItem.VIDEO) {
@@ -385,4 +406,95 @@ export class ItemsService {
       },
     });
   }
+  /**
+   * Updates an existing item and replaces editable relationships atomically.
+   */
+  async updateAdminItem(id: number, data: any) {
+    return this.prisma.$transaction(async (tx) => {
+      const existing = await tx.curadoriaItem.findUnique({
+        where: { id },
+        include: { livro: true, video: true },
+      });
+
+      if (!existing) return null;
+
+      const publicadoEm =
+        data.status === CuradoriaStatus.PUBLICADO
+          ? existing.publicadoEm || new Date()
+          : existing.publicadoEm;
+
+      await tx.curadoriaItem.update({
+        where: { id },
+        data: {
+          titulo: data.titulo,
+          resumo: data.resumo,
+          descricao: data.descricao || null,
+          porqueIndicamos: data.porqueIndicamos,
+          ressalvas: data.ressalvas || null,
+          publicoIndicado: data.publicoIndicado || null,
+          nivel: data.nivel,
+          status: data.status || existing.status,
+          destaque: Boolean(data.destaque),
+          ordemDestaque: data.ordemDestaque ? Number(data.ordemDestaque) : null,
+          imagemUrl: data.imagemUrl || null,
+          seoTitle: data.seoTitle || null,
+          seoDescription: data.seoDescription || null,
+          publicadoEm,
+          arquivadoEm: data.status === CuradoriaStatus.ARQUIVADO ? new Date() : null,
+          categorias: {
+            deleteMany: {},
+            create: (data.categoriaIds || []).map((catId: number) => ({
+              categoriaId: Number(catId),
+            })),
+          },
+        },
+      });
+
+      if (existing.tipo === CuradoriaTipoItem.LIVRO && existing.livro) {
+        await tx.curadoriaLivro.update({
+          where: { id: existing.livro.id },
+          data: {
+            subtitulo: data.livro?.subtitulo || null,
+            isbn10: data.livro?.isbn10 || null,
+            isbn13: data.livro?.isbn13 || null,
+            asin: data.livro?.asin || null,
+            editora: data.livro?.editora || null,
+            anoPublicacao: data.livro?.anoPublicacao ? Number(data.livro.anoPublicacao) : null,
+            edicao: data.livro?.edicao || null,
+            idioma: data.livro?.idioma || 'Português',
+            numeroPaginas: data.livro?.numeroPaginas ? Number(data.livro.numeroPaginas) : null,
+            formatoPrincipal: data.livro?.formatoPrincipal || null,
+            capaUrl: data.livro?.capaUrl || null,
+            disponibilidade: data.livro?.disponibilidade || 'DISPONIVEL',
+            acessos: {
+              deleteMany: {},
+              create: this.buildAccessData(data.livro?.acessos),
+            },
+          },
+        });
+      } else if (existing.tipo === CuradoriaTipoItem.VIDEO && existing.video) {
+        await tx.curadoriaVideo.update({
+          where: { id: existing.video.id },
+          data: {
+            youtubeId: data.video?.youtubeId || null,
+            urlOriginal: data.video?.urlOriginal,
+            canal: data.video?.canal || null,
+            duracaoSegundos: data.video?.duracaoSegundos ? Number(data.video.duracaoSegundos) : null,
+            thumbnailUrl: data.video?.thumbnailUrl || null,
+            incorporavel: data.video?.incorporavel !== false,
+          },
+        });
+      }
+
+      return tx.curadoriaItem.findUnique({
+        where: { id },
+        include: {
+          categorias: { include: { categoria: true } },
+          livro: { include: { acessos: { orderBy: { ordem: 'asc' } } } },
+          video: true,
+        },
+      });
+    });
+  }
+
 }
