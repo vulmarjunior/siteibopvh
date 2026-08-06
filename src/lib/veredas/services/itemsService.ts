@@ -347,6 +347,21 @@ export class ItemsService {
           formatoPrincipal: data.livro?.formatoPrincipal || null,
           capaUrl: data.livro?.capaUrl || null,
           disponibilidade: data.livro?.disponibilidade || 'DISPONIVEL',
+          acessos: data.livro?.amazonUrl ? {
+            create: [
+              {
+                tipo: 'COMPRA',
+                provedor: 'AMAZON',
+                fornecedor: 'Amazon Brasil',
+                url: data.livro.amazonUrl,
+                textoBotao: 'Comprar na Amazon',
+                linkAssociado: true,
+                gratuito: false,
+                ativo: true,
+                ordem: 0,
+              },
+            ],
+          } : undefined,
           autores: {
             create: (data.livro?.pessoaIds || []).map((pessoaId: number, idx: number) => ({
               pessoaId: Number(pessoaId),

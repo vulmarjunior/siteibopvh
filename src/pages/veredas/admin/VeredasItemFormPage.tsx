@@ -437,6 +437,47 @@ function BookFormInternal({ data, onChange }: { data: any; onChange: (d: any) =>
           />
         </div>
       </div>
+
+      {/* SEÇÃO LINK DE ASSOCIADO AMAZON */}
+      <div className="pt-4 border-t border-stone-800 space-y-4">
+        <h3 className="font-serif font-bold text-xs text-amber-300 uppercase tracking-wider">
+          🛒 Link de Compra na Amazon (Programa de Associados)
+        </h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-stone-300 mb-1">
+              Link Completo de Associado Amazon
+            </label>
+            <input
+              type="url"
+              value={data.amazonUrl || ''}
+              onChange={(e) => onChange({ ...data, amazonUrl: e.target.value })}
+              placeholder="https://www.amazon.com.br/dp/8538303978?tag=ibopvh-20"
+              className="w-full bg-stone-950 border border-amber-600/50 rounded-lg px-3 py-2 text-xs text-stone-200 focus:outline-none focus:border-amber-500"
+            />
+            <p className="text-[10px] text-stone-400 mt-1">
+              Cole a URL completa da Amazon contendo sua tag de associado (ex: <code className="text-amber-300">tag=ibopvh-20</code>).
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-stone-300 mb-1">
+              Código ASIN ou ISBN-10 da Amazon
+            </label>
+            <input
+              type="text"
+              value={data.asin || ''}
+              onChange={(e) => onChange({ ...data, asin: e.target.value })}
+              placeholder="Ex: 8538303978 ou B08XXXXXXX"
+              className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
+            />
+            <p className="text-[10px] text-stone-400 mt-1">
+              Código de 10 caracteres do produto na Amazon.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
