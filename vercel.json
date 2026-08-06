@@ -4,15 +4,11 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/api/cron/weekly-reading",
-      "destination": "/api/cron/weekly-reading"
-    },
-    {
-      "source": "/api/:path*",
+      "source": "/api/:path((?!cron/weekly-reading$).*)",
       "destination": "/api/index"
     },
     {
-      "source": "/:path*",
+      "source": "/:path((?!api/).*)",
       "destination": "/"
     }
   ],

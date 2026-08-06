@@ -1,5 +1,5 @@
 ﻿import express from "express";
-import { apiRouter } from "../src/api";
+import { apiRouter } from "../src/api.js";
 
 const app = express();
 const isProdLike = () => process.env.NODE_ENV === "production" || process.env.VERCEL === "1";

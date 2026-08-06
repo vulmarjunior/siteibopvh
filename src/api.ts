@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import "dayjs/locale/pt-br.js";
-import { createVeredasRouter } from "./api/veredas/router";
+import { createVeredasRouter } from "./api/veredas/router.js";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
