@@ -12,14 +12,14 @@ export const VeredasReportsPage: React.FC = () => {
   useEffect(() => {
     async function loadReports() {
       try {
-        const session = (await supabaseClient.auth.getSession()).data.session;
-        if (!session) {
+        const token = localStorage.getItem('veredas_access_token') || (await supabaseClient.auth.getSession()).data.session?.access_token;
+        if (!token) {
           navigate('/admin/veredas/login');
           return;
         }
 
         const res = await fetch('/api/veredas/admin/relatos', {
-          headers: { Authorization: `Bearer ${session.access_token}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (!res.ok) {
@@ -41,12 +41,12 @@ export const VeredasReportsPage: React.FC = () => {
 
   const handleResolve = async (id: number) => {
     try {
-      const session = (await supabaseClient.auth.getSession()).data.session;
+      const token = localStorage.getItem('veredas_access_token') || (await supabaseClient.auth.getSession()).data.session?.access_token;
       const res = await fetch(`/api/veredas/admin/relatos/${id}/resolver`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.access_token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ notaAdministrativa: 'Verificado e corrigido pelo curador.' }),
       });

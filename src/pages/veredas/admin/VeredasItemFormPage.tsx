@@ -55,12 +55,12 @@ export const VeredasItemFormPage: React.FC = () => {
   const handleYoutubeParser = async () => {
     if (!videoData.urlOriginal) return;
     try {
-      const session = (await supabaseClient.auth.getSession()).data.session;
+      const token = localStorage.getItem('veredas_access_token') || (await supabaseClient.auth.getSession()).data.session?.access_token;
       const res = await fetch('/api/veredas/admin/importar/youtube', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.access_token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ url: videoData.urlOriginal }),
       });
@@ -83,8 +83,8 @@ export const VeredasItemFormPage: React.FC = () => {
     setErrorMsg(null);
 
     try {
-      const session = (await supabaseClient.auth.getSession()).data.session;
-      if (!session) {
+      const token = localStorage.getItem('veredas_access_token') || (await supabaseClient.auth.getSession()).data.session?.access_token;
+      if (!token) {
         navigate('/admin/veredas/login');
         return;
       }
@@ -107,7 +107,7 @@ export const VeredasItemFormPage: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });

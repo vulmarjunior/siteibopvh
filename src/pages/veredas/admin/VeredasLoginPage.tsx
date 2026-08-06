@@ -17,30 +17,22 @@ export const VeredasLoginPage: React.FC = () => {
     setErrorMsg(null);
 
     try {
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email,
-        password,
+      const res = await fetch('/api/veredas/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (error) {
-        throw error;
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Falha ao autenticar');
       }
 
-      if (data.session) {
-        // Test backend authentication & Prisma authorization
-        const token = data.session.access_token;
-        const res = await fetch('/api/veredas/admin/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+      localStorage.setItem('veredas_access_token', data.access_token);
+      localStorage.setItem('veredas_user', JSON.stringify(data.usuario));
 
-        if (!res.ok) {
-          const errData = await res.json();
-          await supabaseClient.auth.signOut();
-          throw new Error(errData.error || 'Usuário não cadastrado como curador ou suspenso');
-        }
-
-        navigate('/admin/veredas');
-      }
+      navigate('/admin/veredas');
     } catch (err: any) {
       setErrorMsg(err.message || 'Falha ao realizar login. Verifique seu e-mail e senha.');
     } finally {

@@ -12,17 +12,18 @@ export const VeredasDashboardPage: React.FC = () => {
   useEffect(() => {
     async function loadDashboard() {
       try {
-        const session = (await supabaseClient.auth.getSession()).data.session;
-        if (!session) {
+        const token = localStorage.getItem('veredas_access_token') || (await supabaseClient.auth.getSession()).data.session?.access_token;
+        if (!token) {
           navigate('/admin/veredas/login');
           return;
         }
 
         const res = await fetch('/api/veredas/admin/dashboard', {
-          headers: { Authorization: `Bearer ${session.access_token}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (!res.ok) {
+          localStorage.removeItem('veredas_access_token');
           navigate('/admin/veredas/login');
           return;
         }
@@ -40,7 +41,11 @@ export const VeredasDashboardPage: React.FC = () => {
   }, [navigate]);
 
   const handleLogout = async () => {
-    await supabaseClient.auth.signOut();
+    localStorage.removeItem('veredas_access_token');
+    localStorage.removeItem('veredas_user');
+    try { await supabaseClient.auth.signOut(); } catch (e) {
+      // Ignore sign out error
+    }
     navigate('/admin/veredas/login');
   };
 

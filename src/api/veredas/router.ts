@@ -8,6 +8,8 @@ import { parseYoutubeUrl } from '../../lib/veredas/youtube';
 import { parseAmazonUrl } from '../../lib/veredas/amazon';
 import { generateSlug } from '../../lib/veredas/slug';
 
+import { getSupabaseServer } from '../../lib/veredas/supabaseServer';
+
 export function createVeredasRouter(prisma: PrismaClient) {
   const router = express.Router();
   const itemsService = new ItemsService(prisma);
@@ -16,6 +18,47 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // ==========================================
   // ROTAS PÚBLICAS (/api/veredas/*)
   // ==========================================
+
+  // POST /api/veredas/auth/login (Proxied login via serverless to prevent client-side network tunnel blocks)
+  router.post('/auth/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'E-mail e senha são obrigatórios' });
+    }
+
+    try {
+      const supabase = getSupabaseServer();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error || !data.session) {
+        return res.status(401).json({ error: 'E-mail ou senha incorretos' });
+      }
+
+      const usuario = await prisma.curadoriaUsuario.findUnique({
+        where: { id: data.session.user.id },
+      });
+
+      if (!usuario) {
+        return res.status(403).json({ error: 'Usuário não cadastrado como curador ou administrador' });
+      }
+
+      if (!usuario.ativo) {
+        return res.status(403).json({ error: 'Acesso suspenso ou inativo' });
+      }
+
+      res.json({
+        access_token: data.session.access_token,
+        usuario,
+      });
+    } catch (err) {
+      console.error('Login proxy error:', err);
+      res.status(500).json({ error: 'Erro no servidor de autenticação' });
+    }
+  });
 
   // GET /api/veredas/items
   router.get('/items', async (req, res) => {
