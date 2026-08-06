@@ -1,5 +1,5 @@
 [build]
-  command = "npx prisma generate && node scripts/process-ebf-gallery.mjs && npm run build"
+  command = "npx prisma generate && npx prisma migrate deploy && node scripts/process-ebf-gallery.mjs && npm run build"
   publish = "dist"
   environment = { SECRETS_SCAN_ENABLED = "false" }
 
