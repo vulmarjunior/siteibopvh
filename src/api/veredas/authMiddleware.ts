@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { PrismaClient, CuradoriaPapelUsuario, CuradoriaUsuario } from '@prisma/client';
-import { getSupabaseServer } from '../../lib/veredas/supabaseServer';
+import { getSupabaseServer } from '../../lib/veredas/supabaseServer.js';
 
 export interface VeredasAuthenticatedRequest extends Request {
   veredasUser?: CuradoriaUsuario;

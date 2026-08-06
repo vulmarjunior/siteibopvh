@@ -30,3 +30,8 @@ public/images/ebf-gallery/
 
 # EBF videos (not needed for gallery)
 EBFIMG/*.mp4
+.vercel
+.env*
+
+# Local Netlify folder
+.netlify

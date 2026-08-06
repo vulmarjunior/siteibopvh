@@ -1,14 +1,14 @@
 import express, { Response } from 'express';
 import { PrismaClient, CuradoriaStatus, CuradoriaMotivoRelato, CuradoriaStatusRelato } from '@prisma/client';
-import { ItemsService } from '../../lib/veredas/services/itemsService';
-import { createAuthMiddleware, VeredasAuthenticatedRequest } from './authMiddleware';
-import { validateReportPayload, validateItemPayload, validateAccessPayload } from '../../lib/veredas/validation';
-import { checkReportRateLimit, generateIpHash } from '../../lib/veredas/rateLimit';
-import { parseYoutubeUrl } from '../../lib/veredas/youtube';
-import { parseAmazonUrl } from '../../lib/veredas/amazon';
-import { generateSlug } from '../../lib/veredas/slug';
+import { ItemsService } from '../../lib/veredas/services/itemsService.js';
+import { createAuthMiddleware, VeredasAuthenticatedRequest } from './authMiddleware.js';
+import { validateReportPayload, validateItemPayload, validateAccessPayload } from '../../lib/veredas/validation.js';
+import { checkReportRateLimit, generateIpHash } from '../../lib/veredas/rateLimit.js';
+import { parseYoutubeUrl } from '../../lib/veredas/youtube.js';
+import { parseAmazonUrl } from '../../lib/veredas/amazon.js';
+import { generateSlug } from '../../lib/veredas/slug.js';
 
-import { getSupabaseServer } from '../../lib/veredas/supabaseServer';
+import { getSupabaseServer } from '../../lib/veredas/supabaseServer.js';
 
 export function createVeredasRouter(prisma: PrismaClient) {
   const router = express.Router();

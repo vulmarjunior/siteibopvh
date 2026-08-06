@@ -1,0 +1,21 @@
+{
+  "buildCommand": "npx prisma generate && node scripts/process-ebf-gallery.mjs && npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/api/:path((?!cron/weekly-reading$).*)",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/:path((?!api/).*)",
+      "destination": "/"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/weekly-reading",
+      "schedule": "0 11 * * 1"
+    }
+  ]
+}

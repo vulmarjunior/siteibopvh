@@ -1,5 +1,5 @@
 import { PrismaClient, CuradoriaStatus, CuradoriaTipoItem, CuradoriaNivel } from '@prisma/client';
-import { generateSlug } from '../slug';
+import { generateSlug } from '../slug.js';
 
 export interface ItemsQueryParams {
   q?: string;
