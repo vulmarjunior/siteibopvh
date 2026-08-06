@@ -2,6 +2,28 @@
 
 ## [Em Desenvolvimento]
 
+### 2026-08-06 - Veredas IBO: links de aquisicao
+
+- Cadastro e edicao de multiplos links de compra, leitura e download por livro.
+- Suporte a Amazon, editoras, livrarias, sebos e outras fontes.
+- Normalizacao de links Amazon com ASIN e preservacao de tag de afiliado.
+- Validacao dos links na API e persistencia atomica no banco.
+
+### 2026-08-06 - Migracao de hospedagem e DNS para a Vercel
+
+#### Concluido
+- Projeto `ibopvh` criado na Vercel e conectado ao repositorio GitHub `vulmarjunior/siteibopvh`, com deploy automatico da branch `main`.
+- Portal, APIs e certificado HTTPS validados em `https://ibopvh.com.br`, `https://www.ibopvh.com.br` e `https://ibopvh.vercel.app`.
+- Variaveis de producao e preview configuradas na Vercel; cron semanal protegido por `CRON_SECRET`.
+- Dominios `ibopvh.com.br` e `www.ibopvh.com.br` vinculados ao projeto Vercel.
+- Zona DNS reproduzida na Vercel com os registros MX, SPF, DKIM, DMARC e CNAME do Google Workspace e do servico de envio de e-mail.
+- Nameservers alterados no HostGator para `ns1.vercel-dns.com` e `ns2.vercel-dns.com`.
+
+#### Pendente
+- Aguardar a propagacao publica dos nameservers antes de encerrar a conta Netlify.
+- Confirmar novamente site, API e e-mail apos a propagacao.
+
+
 ### 2026-07-28 — Atualização do Hotsite Parousia (Sermão 05)
 
 #### Adicionado

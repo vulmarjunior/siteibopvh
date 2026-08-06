@@ -4,6 +4,16 @@ Referência local do plano de continuidade da migração.
 
 Objetivo: migrar o portal para Vercel preservando Supabase/Postgres, Resend e Google Workspace, sem mudanças de DNS antes da homologação completa em `*.vercel.app`.
 
+## Status em 2026-08-06
+
+- Aplicacao e APIs implantadas e homologadas no projeto Vercel `ibopvh`.
+- Deploy automatico pelo GitHub ativo para a branch `main`.
+- Dominios de producao: `https://ibopvh.com.br` e `https://www.ibopvh.com.br`.
+- URL permanente da Vercel: `https://ibopvh.vercel.app`.
+- Zona DNS completa copiada para a Vercel, inclusive registros do Google Workspace e do servico de envio.
+- Nameservers configurados no HostGator como `ns1.vercel-dns.com` e `ns2.vercel-dns.com`.
+- Propagacao DNS ainda pendente de confirmacao publica; a conta Netlify deve permanecer ativa ate essa validacao.
+
 ## Pontos principais
 
 - Criar branch de implementação específica (`codex/migracao-vercel`) e manter produção Netlify intacta durante a fase inicial.

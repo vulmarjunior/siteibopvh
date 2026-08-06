@@ -24,9 +24,19 @@ export function parseAmazonUrl(url: string, affiliateTag?: string): AmazonParseR
 
   if (asinMatch && asinMatch[1]) {
     const asin = asinMatch[1].toUpperCase();
+    let existingAffiliateTag: string | undefined;
+
+    try {
+      const parsedUrl = new URL(trimmedUrl);
+      existingAffiliateTag = parsedUrl.searchParams.get('tag')?.trim() || undefined;
+    } catch {
+      // The URL format is validated by the caller; keep parsing the ASIN here.
+    }
+
+    const effectiveAffiliateTag = affiliateTag?.trim() || existingAffiliateTag;
     let canonicalUrl = `https://www.amazon.com.br/dp/${asin}`;
-    if (affiliateTag) {
-      canonicalUrl += `?tag=${encodeURIComponent(affiliateTag)}`;
+    if (effectiveAffiliateTag) {
+      canonicalUrl += `?tag=${encodeURIComponent(effectiveAffiliateTag)}`;
     }
     return { asin, canonicalUrl, isValid: true };
   }

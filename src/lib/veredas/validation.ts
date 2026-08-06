@@ -82,6 +82,26 @@ export function validateItemPayload(payload: any): ValidationResult<any> {
   }
 
   const statusValidos = Object.values(CuradoriaStatus);
+  if (payload.tipo === CuradoriaTipoItem.LIVRO) {
+    const bookValidation = validateBookPayload(payload.livro || {});
+    errors.push(...bookValidation.errors);
+
+    const acessos = payload.livro?.acessos || [];
+    if (!Array.isArray(acessos)) {
+      errors.push('A lista de links de acesso deve ser valida');
+    } else {
+      acessos.forEach((acesso: any, index: number) => {
+        const accessValidation = validateAccessPayload(acesso);
+        errors.push(...accessValidation.errors.map((error) => `Link ${index + 1}: ${error}`));
+      });
+    }
+  }
+
+  if (payload.tipo === CuradoriaTipoItem.VIDEO) {
+    const videoValidation = validateVideoPayload(payload.video || {});
+    errors.push(...videoValidation.errors);
+  }
+
   if (payload.status && !statusValidos.includes(payload.status)) {
     errors.push('Status informado é inválido');
   }

@@ -13,6 +13,11 @@ describe('parseAmazonUrl', () => {
     expect(res.canonicalUrl).toContain('tag=ibopvh-20');
   });
 
+  it('should preserve the affiliate tag already present in the URL', () => {
+    const res = parseAmazonUrl('https://www.amazon.com.br/dp/8527500010?tag=ibopvh-20');
+    expect(res.canonicalUrl).toBe('https://www.amazon.com.br/dp/8527500010?tag=ibopvh-20');
+  });
+
   it('should flag shortened URLs without ASIN to avoid SSRF', () => {
     const res = parseAmazonUrl('https://amzn.to/3xyz');
     expect(res.isValid).toBe(true);

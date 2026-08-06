@@ -359,6 +359,38 @@ export function createVeredasRouter(prisma: PrismaClient) {
       res.status(500).json({ error: 'Erro ao cadastrar novo conteúdo' });
     }
   });
+  // PUT /api/veredas/admin/items/:id (Atualizacao de Video ou Livro)
+  router.put('/admin/items/:id', authMiddleware, async (req: VeredasAuthenticatedRequest, res: Response) => {
+    try {
+      const validation = validateItemPayload(req.body);
+      if (!validation.isValid) {
+        return res.status(400).json({ errors: validation.errors });
+      }
+
+      const id = Number(req.params.id);
+      const item = await itemsService.updateAdminItem(id, req.body);
+      if (!item) {
+        return res.status(404).json({ error: 'Conteudo nao encontrado' });
+      }
+
+      await prisma.curadoriaAuditoria.create({
+        data: {
+          usuarioId: req.veredasUser!.id,
+          usuarioEmail: req.veredasUser!.email,
+          acao: 'EDITAR',
+          entidade: 'CuradoriaItem',
+          entidadeId: String(id),
+          dados: { titulo: item.titulo, tipo: item.tipo, status: item.status },
+        },
+      });
+
+      res.json(item);
+    } catch (err) {
+      console.error('Error updating admin item:', err);
+      res.status(500).json({ error: 'Erro ao atualizar conteudo' });
+    }
+  });
+
 
   // POST /api/veredas/admin/items/:id/publicar
   router.post('/admin/items/:id/publicar', authMiddleware, async (req: VeredasAuthenticatedRequest, res: Response) => {
