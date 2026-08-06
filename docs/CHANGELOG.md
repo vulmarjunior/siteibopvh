@@ -2,6 +2,13 @@
 
 ## [Em Desenvolvimento]
 
+### 2026-08-06 - Veredas IBO: busca automatica de capas
+
+- Campos ISBN-10 e ISBN-13 adicionados ao formulario administrativo de livros.
+- Busca assistida de titulo, editora, ano, paginas e capa pelo Google Books.
+- Fallback automatico de metadados e capa pelo Open Library.
+- Previa da capa mantida editavel antes de salvar o livro.
+
 ### 2026-08-06 - Veredas IBO: links de aquisicao
 
 - Cadastro e edicao de multiplos links de compra, leitura e download por livro.
