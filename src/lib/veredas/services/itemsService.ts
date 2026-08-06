@@ -225,6 +225,74 @@ export class ItemsService {
   }
 
   /**
+   * Administrative items list with status and tipo filter.
+   */
+  async getAdminItems(status?: string, tipo?: string) {
+    const where: any = {};
+    if (status && status !== 'TODOS') {
+      where.status = status;
+    }
+    if (tipo && tipo !== 'TODOS') {
+      where.tipo = tipo;
+    }
+
+    return this.prisma.curadoriaItem.findMany({
+      where,
+      orderBy: [{ criadoEm: 'desc' }],
+      include: {
+        categorias: {
+          include: { categoria: true },
+        },
+        livro: {
+          include: {
+            autores: { include: { pessoa: true } },
+            acessos: true,
+          },
+        },
+        video: {
+          include: {
+            participantes: { include: { pessoa: true } },
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Get single item by ID for editing.
+   */
+  async getAdminItemById(id: number) {
+    return this.prisma.curadoriaItem.findUnique({
+      where: { id },
+      include: {
+        categorias: {
+          include: { categoria: true },
+        },
+        livro: {
+          include: {
+            autores: { include: { pessoa: true } },
+            acessos: true,
+          },
+        },
+        video: {
+          include: {
+            participantes: { include: { pessoa: true } },
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Delete item by ID.
+   */
+  async deleteAdminItem(id: number) {
+    return this.prisma.curadoriaItem.delete({
+      where: { id },
+    });
+  }
+
+  /**
    * Administrative item creation (Book or Video).
    */
   async createAdminItem(data: any) {

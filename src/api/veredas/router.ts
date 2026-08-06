@@ -281,6 +281,56 @@ export function createVeredasRouter(prisma: PrismaClient) {
     }
   });
 
+  // GET /api/veredas/admin/items (Listagem completa para o painel admin)
+  router.get('/admin/items', authMiddleware, async (req, res) => {
+    try {
+      const { status, tipo } = req.query;
+      const items = await itemsService.getAdminItems(status as string, tipo as string);
+      res.json(items);
+    } catch (err) {
+      console.error('Error fetching admin items:', err);
+      res.status(500).json({ error: 'Erro ao listar conteúdos administrativos' });
+    }
+  });
+
+  // GET /api/veredas/admin/items/:id (Busca item específico por ID para edição)
+  router.get('/admin/items/:id', authMiddleware, async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      const item = await itemsService.getAdminItemById(id);
+      if (!item) {
+        return res.status(404).json({ error: 'Conteúdo não encontrado' });
+      }
+      res.json(item);
+    } catch (err) {
+      console.error('Error fetching admin item by id:', err);
+      res.status(500).json({ error: 'Erro ao carregar conteúdo' });
+    }
+  });
+
+  // DELETE /api/veredas/admin/items/:id (Exclusão de conteúdo)
+  router.delete('/admin/items/:id', authMiddleware, async (req: VeredasAuthenticatedRequest, res: Response) => {
+    try {
+      const id = Number(req.params.id);
+      const deleted = await itemsService.deleteAdminItem(id);
+
+      await prisma.curadoriaAuditoria.create({
+        data: {
+          usuarioId: req.veredasUser!.id,
+          usuarioEmail: req.veredasUser!.email,
+          acao: 'EXCLUIR',
+          entidade: 'CuradoriaItem',
+          entidadeId: String(id),
+        },
+      });
+
+      res.json(deleted);
+    } catch (err) {
+      console.error('Error deleting admin item:', err);
+      res.status(500).json({ error: 'Erro ao excluir conteúdo' });
+    }
+  });
+
   // POST /api/veredas/admin/items (Criação de Vídeo ou Livro)
   router.post('/admin/items', authMiddleware, async (req: VeredasAuthenticatedRequest, res: Response) => {
     try {

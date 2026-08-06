@@ -50,7 +50,53 @@ export const VeredasItemFormPage: React.FC = () => {
     fetch('/api/veredas/categorias')
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data)) setCategoriasList(data); });
-  }, []);
+
+    if (id) {
+      const token = localStorage.getItem('veredas_access_token');
+      fetch(`/api/veredas/admin/items/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then((r) => r.json())
+        .then((item) => {
+          if (item && !item.error) {
+            setTipo(item.tipo);
+            setTitulo(item.titulo);
+            setResumo(item.resumo);
+            setPorqueIndicamos(item.porqueIndicamos);
+            setRessalvas(item.ressalvas || '');
+            setNivel(item.nivel);
+            setStatus(item.status);
+            setDestaque(Boolean(item.destaque));
+            if (item.categorias) {
+              setCategoriaIds(item.categorias.map((c: any) => c.categoriaId));
+            }
+            if (item.livro) {
+              setBookData({
+                subtitulo: item.livro.subtitulo || '',
+                isbn10: item.livro.isbn10 || '',
+                isbn13: item.livro.isbn13 || '',
+                asin: item.livro.asin || '',
+                editora: item.livro.editora || '',
+                anoPublicacao: item.livro.anoPublicacao ? String(item.livro.anoPublicacao) : '',
+                numeroPaginas: item.livro.numeroPaginas ? String(item.livro.numeroPaginas) : '',
+                capaUrl: item.livro.capaUrl || '',
+                disponibilidade: item.livro.disponibilidade || 'DISPONIVEL',
+              });
+            }
+            if (item.video) {
+              setVideoData({
+                urlOriginal: item.video.urlOriginal || '',
+                youtubeId: item.video.youtubeId || '',
+                canal: item.video.canal || '',
+                duracaoSegundos: item.video.duracaoSegundos ? String(item.video.duracaoSegundos) : '',
+                thumbnailUrl: item.video.thumbnailUrl || '',
+                incorporavel: item.video.incorporavel !== undefined ? Boolean(item.video.incorporavel) : true,
+              });
+            }
+          }
+        });
+    }
+  }, [id]);
 
   const handleYoutubeParser = async () => {
     if (!videoData.urlOriginal) return;
