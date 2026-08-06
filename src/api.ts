@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import "dayjs/locale/pt-br.js";
+import { createVeredasRouter } from "./api/veredas/router";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -80,6 +81,8 @@ export async function seed() {
 }
 
 // API Routes
+apiRouter.use("/veredas", createVeredasRouter(prisma));
+
 apiRouter.get("/youtube-proxy", async (req, res) => {
   const channelId = req.query.channelId;
   if (!channelId) {

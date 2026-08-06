@@ -23,12 +23,16 @@ function loadProgress(): TreasureProgress {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
-  } catch {}
+  } catch (e) {
+    // localStorage unavailable or corrupt
+  }
   return { unlockedStages: [1], cluesFound: [] };
 }
 
 function saveProgress(progress: TreasureProgress) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (e) {
+    // localStorage write failed
+  }
 }
 
 interface Props {

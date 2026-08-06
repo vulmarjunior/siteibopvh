@@ -1,0 +1,375 @@
+import express, { Response } from 'express';
+import { PrismaClient, CuradoriaStatus, CuradoriaMotivoRelato, CuradoriaStatusRelato } from '@prisma/client';
+import { ItemsService } from '../../lib/veredas/services/itemsService';
+import { createAuthMiddleware, VeredasAuthenticatedRequest } from './authMiddleware';
+import { validateReportPayload, validateItemPayload, validateAccessPayload } from '../../lib/veredas/validation';
+import { checkReportRateLimit, generateIpHash } from '../../lib/veredas/rateLimit';
+import { parseYoutubeUrl } from '../../lib/veredas/youtube';
+import { parseAmazonUrl } from '../../lib/veredas/amazon';
+import { generateSlug } from '../../lib/veredas/slug';
+
+export function createVeredasRouter(prisma: PrismaClient) {
+  const router = express.Router();
+  const itemsService = new ItemsService(prisma);
+  const authMiddleware = createAuthMiddleware(prisma);
+
+  // ==========================================
+  // ROTAS PÚBLICAS (/api/veredas/*)
+  // ==========================================
+
+  // GET /api/veredas/items
+  router.get('/items', async (req, res) => {
+    try {
+      const result = await itemsService.getPublicItems({
+        q: req.query.q as string,
+        tipo: req.query.tipo as any,
+        categoria: req.query.categoria as string,
+        nivel: req.query.nivel as any,
+        pessoa: req.query.pessoa as string,
+        gratuito: req.query.gratuito === 'true',
+        page: req.query.page ? Number(req.query.page) : 1,
+        limit: req.query.limit ? Number(req.query.limit) : 12,
+      });
+
+      res.json(result);
+    } catch (err) {
+      console.error('Error fetching public items:', err);
+      res.status(500).json({ error: 'Erro ao buscar catálogo' });
+    }
+  });
+
+  // GET /api/veredas/destaques
+  router.get('/destaques', async (req, res) => {
+    try {
+      const result = await itemsService.getPublicItems({
+        destaqueOnly: true,
+        limit: 6,
+      });
+
+      res.json(result.items);
+    } catch (err) {
+      console.error('Error fetching destaques:', err);
+      res.status(500).json({ error: 'Erro ao buscar destaques' });
+    }
+  });
+
+  // GET /api/veredas/recentes
+  router.get('/recentes', async (req, res) => {
+    try {
+      const result = await itemsService.getPublicItems({
+        page: 1,
+        limit: 8,
+      });
+
+      res.json(result.items);
+    } catch (err) {
+      console.error('Error fetching recentes:', err);
+      res.status(500).json({ error: 'Erro ao buscar recentes' });
+    }
+  });
+
+  // GET /api/veredas/items/:slug
+  router.get('/items/:slug', async (req, res) => {
+    try {
+      const item = await itemsService.getPublicItemBySlug(req.params.slug);
+      if (!item) {
+        return res.status(404).json({ error: 'Conteúdo não encontrado ou não publicado' });
+      }
+      res.json(item);
+    } catch (err) {
+      console.error('Error fetching item by slug:', err);
+      res.status(500).json({ error: 'Erro ao carregar detalhes do conteúdo' });
+    }
+  });
+
+  // GET /api/veredas/categorias
+  router.get('/categorias', async (req, res) => {
+    try {
+      const categorias = await prisma.curadoriaCategoria.findMany({
+        where: { ativa: true },
+        orderBy: [{ ordem: 'asc' }, { nome: 'asc' }],
+      });
+      res.json(categorias);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+      res.status(500).json({ error: 'Erro ao carregar categorias' });
+    }
+  });
+
+  // GET /api/veredas/pessoas/:slug
+  router.get('/pessoas/:slug', async (req, res) => {
+    try {
+      const pessoa = await prisma.curadoriaPessoa.findUnique({
+        where: { slug: req.params.slug },
+      });
+
+      if (!pessoa || !pessoa.ativa) {
+        return res.status(404).json({ error: 'Autor ou expositor não encontrado' });
+      }
+
+      const items = await itemsService.getPublicItems({
+        pessoa: pessoa.slug,
+        limit: 20,
+      });
+
+      res.json({
+        pessoa,
+        items: items.items,
+      });
+    } catch (err) {
+      console.error('Error fetching person detail:', err);
+      res.status(500).json({ error: 'Erro ao carregar dados do autor' });
+    }
+  });
+
+  // POST /api/veredas/acessos/:id/reportar (Reporte público de link quebrado)
+  router.post('/acessos/:id/reportar', async (req, res) => {
+    try {
+      const acessoId = Number(req.params.id);
+      const validation = validateReportPayload({ ...req.body, acessoId });
+
+      if (!validation.isValid) {
+        return res.status(400).json({ errors: validation.errors });
+      }
+
+      const acesso = await prisma.curadoriaAcesso.findUnique({
+        where: { id: acessoId },
+      });
+
+      if (!acesso || !acesso.ativo) {
+        return res.status(404).json({ error: 'Link de acesso não encontrado' });
+      }
+
+      const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '127.0.0.1';
+      const ipHash = generateIpHash(clientIp.split(',')[0].trim());
+
+      // Database-persisted rate limit check
+      const rateLimitCheck = await checkReportRateLimit(prisma, ipHash, acessoId);
+      if (!rateLimitCheck.allowed) {
+        return res.status(429).json({ error: rateLimitCheck.reason });
+      }
+
+      const relato = await prisma.curadoriaLinkRelato.create({
+        data: {
+          acessoId,
+          motivo: validation.data!.motivo,
+          observacao: validation.data!.observacao || null,
+          ipHash,
+          userAgentResumido: req.headers['user-agent'] ? req.headers['user-agent'].substring(0, 150) : null,
+          status: CuradoriaStatusRelato.PENDENTE,
+        },
+      });
+
+      res.status(201).json({
+        message: 'Obrigado por nos avisar. Nossa equipe verificará este link.',
+        id: relato.id,
+      });
+    } catch (err) {
+      console.error('Error reporting link:', err);
+      res.status(500).json({ error: 'Erro ao enviar reporte de link' });
+    }
+  });
+
+  // ==========================================
+  // UTILS IMPORTADORES ASSISTIDOS (/api/veredas/admin/importar/*)
+  // ==========================================
+
+  router.post('/admin/importar/youtube', authMiddleware, (req, res) => {
+    const { url } = req.body;
+    const parsed = parseYoutubeUrl(url);
+
+    if (!parsed.isValid) {
+      return res.status(400).json({ error: parsed.error || 'URL inválida' });
+    }
+
+    res.json(parsed);
+  });
+
+  router.post('/admin/importar/amazon', authMiddleware, (req, res) => {
+    const { url, affiliateTag } = req.body;
+    const parsed = parseAmazonUrl(url, affiliateTag);
+
+    if (!parsed.isValid) {
+      return res.status(400).json({ error: parsed.error || 'URL inválida' });
+    }
+
+    res.json(parsed);
+  });
+
+  // ==========================================
+  // ROTAS ADMINISTRATIVAS PROTEGIDAS (/api/veredas/admin/*)
+  // ==========================================
+
+  // GET /api/veredas/admin/me (Verifica usuário atual)
+  router.get('/admin/me', authMiddleware, (req: VeredasAuthenticatedRequest, res: Response) => {
+    res.json(req.veredasUser);
+  });
+
+  // GET /api/veredas/admin/dashboard
+  router.get('/admin/dashboard', authMiddleware, async (req, res) => {
+    try {
+      const [
+        totalVideos,
+        totalLivros,
+        rascunhos,
+        arquivados,
+        livrosGratuitos,
+        relatosPendentes,
+      ] = await Promise.all([
+        prisma.curadoriaItem.count({ where: { tipo: 'VIDEO', status: 'PUBLICADO' } }),
+        prisma.curadoriaItem.count({ where: { tipo: 'LIVRO', status: 'PUBLICADO' } }),
+        prisma.curadoriaItem.count({ where: { status: 'RASCUNHO' } }),
+        prisma.curadoriaItem.count({ where: { status: 'ARQUIVADO' } }),
+        prisma.curadoriaAcesso.count({ where: { gratuito: true, ativo: true } }),
+        prisma.curadoriaLinkRelato.count({ where: { status: 'PENDENTE' } }),
+      ]);
+
+      res.json({
+        totalVideos,
+        totalLivros,
+        rascunhos,
+        arquivados,
+        livrosGratuitos,
+        relatosPendentes,
+      });
+    } catch (err) {
+      console.error('Dashboard stats error:', err);
+      res.status(500).json({ error: 'Erro ao carregar estatísticas do painel' });
+    }
+  });
+
+  // POST /api/veredas/admin/items (Criação de Vídeo ou Livro)
+  router.post('/admin/items', authMiddleware, async (req: VeredasAuthenticatedRequest, res: Response) => {
+    try {
+      const validation = validateItemPayload(req.body);
+      if (!validation.isValid) {
+        return res.status(400).json({ errors: validation.errors });
+      }
+
+      const item = await itemsService.createAdminItem(req.body);
+
+      // Log audit action
+      await prisma.curadoriaAuditoria.create({
+        data: {
+          usuarioId: req.veredasUser!.id,
+          usuarioEmail: req.veredasUser!.email,
+          acao: 'CRIAR',
+          entidade: 'CuradoriaItem',
+          entidadeId: String(item.id),
+          dados: { titulo: item.titulo, tipo: item.tipo, status: item.status },
+        },
+      });
+
+      res.status(201).json(item);
+    } catch (err) {
+      console.error('Error creating admin item:', err);
+      res.status(500).json({ error: 'Erro ao cadastrar novo conteúdo' });
+    }
+  });
+
+  // POST /api/veredas/admin/items/:id/publicar
+  router.post('/admin/items/:id/publicar', authMiddleware, async (req: VeredasAuthenticatedRequest, res: Response) => {
+    try {
+      const id = Number(req.params.id);
+      const item = await prisma.curadoriaItem.update({
+        where: { id },
+        data: {
+          status: CuradoriaStatus.PUBLICADO,
+          publicadoEm: new Date(),
+          arquivadoEm: null,
+        },
+      });
+
+      await prisma.curadoriaAuditoria.create({
+        data: {
+          usuarioId: req.veredasUser!.id,
+          usuarioEmail: req.veredasUser!.email,
+          acao: 'PUBLICAR',
+          entidade: 'CuradoriaItem',
+          entidadeId: String(item.id),
+        },
+      });
+
+      res.json(item);
+    } catch (err) {
+      console.error('Error publishing item:', err);
+      res.status(500).json({ error: 'Erro ao publicar conteúdo' });
+    }
+  });
+
+  // POST /api/veredas/admin/items/:id/arquivar
+  router.post('/admin/items/:id/arquivar', authMiddleware, async (req: VeredasAuthenticatedRequest, res: Response) => {
+    try {
+      const id = Number(req.params.id);
+      const item = await prisma.curadoriaItem.update({
+        where: { id },
+        data: {
+          status: CuradoriaStatus.ARQUIVADO,
+          arquivadoEm: new Date(),
+        },
+      });
+
+      await prisma.curadoriaAuditoria.create({
+        data: {
+          usuarioId: req.veredasUser!.id,
+          usuarioEmail: req.veredasUser!.email,
+          acao: 'ARQUIVAR',
+          entidade: 'CuradoriaItem',
+          entidadeId: String(item.id),
+        },
+      });
+
+      res.json(item);
+    } catch (err) {
+      console.error('Error archiving item:', err);
+      res.status(500).json({ error: 'Erro ao arquivar conteúdo' });
+    }
+  });
+
+  // GET /api/veredas/admin/relatos
+  router.get('/admin/relatos', authMiddleware, async (req, res) => {
+    try {
+      const relatos = await prisma.curadoriaLinkRelato.findMany({
+        orderBy: { criadoEm: 'desc' },
+        include: {
+          acesso: {
+            include: {
+              livro: {
+                include: {
+                  item: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      res.json(relatos);
+    } catch (err) {
+      console.error('Error fetching admin reports:', err);
+      res.status(500).json({ error: 'Erro ao carregar relatos de links' });
+    }
+  });
+
+  // POST /api/veredas/admin/relatos/:id/resolver
+  router.post('/admin/relatos/:id/resolver', authMiddleware, async (req: VeredasAuthenticatedRequest, res: Response) => {
+    try {
+      const id = Number(req.params.id);
+      const relato = await prisma.curadoriaLinkRelato.update({
+        where: { id },
+        data: {
+          status: CuradoriaStatusRelato.RESOLVIDO,
+          resolvidoEm: new Date(),
+          resolvidoPor: req.veredasUser!.email,
+          notaAdministrativa: req.body.notaAdministrativa || null,
+        },
+      });
+
+      res.json(relato);
+    } catch (err) {
+      console.error('Error resolving report:', err);
+      res.status(500).json({ error: 'Erro ao marcar relato como resolvido' });
+    }
+  });
+
+  return router;
+}

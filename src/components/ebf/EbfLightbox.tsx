@@ -72,7 +72,9 @@ export default function EbfLightbox({ images, currentIndex, isOpen, onClose, onN
     if (!image || !navigator.share) return;
     try {
       await navigator.share({ title: 'Foto da EBF 2026', text: stageName || 'EBF 2026', url: window.location.href });
-    } catch {}
+    } catch {
+      // User cancelled share dialog
+    }
   }, [image, stageName]);
 
   if (!isOpen || !image) return null;

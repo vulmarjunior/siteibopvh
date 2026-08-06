@@ -64,3 +64,324 @@ model ReadingSubscriber {
   subscribedAt   DateTime   @default(now())
   unsubscribedAt DateTime?
 }
+
+// ==========================================
+// MÓDULO VEREDAS IBO (CURADORIA TEOLÓGICA)
+// ==========================================
+
+enum CuradoriaTipoItem {
+  VIDEO
+  LIVRO
+}
+
+enum CuradoriaNivel {
+  INTRODUTORIO
+  INTERMEDIARIO
+  APROFUNDAMENTO
+}
+
+enum CuradoriaStatus {
+  RASCUNHO
+  PUBLICADO
+  ARQUIVADO
+}
+
+enum CuradoriaDisponibilidade {
+  DISPONIVEL
+  GRATUITO
+  SOMENTE_DIGITAL
+  ESGOTADO
+  FORA_DE_CATALOGO
+  AQUISICAO_NAO_LOCALIZADA
+  INDISPONIVEL_TEMPORARIAMENTE
+}
+
+enum CuradoriaPapelPessoa {
+  AUTOR
+  ORGANIZADOR
+  TRADUTOR
+  PREFACIADOR
+  EXPOSITOR
+  PREGADOR
+  ENTREVISTADOR
+  ENTREVISTADO
+  DEBATEDOR
+}
+
+enum CuradoriaTipoAcesso {
+  COMPRA
+  LEITURA_ONLINE
+  DOWNLOAD_INTEGRAL
+  AMOSTRA
+  PAGINA_OFICIAL
+  EMPRESTIMO
+  MATERIAL_COMPLEMENTAR
+}
+
+enum CuradoriaFormatoAcesso {
+  IMPRESSO
+  PDF
+  EPUB
+  KINDLE
+  WEB
+  VIDEO
+  OUTRO
+}
+
+enum CuradoriaProvedorAcesso {
+  AMAZON
+  EDITORA
+  LIVRARIA
+  ESTANTE_VIRTUAL
+  GOOGLE_DRIVE
+  ONEDRIVE
+  SITE_AUTOR
+  SITE_INSTITUCIONAL
+  BIBLIOTECA_DIGITAL
+  OUTRO
+}
+
+enum CuradoriaMotivoRelato {
+  LINK_NAO_ABRE
+  PAGINA_NAO_ENCONTRADA
+  CONTEUDO_REMOVIDO
+  EXIGE_LOGIN
+  NAO_E_MAIS_GRATUITO
+  CONTEUDO_INCORRETO
+  REDIRECIONAMENTO_INDESEJADO
+  OUTRO
+}
+
+enum CuradoriaStatusRelato {
+  PENDENTE
+  EM_ANALISE
+  RESOLVIDO
+  DESCARTADO
+}
+
+enum CuradoriaPapelUsuario {
+  ADMIN
+  CURADOR
+}
+
+model CuradoriaItem {
+  id              Int                     @id @default(autoincrement())
+  tipo            CuradoriaTipoItem
+  titulo          String
+  slug            String                  @unique
+  resumo          String
+  descricao       String?
+  porqueIndicamos String
+  ressalvas       String?
+  publicoIndicado String?
+  nivel           CuradoriaNivel
+  status          CuradoriaStatus
+  destaque        Boolean                 @default(false)
+  ordemDestaque   Int?
+  imagemUrl       String?
+  seoTitle        String?
+  seoDescription  String?
+  publicadoEm     DateTime?
+  arquivadoEm     DateTime?
+  criadoEm        DateTime                @default(now())
+  atualizadoEm    DateTime                @updatedAt
+
+  livro           CuradoriaLivro?
+  video           CuradoriaVideo?
+  categorias      CuradoriaItemCategoria[]
+
+  @@index([status, publicadoEm])
+  @@index([tipo, status])
+  @@index([destaque, status])
+  @@index([nivel, status])
+}
+
+model CuradoriaLivro {
+  id               Int                      @id @default(autoincrement())
+  itemId           Int                      @unique
+  item             CuradoriaItem            @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  subtitulo        String?
+  isbn10           String?
+  isbn13           String?
+  asin             String?
+  editora          String?
+  anoPublicacao    Int?
+  edicao           String?
+  idioma           String?
+  numeroPaginas    Int?
+  formatoPrincipal String?
+  capaUrl          String?
+  disponibilidade  CuradoriaDisponibilidade @default(DISPONIVEL)
+
+  autores          CuradoriaLivroPessoa[]
+  acessos          CuradoriaAcesso[]
+
+  @@index([disponibilidade])
+}
+
+model CuradoriaVideo {
+  id                  Int                    @id @default(autoincrement())
+  itemId              Int                    @unique
+  item                CuradoriaItem          @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  youtubeId           String?
+  urlOriginal         String
+  canal               String?
+  duracaoSegundos     Int?
+  publicadoOriginalEm DateTime?
+  thumbnailUrl        String?
+  incorporavel        Boolean                @default(true)
+
+  participantes       CuradoriaVideoPessoa[]
+
+  @@index([youtubeId])
+}
+
+model CuradoriaCategoria {
+  id        Int                      @id @default(autoincrement())
+  nome      String                   @unique
+  slug      String                   @unique
+  descricao String?
+  ativa     Boolean                  @default(true)
+  ordem     Int                      @default(0)
+
+  itens     CuradoriaItemCategoria[]
+
+  @@index([ativa, ordem])
+}
+
+model CuradoriaItemCategoria {
+  itemId      Int
+  categoriaId Int
+
+  item        CuradoriaItem      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  categoria   CuradoriaCategoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, categoriaId])
+  @@index([categoriaId])
+  @@index([itemId])
+}
+
+model CuradoriaPessoa {
+  id        Int                    @id @default(autoincrement())
+  nome      String
+  slug      String                 @unique
+  descricao String?
+  imagemUrl String?
+  ativa     Boolean                @default(true)
+
+  livros    CuradoriaLivroPessoa[]
+  videos    CuradoriaVideoPessoa[]
+
+  @@index([ativa])
+}
+
+model CuradoriaLivroPessoa {
+  livroId  Int
+  pessoaId Int
+  papel    CuradoriaPapelPessoa @default(AUTOR)
+  ordem    Int                  @default(0)
+
+  livro    CuradoriaLivro       @relation(fields: [livroId], references: [id], onDelete: Cascade)
+  pessoa   CuradoriaPessoa      @relation(fields: [pessoaId], references: [id], onDelete: Cascade)
+
+  @@id([livroId, pessoaId, papel])
+  @@index([pessoaId])
+  @@index([livroId, ordem])
+}
+
+model CuradoriaVideoPessoa {
+  videoId  Int
+  pessoaId Int
+  papel    CuradoriaPapelPessoa @default(EXPOSITOR)
+  ordem    Int                  @default(0)
+
+  video    CuradoriaVideo       @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  pessoa   CuradoriaPessoa      @relation(fields: [pessoaId], references: [id], onDelete: Cascade)
+
+  @@id([videoId, pessoaId, papel])
+  @@index([pessoaId])
+  @@index([videoId, ordem])
+}
+
+model CuradoriaAcesso {
+  id                  Int                      @id @default(autoincrement())
+  livroId             Int
+  livro               CuradoriaLivro           @relation(fields: [livroId], references: [id], onDelete: Cascade)
+
+  tipo                CuradoriaTipoAcesso
+  formato             CuradoriaFormatoAcesso?
+  provedor            CuradoriaProvedorAcesso?
+  fornecedor          String?
+  url                 String
+  textoBotao          String
+  gratuito            Boolean                  @default(false)
+  linkAssociado       Boolean                  @default(false)
+  producaoIbo         Boolean                  @default(false)
+  ativo               Boolean                  @default(true)
+  ordem               Int                      @default(0)
+  observacaoPublica   String?
+  fonte               String?
+  ultimaVerificacaoEm DateTime?
+  criadoEm            DateTime                 @default(now())
+  atualizadoEm        DateTime                 @updatedAt
+
+  relatos             CuradoriaLinkRelato[]
+
+  @@index([livroId, ativo])
+  @@index([gratuito, ativo])
+  @@index([tipo, ativo])
+}
+
+model CuradoriaLinkRelato {
+  id                Int                   @id @default(autoincrement())
+  acessoId          Int
+  acesso            CuradoriaAcesso       @relation(fields: [acessoId], references: [id], onDelete: Cascade)
+
+  motivo            CuradoriaMotivoRelato
+  observacao        String?
+  status            CuradoriaStatusRelato @default(PENDENTE)
+
+  ipHash            String?
+  userAgentResumido String?
+
+  criadoEm          DateTime              @default(now())
+  analisadoEm       DateTime?
+  resolvidoEm       DateTime?
+  resolvidoPor      String?
+  notaAdministrativa String?
+
+  @@index([acessoId])
+  @@index([status, criadoEm])
+  @@index([ipHash, criadoEm])
+}
+
+model CuradoriaUsuario {
+  id             String                @id
+  email          String                @unique
+  nome           String?
+  papel          CuradoriaPapelUsuario @default(CURADOR)
+  ativo          Boolean               @default(true)
+  ultimoAcessoEm DateTime?
+  criadoEm       DateTime              @default(now())
+  atualizadoEm   DateTime              @updatedAt
+
+  @@index([ativo])
+  @@index([papel])
+}
+
+model CuradoriaAuditoria {
+  id           Int      @id @default(autoincrement())
+  usuarioId    String
+  usuarioEmail String?
+  acao         String
+  entidade     String
+  entidadeId   String
+  dados        Json?
+  criadoEm     DateTime @default(now())
+
+  @@index([entidade, entidadeId])
+  @@index([criadoEm])
+}
+

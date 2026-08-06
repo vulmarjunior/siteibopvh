@@ -9,10 +9,15 @@
     "start": "node server.ts",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "process-gallery": "node scripts/process-ebf-gallery.mjs"
+    "process-gallery": "node scripts/process-ebf-gallery.mjs",
+    "db:seed": "prisma db seed"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@supabase/supabase-js": "^2.112.1",
     "date-fns": "^3.3.1",
     "dayjs": "^1.11.20",
     "express": "^5.2.1",
