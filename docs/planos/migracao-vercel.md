@@ -269,3 +269,164 @@ Estimativa técnica total: **16 a 29 horas**, sem contar o período passivo de e
 - Função semanal executada pela Vercel Cron.
 - Netlify retirada somente após estabilização.
 - Rollback documentado e testável.
+
+## Retomada do trabalho em outro computador
+
+### Estado no momento da criação deste documento
+
+- Repositório: `https://github.com/vulmarjunior/siteibopvh.git`
+- Branch principal publicada: `main`
+- Branch local de segurança: `backup/pre-migracao-vercel-2026-08-06`
+- Commit inicial do checkpoint: `86a330b`
+- Hospedagem em produção: Netlify
+- Banco e autenticação: Supabase
+- E-mail transacional: Resend
+- E-mail institucional: Google Workspace
+- Objetivo: migrar a hospedagem para Vercel sem interromper o site ou o e-mail.
+
+> A branch de segurança foi criada inicialmente apenas na máquina de origem. Um commit local não fica disponível em outro computador até que a branch seja enviada a um remoto ou transferida por arquivo.
+
+### Opção A — Transferência pelo GitHub
+
+É a forma mais simples, mas deve ser usada somente depois de impedir que a Netlify construa essa branch.
+
+1. No painel da Netlify, confirmar que deploys de branches estão desativados ou pausar/desconectar temporariamente os builds automáticos.
+2. Na máquina de origem, confirmar a branch:
+
+   ```powershell
+   git branch --show-current
+   git status
+   ```
+
+3. Enviar somente a branch de segurança:
+
+   ```powershell
+   git push -u origin backup/pre-migracao-vercel-2026-08-06
+   ```
+
+4. No outro computador:
+
+   ```powershell
+   git clone https://github.com/vulmarjunior/siteibopvh.git
+   cd siteibopvh
+   git fetch origin
+   git switch --track origin/backup/pre-migracao-vercel-2026-08-06
+   npm ci
+   ```
+
+5. Criar `.env.local` manualmente ou por um gerenciador seguro. Nunca enviar esse arquivo ao GitHub.
+
+6. Confirmar o ambiente:
+
+   ```powershell
+   git status
+   git log -3 --oneline --decorate
+   npm run build
+   ```
+
+### Opção B — Transferência sem push e sem contato com a Netlify
+
+Esta é a opção mais segura enquanto houver dúvida sobre os gatilhos de deploy da Netlify.
+
+Na máquina de origem, criar um bundle Git:
+
+```powershell
+git bundle create siteibopvh-pre-migracao.bundle backup/pre-migracao-vercel-2026-08-06
+git bundle verify siteibopvh-pre-migracao.bundle
+```
+
+Copiar `siteibopvh-pre-migracao.bundle` para o outro computador por mídia ou armazenamento privado. Não incluir `.env.local` junto ao bundle.
+
+No outro computador:
+
+```powershell
+git clone siteibopvh-pre-migracao.bundle siteibopvh
+cd siteibopvh
+git switch backup/pre-migracao-vercel-2026-08-06
+git remote add origin https://github.com/vulmarjunior/siteibopvh.git
+npm ci
+git status
+```
+
+Se o clone não selecionar a branch automaticamente:
+
+```powershell
+git branch -a
+git switch -c backup/pre-migracao-vercel-2026-08-06 refs/remotes/origin/backup/pre-migracao-vercel-2026-08-06
+```
+
+Antes de qualquer push, conferir novamente a integração do repositório com a Netlify.
+
+### Variáveis necessárias no novo computador
+
+Usar `.env.example` como referência e obter os valores por canal seguro. A implementação atual ou a migração poderá precisar de:
+
+```text
+DATABASE_URL
+DIRECT_URL
+RESEND_API_KEY
+ADMIN_PASSWORD
+APP_URL
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+SUPABASE_ANON_KEY
+VITE_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY
+CRON_SECRET
+```
+
+Regras:
+
+- não copiar segredos para este documento;
+- não versionar `.env.local`;
+- não expor `SUPABASE_SERVICE_ROLE_KEY` ao frontend;
+- tratar qualquer variável `VITE_*` como pública;
+- usar credenciais separadas ou de baixo risco em deploys Preview.
+
+### Checklist para iniciar a nova sessão
+
+1. Ler este documento integralmente.
+2. Ler `README.md`, `agente.md`, `netlify.toml`, `package.json`, `server.ts`, `src/api.ts`, `netlify/functions/api.ts` e `netlify/functions/weekly-reading.ts`.
+3. Confirmar branch e diretório limpo com `git status`.
+4. Não alterar DNS, Netlify, Vercel, Supabase ou GitHub sem autorização explícita.
+5. Não executar `git push` enquanto a integração da Netlify não estiver verificada ou pausada.
+6. Executar verificações locais antes de implementar a migração.
+7. Começar pela adaptação da API Express para Vercel Functions em uma branch de implementação derivada do checkpoint.
+8. Manter a Netlify como produção e contingência até a homologação completa na URL `*.vercel.app`.
+
+### Prompt de continuidade
+
+Copiar e enviar o texto abaixo ao Codex no outro computador:
+
+```text
+Analise este repositório e dê continuidade ao plano descrito em
+docs/planos/migracao-vercel.md.
+
+Contexto:
+- O portal da Igreja Batista Olaria está atualmente na Netlify.
+- A Netlify atingiu o limite mensal de deploys.
+- A nova hospedagem escolhida é a Vercel no plano Hobby.
+- O frontend usa React 18, Vite 5, TypeScript e Tailwind CSS 4.
+- O backend usa Express, Prisma/PostgreSQL no Supabase, Supabase Auth e Resend.
+- O Google Workspace gerencia os e-mails do domínio e seus registros DNS não podem ser alterados.
+- A Netlify deve continuar como produção até a homologação completa na URL temporária da Vercel.
+- Não faça push, deploy, alteração de DNS, migração de banco ou alteração externa sem minha autorização explícita.
+
+Antes de agir:
+1. Leia integralmente docs/planos/migracao-vercel.md.
+2. Inspecione o estado do Git e preserve alterações existentes.
+3. Leia os arquivos centrais indicados no checklist de retomada.
+4. Compare o código atual com as etapas do plano.
+5. Apresente o diagnóstico do ponto de retomada e proponha o primeiro lote pequeno de implementação.
+
+Trabalhe de forma incremental, valide build, lint e testes localmente, mantenha rollback simples e pare antes de qualquer ação externa. Não altere o DNS nem desative a Netlify durante a fase de implementação.
+```
+
+### Primeira decisão na retomada
+
+Antes de implementar, escolher entre:
+
+- criar uma branch nova a partir do checkpoint, como `codex/migracao-vercel`; ou
+- continuar temporariamente na branch de segurança.
+
+Recomendação: preservar a branch `backup/pre-migracao-vercel-2026-08-06` como checkpoint imutável e criar `codex/migracao-vercel` para a implementação.
