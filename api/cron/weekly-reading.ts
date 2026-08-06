@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from "node:http";
-import { default as runWeeklyReading } from "../../../netlify/functions/weekly-reading";
+import { default as runWeeklyReading } from "../../netlify/functions/weekly-reading";
 
 function getAuthorizationHeader(req: IncomingMessage): string {
   const header = req.headers?.authorization;
