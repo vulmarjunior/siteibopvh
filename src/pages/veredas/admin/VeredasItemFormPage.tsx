@@ -47,6 +47,7 @@ export const VeredasItemFormPage: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [bookLookupLoading, setBookLookupLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -181,6 +182,46 @@ export const VeredasItemFormPage: React.FC = () => {
     }
   };
 
+  const handleIsbnLookup = async () => {
+    const isbn = bookData.isbn13 || bookData.isbn10;
+    if (!isbn) {
+      setErrorMsg('Informe o ISBN-13 ou ISBN-10 antes de buscar');
+      return;
+    }
+
+    setBookLookupLoading(true);
+    setErrorMsg(null);
+    try {
+      const token = localStorage.getItem('veredas_access_token') || (await supabaseClient.auth.getSession()).data.session?.access_token;
+      const res = await fetch('/api/veredas/admin/importar/isbn', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify({ isbn }),
+      });
+      const result = await res.json();
+      if (!res.ok || !result.metadata) throw new Error(result.error || 'Livro nao encontrado');
+
+      const metadata = result.metadata;
+      setTitulo((current) => current || metadata.title || '');
+      setBookData((current) => ({
+        ...current,
+        subtitulo: current.subtitulo || metadata.subtitle || '',
+        isbn10: current.isbn10 || metadata.isbn10 || '',
+        isbn13: current.isbn13 || metadata.isbn13 || '',
+        editora: current.editora || metadata.publisher || '',
+        anoPublicacao: current.anoPublicacao || (metadata.publishedYear ? String(metadata.publishedYear) : ''),
+        numeroPaginas: current.numeroPaginas || (metadata.pageCount ? String(metadata.pageCount) : ''),
+        capaUrl: metadata.coverUrl || current.capaUrl,
+      }));
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Falha ao buscar dados do livro');
+    } finally {
+      setBookLookupLoading(false);
+    }
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -409,7 +450,12 @@ export const VeredasItemFormPage: React.FC = () => {
           {/* INTERNAL FORM: BOOK OR VIDEO */}
           {tipo === 'LIVRO' ? (
             <>
-              <BookFormInternal data={bookData} onChange={setBookData} />
+              <BookFormInternal
+                data={bookData}
+                onChange={setBookData}
+                onLookupIsbn={handleIsbnLookup}
+                lookupLoading={bookLookupLoading}
+              />
               <BookAccessFields
                 accesses={bookAccesses}
                 onChange={setBookAccesses}
@@ -440,12 +486,54 @@ export const VeredasItemFormPage: React.FC = () => {
 };
 
 /* Separate Internal Component for Book Form */
-function BookFormInternal({ data, onChange }: { data: any; onChange: (d: any) => void }) {
+function BookFormInternal({
+  data,
+  onChange,
+  onLookupIsbn,
+  lookupLoading,
+}: {
+  data: any;
+  onChange: (d: any) => void;
+  onLookupIsbn: () => void;
+  lookupLoading: boolean;
+}) {
   return (
     <div className="bg-stone-900 border border-stone-800 rounded-xl p-6 space-y-4">
       <h2 className="font-serif font-bold text-sm text-amber-400 uppercase tracking-wider flex items-center gap-2">
         <BookOpen className="w-4 h-4" /> 2. Metadados do Livro
       </h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-4 items-end">
+        <div>
+          <label className="block text-xs font-semibold text-stone-300 mb-1">ISBN-13</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={data.isbn13}
+            onChange={(e) => onChange({ ...data, isbn13: e.target.value })}
+            placeholder="978..."
+            className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-stone-300 mb-1">ISBN-10</label>
+          <input
+            type="text"
+            value={data.isbn10}
+            onChange={(e) => onChange({ ...data, isbn10: e.target.value })}
+            placeholder="10 caracteres"
+            className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={onLookupIsbn}
+          disabled={lookupLoading || (!data.isbn13 && !data.isbn10)}
+          className="px-4 py-2 bg-stone-800 hover:bg-stone-700 disabled:opacity-50 text-amber-300 font-bold text-xs rounded-lg border border-stone-700 whitespace-nowrap"
+        >
+          {lookupLoading ? 'Buscando...' : 'Buscar dados e capa'}
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -501,6 +589,16 @@ function BookFormInternal({ data, onChange }: { data: any; onChange: (d: any) =>
             placeholder="https://..."
             className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
           />
+          {data.capaUrl ? (
+            <div className="mt-3 flex items-start gap-3">
+              <img
+                src={data.capaUrl}
+                alt="Previa da capa do livro"
+                className="w-20 aspect-[2/3] object-cover rounded border border-stone-700 bg-stone-950"
+              />
+              <span className="text-[11px] text-stone-500">Capa encontrada. Voce ainda pode substituir a URL.</span>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

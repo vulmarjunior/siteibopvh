@@ -6,6 +6,7 @@ import { validateReportPayload, validateItemPayload, validateAccessPayload } fro
 import { checkReportRateLimit, generateIpHash } from '../../lib/veredas/rateLimit.js';
 import { parseYoutubeUrl } from '../../lib/veredas/youtube.js';
 import { parseAmazonUrl } from '../../lib/veredas/amazon.js';
+import { lookupBookByIsbn } from '../../lib/veredas/books.js';
 import { generateSlug } from '../../lib/veredas/slug.js';
 
 import { getSupabaseServer } from '../../lib/veredas/supabaseServer.js';
@@ -237,6 +238,16 @@ export function createVeredasRouter(prisma: PrismaClient) {
     }
 
     res.json(parsed);
+  });
+
+  router.post('/admin/importar/isbn', authMiddleware, async (req, res) => {
+    const result = await lookupBookByIsbn(req.body?.isbn);
+
+    if (!result.isValid) {
+      return res.status(404).json({ error: result.error || 'Livro nao encontrado' });
+    }
+
+    res.json(result);
   });
 
   // ==========================================

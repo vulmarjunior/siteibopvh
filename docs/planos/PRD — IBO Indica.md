@@ -995,7 +995,7 @@ No MVP:
 
 - `youtube`: extrair ID e thumbnail;
 - `amazon`: extrair ASIN e preservar URL;
-- `isbn`: pode permanecer preparado, sem integração externa obrigatória.
+- `isbn`: implementado com Google Books e fallback para Open Library, preenchimento assistido de metadados e manutenção do fallback manual.
 
 Todos devem possuir fallback manual.
 
