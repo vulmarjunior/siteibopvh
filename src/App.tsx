@@ -25,9 +25,12 @@ const VeredasDashboardPage = lazy(() => import('./pages/veredas/admin/VeredasDas
 const VeredasItemFormPage = lazy(() => import('./pages/veredas/admin/VeredasItemFormPage').then(m => ({ default: m.VeredasItemFormPage })));
 const VeredasReportsPage = lazy(() => import('./pages/veredas/admin/VeredasReportsPage').then(m => ({ default: m.VeredasReportsPage })));
 
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
+
 const App: React.FC = () => (
-  <BrowserRouter>
-    <Suspense fallback={<LoadingSpinner />}>
+  <ErrorBoundary>
+    <BrowserRouter>
+      <Suspense fallback={<LoadingSpinner />}>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/pascoa" element={<PascoaPage />} />
@@ -56,6 +59,7 @@ const App: React.FC = () => (
       </Routes>
     </Suspense>
   </BrowserRouter>
+</ErrorBoundary>
 );
 
 export default App;
