@@ -1,28 +1,27 @@
-﻿# Plano de migração Netlify → Vercel
+# Migração Netlify → Vercel
 
-Referência local do plano de continuidade da migração.
+## Status final — concluída em 2026-08-06
 
-Objetivo: migrar o portal para Vercel preservando Supabase/Postgres, Resend e Google Workspace, sem mudanças de DNS antes da homologação completa em `*.vercel.app`.
+- Projeto Vercel: `ibopvh`.
+- Repositório conectado: `vulmarjunior/siteibopvh`.
+- Deploy automático ativo para a branch `main`.
+- Produção: `https://ibopvh.com.br` e `https://www.ibopvh.com.br`.
+- Alias permanente: `https://ibopvh.vercel.app`.
+- Aplicação SPA, APIs Express e cron executam em Vercel Functions.
+- Variáveis de produção e preview estão configuradas na Vercel.
+- DNS autoritativo usa `ns1.vercel-dns.com` e `ns2.vercel-dns.com`.
+- Registros MX, SPF, DKIM, DMARC e Google Workspace foram preservados.
+- HTTPS e rotas públicas foram validados.
+- Netlify não participa mais do deploy de produção nem do DNS.
 
-## Status em 2026-08-06
+## Configuração mantida no repositório
 
-- Aplicacao e APIs implantadas e homologadas no projeto Vercel `ibopvh`.
-- Deploy automatico pelo GitHub ativo para a branch `main`.
-- Dominios de producao: `https://ibopvh.com.br` e `https://www.ibopvh.com.br`.
-- URL permanente da Vercel: `https://ibopvh.vercel.app`.
-- Zona DNS completa copiada para a Vercel, inclusive registros do Google Workspace e do servico de envio.
-- Nameservers configurados no HostGator como `ns1.vercel-dns.com` e `ns2.vercel-dns.com`.
-- Propagacao DNS ainda pendente de confirmacao publica; a conta Netlify deve permanecer ativa ate essa validacao.
+- `api/index.ts`: entrada da API na Vercel.
+- `api/cron/weekly-reading.ts`: cron semanal protegido por `CRON_SECRET`.
+- `vercel.json`: build, SPA rewrites, API e cron.
+- `netlify.toml` e `netlify/functions/`: legado preservado apenas como referência/fallback histórico; não representam a hospedagem atual.
 
-## Pontos principais
-
-- Criar branch de implementação específica (`codex/migracao-vercel`) e manter produção Netlify intacta durante a fase inicial.
-- Adaptar API Express para funcionar em Vercel Functions.
-- Configurar `vercel.json` com rewrites de SPA + API + cron.
-- Migrar job semanal para `/api/cron/weekly-reading` com proteção por `CRON_SECRET`.
-- Manter `netlify.toml` e funções Netlify atuais como fallback por enquanto.
-
-## Variáveis de ambiente esperadas
+## Variáveis esperadas
 
 - `DATABASE_URL`
 - `DIRECT_URL`
@@ -36,54 +35,6 @@ Objetivo: migrar o portal para Vercel preservando Supabase/Postgres, Resend e Go
 - `VITE_SUPABASE_ANON_KEY`
 - `CRON_SECRET`
 
-## Lote inicial (já em execução)
+Os valores secretos não são versionados. Eles permanecem na Vercel e nos respectivos provedores.
 
-1. Configurar entrypoint API para Vercel (`api/index.ts`) reutilizando `apiRouter`.
-2. Adicionar handler cron em `api/cron/weekly-reading.ts`.
-3. Criar `vercel.json` com:
-   - `buildCommand` com `prisma generate`
-   - `outputDirectory: dist`
-   - `rewrites` para API e SPA
-   - `crons` para segunda-feira às 11:00 UTC
-4. Preparar ajuste de variáveis sem tocar DNS, deploy externo e banco.
-
-### Checklist de ambiente para começar no Vercel
-
-Antes do primeiro deploy em `*.vercel.app`, só faltam essas configurações:
-
-- No projeto Vercel:
-  - Importar o repositório no Vercel via GitHub.
-  - Framework: Vite.
-  - Build Command: `npx prisma generate && node scripts/process-ebf-gallery.mjs && npm run build` (já refletido em `vercel.json`).
-  - Output Directory: `dist`.
-  - Region compatível para o banco (ideal Sul dos EUA / São Paulo conforme disponibilidade).
-  - Domínio customizado **sem alterar** DNS ainda (fique no `*.vercel.app` até validação).
-
-- Variáveis de ambiente de produção/preview (mesmas do Netlify):
-  - `DATABASE_URL`
-  - `DIRECT_URL`
-  - `RESEND_API_KEY`
-  - `ADMIN_PASSWORD`
-  - `APP_URL` (agora `https://<seu-projeto>.vercel.app` ou domínio temporário de homologação)
-  - `SUPABASE_URL`
-  - `SUPABASE_SERVICE_ROLE_KEY`
-  - `SUPABASE_ANON_KEY`
-  - `VITE_SUPABASE_URL`
-  - `VITE_SUPABASE_ANON_KEY`
-  - `CRON_SECRET` (string aleatória longa)
-
-- Validar se estas rotas funcionam em staging:
-  - `/<qualquer-rota-do-app>` retorna front-end (SPA).
-  - `/api/health` retorna OK.
-  - `/api/parousia/unsubscribe?...` responde conforme app atual.
-  - `/api/cron/weekly-reading` só responde com header `Authorization: Bearer <CRON_SECRET>` (ou 401 sem token).
-
-- Cron:
-  - `vercel.json` já configura `0 11 * * 1`.
-  - Em produção, ajuste fuso/horário no Vercel se necessário.
-
-- Supabase:
-  - Validar `SUPABASE_SERVICE_ROLE_KEY` e IP allowlist (se aplicável) para permitir chamadas da Vercel sem bloqueio.
-
-- Netlify:
-  - Deixar a configuração existente ativa como fallback durante a homologação da Vercel.
+Consulte `docs/CONTINUIDADE.md` para retomar o trabalho em outro computador.
