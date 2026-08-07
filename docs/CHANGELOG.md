@@ -15,6 +15,7 @@
 - Cadastro e edicao de multiplos links de compra, leitura e download por livro.
 - Suporte a Amazon, editoras, livrarias, sebos e outras fontes.
 - Normalizacao de links Amazon com ASIN e preservacao de tag de afiliado.
+- Validacao Amazon agora exibe confirmacao, mostra o ASIN no formulario e tenta importar metadados quando o ASIN corresponde a um ISBN-10.
 - Validacao dos links na API e persistencia atomica no banco.
 
 ### 2026-08-06 - Migracao de hospedagem e DNS para a Vercel

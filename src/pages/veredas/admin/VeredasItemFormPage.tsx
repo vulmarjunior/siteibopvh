@@ -49,6 +49,7 @@ export const VeredasItemFormPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [bookLookupLoading, setBookLookupLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/veredas/categorias')
@@ -149,6 +150,7 @@ export const VeredasItemFormPage: React.FC = () => {
     if (!access?.url) return;
 
     setErrorMsg(null);
+    setSuccessMsg(null);
     try {
       const token = localStorage.getItem('veredas_access_token') || (await supabaseClient.auth.getSession()).data.session?.access_token;
       const res = await fetch('/api/veredas/admin/importar/amazon', {
@@ -176,6 +178,38 @@ export const VeredasItemFormPage: React.FC = () => {
       );
       if (parsed.asin) {
         setBookData((current) => ({ ...current, asin: parsed.asin }));
+
+        if (/^\d{9}[\dX]$/.test(parsed.asin)) {
+          const metadataResponse = await fetch('/api/veredas/admin/importar/isbn', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + token,
+            },
+            body: JSON.stringify({ isbn: parsed.asin }),
+          });
+          const metadataResult = await metadataResponse.json();
+          if (metadataResponse.ok && metadataResult.metadata) {
+            const metadata = metadataResult.metadata;
+            setTitulo((current) => current || metadata.title || '');
+            setBookData((current) => ({
+              ...current,
+              asin: parsed.asin,
+              subtitulo: current.subtitulo || metadata.subtitle || '',
+              isbn10: current.isbn10 || metadata.isbn10 || parsed.asin,
+              isbn13: current.isbn13 || metadata.isbn13 || '',
+              editora: current.editora || metadata.publisher || '',
+              anoPublicacao: current.anoPublicacao || (metadata.publishedYear ? String(metadata.publishedYear) : ''),
+              numeroPaginas: current.numeroPaginas || (metadata.pageCount ? String(metadata.pageCount) : ''),
+              capaUrl: metadata.coverUrl || current.capaUrl,
+            }));
+            setSuccessMsg('Link Amazon validado e dados bibliograficos preenchidos.');
+          }
+        }
+
+        setSuccessMsg((current) => current || ('Link Amazon validado. ASIN ' + parsed.asin + ' identificado.'));
+      } else {
+        setSuccessMsg('Link Amazon validado com sucesso.');
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Falha ao validar link da Amazon');
@@ -191,6 +225,7 @@ export const VeredasItemFormPage: React.FC = () => {
 
     setBookLookupLoading(true);
     setErrorMsg(null);
+    setSuccessMsg(null);
     try {
       const token = localStorage.getItem('veredas_access_token') || (await supabaseClient.auth.getSession()).data.session?.access_token;
       const res = await fetch('/api/veredas/admin/importar/isbn', {
@@ -216,6 +251,11 @@ export const VeredasItemFormPage: React.FC = () => {
         numeroPaginas: current.numeroPaginas || (metadata.pageCount ? String(metadata.pageCount) : ''),
         capaUrl: metadata.coverUrl || current.capaUrl,
       }));
+      setSuccessMsg(
+        metadata.coverUrl
+          ? 'Dados do livro e capa preenchidos com sucesso.'
+          : 'Dados do livro preenchidos. Nenhuma capa foi encontrada para esta edicao.',
+      );
     } catch (err: any) {
       setErrorMsg(err.message || 'Falha ao buscar dados do livro');
     } finally {
@@ -317,6 +357,11 @@ export const VeredasItemFormPage: React.FC = () => {
           <div className="p-3 bg-red-950/80 border border-red-800 text-red-300 text-xs rounded-lg flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMsg}</span>
+          </div>
+        )}
+        {successMsg && (
+          <div className="p-3 bg-emerald-950/80 border border-emerald-800 text-emerald-300 text-xs rounded-lg">
+            {successMsg}
           </div>
         )}
 
@@ -503,7 +548,7 @@ function BookFormInternal({
         <BookOpen className="w-4 h-4" /> 2. Metadados do Livro
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-4 items-end">
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-4 items-end">
         <div>
           <label className="block text-xs font-semibold text-stone-300 mb-1">ISBN-13</label>
           <input
@@ -522,6 +567,16 @@ function BookFormInternal({
             value={data.isbn10}
             onChange={(e) => onChange({ ...data, isbn10: e.target.value })}
             placeholder="10 caracteres"
+            className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-stone-300 mb-1">ASIN Amazon</label>
+          <input
+            type="text"
+            value={data.asin}
+            onChange={(e) => onChange({ ...data, asin: e.target.value })}
+            placeholder="Identificado pelo link"
             className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
           />
         </div>
