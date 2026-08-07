@@ -45,7 +45,7 @@ export const VeredasItemFormPage: React.FC = () => {
     canal: '',
     duracaoSegundos: '',
     thumbnailUrl: '',
-    incorporavel: false,
+    incorporavel: true,
   });
 
   const [loading, setLoading] = useState(false);
@@ -113,7 +113,7 @@ export const VeredasItemFormPage: React.FC = () => {
                 canal: item.video.canal || '',
                 duracaoSegundos: item.video.duracaoSegundos ? String(item.video.duracaoSegundos) : '',
                 thumbnailUrl: item.video.thumbnailUrl || '',
-                incorporavel: false,
+                incorporavel: item.video.incorporavel !== undefined ? Boolean(item.video.incorporavel) : true,
               });
             }
           }
