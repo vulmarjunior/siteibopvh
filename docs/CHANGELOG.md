@@ -2,6 +2,12 @@
 
 ## [Em Desenvolvimento]
 
+### 2026-08-06 - Veredas IBO: capas, compartilhamento e videos
+
+- Campo de link da capa voltou a ficar sempre visivel quando a busca por ISBN nao encontra uma imagem.
+- Paginas de livros e videos receberam compartilhamento da URL oficial do Veredas IBO.
+- Videos com restricao de incorporacao agora exibem miniatura e abrem diretamente no YouTube.
+
 ### 2026-08-06 - Veredas IBO: formulario de cadastro simplificado
 
 - Um unico texto pastoral passa a alimentar a recomendacao e o resumo exibido nos cards.

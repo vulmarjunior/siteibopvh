@@ -4,6 +4,7 @@ import { BookOpen, Sparkles, AlertCircle, ShieldCheck, ArrowLeft, Calendar, File
 import { VeredasNavbar } from '../../components/veredas/VeredasNavbar';
 import { VeredasFooter } from '../../components/veredas/VeredasFooter';
 import { AccessLinksList } from '../../components/veredas/AccessLinksList';
+import { SharePageButton } from '../../components/veredas/SharePageButton';
 import { Helmet } from 'react-helmet-async';
 
 export const VeredasBookDetailPage: React.FC = () => {
@@ -77,10 +78,12 @@ export const VeredasBookDetailPage: React.FC = () => {
 
       <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full space-y-8">
         
-        {/* Back Link */}
-        <Link to="/veredas/livros" className="inline-flex items-center gap-1.5 text-xs text-stone-400 hover:text-amber-400 font-medium">
-          <ArrowLeft className="w-4 h-4" /> Voltar ao Catálogo de Livros
-        </Link>
+        <div className="flex items-center justify-between gap-4">
+          <Link to="/veredas/livros" className="inline-flex items-center gap-1.5 text-xs text-stone-400 hover:text-amber-400 font-medium">
+            <ArrowLeft className="w-4 h-4" /> Voltar ao Catálogo de Livros
+          </Link>
+          <SharePageButton title={item.titulo} />
+        </div>
 
         {/* Header Block: Cover + Bibliographic Meta */}
         <div className="bg-stone-900 border border-stone-800 rounded-2xl p-6 sm:p-8 shadow-2xl grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
