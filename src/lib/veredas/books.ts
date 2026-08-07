@@ -8,7 +8,7 @@ export interface BookMetadata {
   isbn10: string | null;
   isbn13: string | null;
   coverUrl: string | null;
-  source: 'GOOGLE_BOOKS' | 'OPEN_LIBRARY';
+  source: 'BRASIL_API' | 'GOOGLE_BOOKS' | 'OPEN_LIBRARY';
 }
 
 export interface BookLookupResult {
@@ -41,6 +41,33 @@ export async function lookupBookByIsbn(
     return { isValid: false, metadata: null, error: 'Informe um ISBN-10 ou ISBN-13 valido' };
   }
 
+  let brasilMetadata: BookMetadata | null = null;
+
+  try {
+    const brasilResponse = await fetcher(
+      'https://brasilapi.com.br/api/isbn/v1/' + encodeURIComponent(isbn),
+      { signal: AbortSignal.timeout(7000) },
+    );
+    if (brasilResponse.ok) {
+      const info: any = await brasilResponse.json();
+      brasilMetadata = {
+        title: info.title || null,
+        subtitle: info.subtitle || null,
+        authors: Array.isArray(info.authors) ? info.authors : [],
+        publisher: info.publisher || null,
+        publishedYear: Number.isFinite(Number(info.year)) ? Number(info.year) : null,
+        pageCount: Number.isFinite(Number(info.page_count)) ? Number(info.page_count) : null,
+        isbn10: isbn.length === 10 ? isbn : null,
+        isbn13: isbn.length === 13 ? isbn : null,
+        coverUrl: secureUrl(info.cover_url),
+        source: 'BRASIL_API',
+      };
+      if (brasilMetadata.coverUrl) return { isValid: true, metadata: brasilMetadata };
+    }
+  } catch (error) {
+    console.warn('BrasilAPI ISBN lookup failed:', error);
+  }
+
   let googleMetadata: BookMetadata | null = null;
 
   try {
@@ -68,7 +95,14 @@ export async function lookupBookByIsbn(
           ),
           source: 'GOOGLE_BOOKS',
         };
-        if (googleMetadata.coverUrl) return { isValid: true, metadata: googleMetadata };
+        if (googleMetadata.coverUrl) {
+          return {
+            isValid: true,
+            metadata: brasilMetadata
+              ? { ...googleMetadata, ...brasilMetadata, coverUrl: googleMetadata.coverUrl }
+              : googleMetadata,
+          };
+        }
       }
     }
   } catch (error) {
@@ -100,9 +134,11 @@ export async function lookupBookByIsbn(
 
         return {
           isValid: true,
-          metadata: googleMetadata
-            ? { ...openLibraryMetadata, ...googleMetadata, coverUrl: openLibraryMetadata.coverUrl }
-            : openLibraryMetadata,
+          metadata: brasilMetadata
+            ? { ...openLibraryMetadata, ...brasilMetadata, coverUrl: openLibraryMetadata.coverUrl }
+            : googleMetadata
+              ? { ...openLibraryMetadata, ...googleMetadata, coverUrl: openLibraryMetadata.coverUrl }
+              : openLibraryMetadata,
         };
       }
     }
@@ -110,6 +146,7 @@ export async function lookupBookByIsbn(
     console.warn('Open Library lookup failed:', error);
   }
 
+  if (brasilMetadata) return { isValid: true, metadata: brasilMetadata };
   if (googleMetadata) return { isValid: true, metadata: googleMetadata };
   return { isValid: false, metadata: null, error: 'Livro nao encontrado pelo ISBN informado' };
 }

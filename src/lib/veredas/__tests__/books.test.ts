@@ -8,40 +8,48 @@ describe('normalizeIsbn', () => {
 });
 
 describe('lookupBookByIsbn', () => {
-  it('returns Google Books metadata and upgrades the cover to HTTPS', async () => {
+  it('returns BrasilAPI metadata and upgrades the cover to HTTPS', async () => {
     const fetcher = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
-        items: [{ volumeInfo: {
-          title: 'Livro Teste',
-          publisher: 'Editora Teste',
-          publishedDate: '2024-03-01',
-          pageCount: 320,
-          industryIdentifiers: [{ type: 'ISBN_13', identifier: '9788527500010' }],
-          imageLinks: { large: 'http://books.google.com/cover.jpg' },
-        } }],
+        title: 'Livro Teste',
+        publisher: 'Editora Teste',
+        year: 2024,
+        page_count: 320,
+        cover_url: 'http://example.com/cover.jpg',
       }),
     }) as unknown as typeof fetch;
 
     const result = await lookupBookByIsbn('978-85-275-0001-0', fetcher);
 
     expect(result.isValid).toBe(true);
-    expect(result.metadata?.coverUrl).toBe('https://books.google.com/cover.jpg');
+    expect(result.metadata?.source).toBe('BRASIL_API');
+    expect(result.metadata?.coverUrl).toBe('https://example.com/cover.jpg');
     expect(result.metadata?.publishedYear).toBe(2024);
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
 
-  it('uses Open Library when Google Books has no cover', async () => {
+  it('combines BrasilAPI metadata with an Open Library cover', async () => {
     const fetcher = vi.fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ items: [{ volumeInfo: { title: 'Livro sem capa' } }] }),
+        json: async () => ({
+          title: 'Livro brasileiro',
+          publisher: 'Editora Brasileira',
+          year: 2024,
+          page_count: 224,
+          cover_url: null,
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ items: [] }),
       })
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           'ISBN:9788527500010': {
-            title: 'Livro sem capa',
+            title: 'Livro brasileiro',
             cover: { large: 'https://covers.openlibrary.org/example.jpg' },
           },
         }),
@@ -50,8 +58,30 @@ describe('lookupBookByIsbn', () => {
     const result = await lookupBookByIsbn('9788527500010', fetcher);
 
     expect(result.isValid).toBe(true);
-    expect(result.metadata?.source).toBe('GOOGLE_BOOKS');
+    expect(result.metadata?.source).toBe('BRASIL_API');
+    expect(result.metadata?.publisher).toBe('Editora Brasileira');
     expect(result.metadata?.coverUrl).toContain('covers.openlibrary.org');
+    expect(fetcher).toHaveBeenCalledTimes(3);
+  });
+
+  it('falls back to Google Books for international ISBN metadata', async () => {
+    const fetcher = vi.fn()
+      .mockResolvedValueOnce({ ok: false })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          items: [{ volumeInfo: {
+            title: 'International Book',
+            imageLinks: { large: 'http://books.google.com/cover.jpg' },
+          } }],
+        }),
+      }) as unknown as typeof fetch;
+
+    const result = await lookupBookByIsbn('9780385533225', fetcher);
+
+    expect(result.isValid).toBe(true);
+    expect(result.metadata?.source).toBe('GOOGLE_BOOKS');
+    expect(result.metadata?.coverUrl).toBe('https://books.google.com/cover.jpg');
     expect(fetcher).toHaveBeenCalledTimes(2);
   });
 
