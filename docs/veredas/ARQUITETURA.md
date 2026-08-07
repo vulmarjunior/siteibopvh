@@ -10,8 +10,8 @@ O módulo **Veredas IBO** é uma plataforma de curadoria teológica e pastoral i
    - Rota base administrativa: `/admin/veredas/*`
    - Estilização: Tailwind CSS v4 com paleta editorial e fontes `Cinzel` (serif) e `Lato` (sans).
 
-2. **Backend Serverless (Express + Netlify Functions)**
-   - Ponto de entrada: `src/api.ts` -> acopla `src/api/veredas/router.ts` sob o prefixo `/api/veredas`.
+2. **Backend Serverless (Express + Vercel Functions)**
+   - Ponto de entrada Vercel: `api/index.ts`; o router `src/api.ts` acopla `src/api/veredas/router.ts` sob o prefixo `/api/veredas`.
    - Autenticação Serverless: `src/api/veredas/authMiddleware.ts` utiliza o SDK oficial `@supabase/supabase-js` no backend (`supabase.auth.getUser(token)`), extrai o UUID e valida contra a tabela `CuradoriaUsuario` do Prisma.
 
 3. **Camada de Dados & Persistência (Prisma + PostgreSQL)**

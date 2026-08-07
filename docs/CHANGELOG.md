@@ -2,6 +2,12 @@
 
 ## [Em Desenvolvimento]
 
+### 2026-08-06 - Registro de continuidade
+
+- Estado de hospedagem, GitHub, Vercel, DNS e Veredas consolidado em docs/CONTINUIDADE.md.
+- Documentacao de migracao marcada como concluida e referencias antigas de arquitetura atualizadas.
+- .env.example ampliado sem incluir valores secretos.
+
 ### 2026-08-06 - Veredas IBO: capas, compartilhamento e videos
 
 - Campo de link da capa voltou a ficar sempre visivel quando a busca por ISBN nao encontra uma imagem.

@@ -4,6 +4,11 @@
 > **Propósito:** Fornecer contexto completo para qualquer agente de codificação que trabalhe neste projeto, eliminando a necessidade de re-análise.
 
 ---
+## Atualização operacional — 2026-08-06
+
+> Esta seção substitui informações antigas sobre hospedagem existentes abaixo. O portal está em produção na **Vercel**, projeto `ibopvh`, conectado ao GitHub `vulmarjunior/siteibopvh`. O deploy é automático pela branch `main`. URLs: `https://ibopvh.com.br` e `https://ibopvh.vercel.app`. O DNS autoritativo está na Vercel, com registros de e-mail preservados. Consulte `docs/CONTINUIDADE.md` e `docs/planos/migracao-vercel.md` antes de trabalhar.
+>
+> O módulo **Veredas IBO** está ativo em `/veredas` e o painel em `/admin/veredas/login`. Ao reduzir formulários, preserve comportamentos homologados, especialmente o player incorporado quando permitido pelo YouTube.
 
 ## 📋 Visão Geral
 
