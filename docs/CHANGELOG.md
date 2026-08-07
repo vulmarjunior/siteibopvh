@@ -6,6 +6,7 @@
 
 - Campos ISBN-10 e ISBN-13 adicionados ao formulario administrativo de livros.
 - Busca assistida de titulo, editora, ano, paginas e capa pelo Google Books.
+- BrasilAPI adicionada como fonte principal para ISBNs brasileiros, com dados da CBL e Mercado Editorial.
 - Fallback automatico de metadados e capa pelo Open Library.
 - Previa da capa mantida editavel antes de salvar o livro.
 
