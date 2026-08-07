@@ -12,7 +12,6 @@ export const VeredasItemFormPage: React.FC = () => {
 
   const [tipo, setTipo] = useState<'LIVRO' | 'VIDEO'>('LIVRO');
   const [titulo, setTitulo] = useState('');
-  const [resumo, setResumo] = useState('');
   const [porqueIndicamos, setPorqueIndicamos] = useState('');
   const [ressalvas, setRessalvas] = useState('');
   const [nivel, setNivel] = useState('INTRODUTORIO');
@@ -20,6 +19,9 @@ export const VeredasItemFormPage: React.FC = () => {
   const [destaque, setDestaque] = useState(false);
   const [categoriaIds, setCategoriaIds] = useState<number[]>([]);
   const [categoriasList, setCategoriasList] = useState<any[]>([]);
+  const [newTheme, setNewTheme] = useState('');
+  const [creatingTheme, setCreatingTheme] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Internal Book State
   const [bookData, setBookData] = useState({
@@ -66,7 +68,6 @@ export const VeredasItemFormPage: React.FC = () => {
           if (item && !item.error) {
             setTipo(item.tipo);
             setTitulo(item.titulo);
-            setResumo(item.resumo);
             setPorqueIndicamos(item.porqueIndicamos);
             setRessalvas(item.ressalvas || '');
             setNivel(item.nivel);
@@ -133,15 +134,19 @@ export const VeredasItemFormPage: React.FC = () => {
         body: JSON.stringify({ url: videoData.urlOriginal }),
       });
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Não foi possível ler o vídeo');
       if (data.youtubeId) {
         setVideoData((prev) => ({
           ...prev,
           youtubeId: data.youtubeId,
+          canal: data.channel || prev.canal,
           thumbnailUrl: data.thumbnailUrl,
         }));
+        setTitulo((current) => current || data.title || '');
+        setSuccessMsg('Dados do vídeo preenchidos automaticamente.');
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Falha ao consultar o vídeo');
     }
   };
 
@@ -262,6 +267,36 @@ export const VeredasItemFormPage: React.FC = () => {
       setBookLookupLoading(false);
     }
   };
+  const handleCreateTheme = async () => {
+    const nome = newTheme.trim();
+    if (!nome) return;
+
+    setCreatingTheme(true);
+    setErrorMsg(null);
+    try {
+      const token = localStorage.getItem('veredas_access_token') || (await supabaseClient.auth.getSession()).data.session?.access_token;
+      const response = await fetch('/api/veredas/admin/categorias', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify({ nome }),
+      });
+      const categoria = await response.json();
+      if (!response.ok) throw new Error(categoria.error || 'Falha ao criar tema');
+
+      setCategoriasList((current) =>
+        current.some((item) => item.id === categoria.id) ? current : [...current, categoria],
+      );
+      setCategoriaIds((current) => current.includes(categoria.id) ? current : [...current, categoria.id]);
+      setNewTheme('');
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Falha ao criar tema');
+    } finally {
+      setCreatingTheme(false);
+    }
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -277,7 +312,7 @@ export const VeredasItemFormPage: React.FC = () => {
       const payload = {
         tipo,
         titulo,
-        resumo,
+        resumo: porqueIndicamos,
         porqueIndicamos,
         ressalvas: ressalvas || undefined,
         nivel,
@@ -368,130 +403,135 @@ export const VeredasItemFormPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           
           {/* BASE COMMON FIELDS */}
-          <div className="bg-stone-900 border border-stone-800 rounded-xl p-6 space-y-4">
+          <div className="bg-stone-900 border border-stone-800 rounded-xl p-6 space-y-5">
             <h2 className="font-serif font-bold text-sm text-stone-200 uppercase tracking-wider">
-              1. Informações Básicas de Curadoria
+              Informações da recomendação
             </h2>
 
-            <div>
-              <label className="block text-xs font-semibold text-stone-300 mb-1">
-                Título Editorial <span className="text-amber-500">*</span>
-              </label>
+            <label className="block text-xs font-semibold text-stone-300">
+              Título <span className="text-amber-500">*</span>
               <input
                 type="text"
                 required
                 value={titulo}
-                onChange={(e) => setTitulo(e.target.value)}
-                placeholder="Ex: O Conhecimento de Deus"
-                className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-sm text-stone-200 focus:outline-none focus:border-amber-500"
+                onChange={(event) => setTitulo(event.target.value)}
+                placeholder={tipo === 'VIDEO' ? 'Preenchido pelo link do YouTube' : 'Título do livro'}
+                className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-sm text-stone-200 focus:outline-none focus:border-amber-500"
               />
-            </div>
+            </label>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  Nível de Profundidade <span className="text-amber-500">*</span>
-                </label>
-                <select
-                  value={nivel}
-                  onChange={(e) => setNivel(e.target.value)}
-                  className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200 focus:outline-none focus:border-amber-500"
-                >
-                  <option value="INTRODUTORIO">Introdutório</option>
-                  <option value="INTERMEDIARIO">Intermediário</option>
-                  <option value="APROFUNDAMENTO">Aprofundamento</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  Status de Publicação <span className="text-amber-500">*</span>
-                </label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200 focus:outline-none focus:border-amber-500"
-                >
-                  <option value="RASCUNHO">Rascunho (Privado)</option>
-                  <option value="PUBLICADO">Publicado (Visível na Web)</option>
-                  <option value="ARQUIVADO">Arquivado</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-stone-300 mb-1">
-                Por que indicamos? (Nota Pastoral) <span className="text-amber-500">*</span>
-              </label>
+            <label className="block text-xs font-semibold text-stone-300">
+              Por que indicamos? <span className="text-amber-500">*</span>
               <textarea
                 required
-                rows={3}
+                rows={4}
                 value={porqueIndicamos}
-                onChange={(e) => setPorqueIndicamos(e.target.value)}
-                placeholder="Explique o motivo pastoral desta recomendação..."
-                className="w-full bg-stone-950 border border-stone-700/80 rounded-lg p-3 text-xs text-stone-200 focus:outline-none focus:border-amber-500 resize-none"
+                onChange={(event) => setPorqueIndicamos(event.target.value)}
+                placeholder="Explique de forma pastoral por que este conteúdo é recomendado..."
+                className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg p-3 text-xs text-stone-200 focus:outline-none focus:border-amber-500 resize-y"
               />
-            </div>
+            </label>
 
-            <div>
-              <label className="block text-xs font-semibold text-stone-300 mb-1">
-                Ressalvas ou Observações (Opcional)
-              </label>
-              <textarea
-                rows={2}
-                value={ressalvas}
-                onChange={(e) => setRessalvas(e.target.value)}
-                placeholder="Caso haja ressalvas teológicas ou doutrinárias secundárias..."
-                className="w-full bg-stone-950 border border-stone-700/80 rounded-lg p-3 text-xs text-stone-200 focus:outline-none focus:border-amber-500 resize-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-stone-300 mb-1">
-                Resumo Geral <span className="text-amber-500">*</span>
-              </label>
-              <textarea
-                required
-                rows={3}
-                value={resumo}
-                onChange={(e) => setResumo(e.target.value)}
-                placeholder="Breve sinopse do conteúdo..."
-                className="w-full bg-stone-950 border border-stone-700/80 rounded-lg p-3 text-xs text-stone-200 focus:outline-none focus:border-amber-500 resize-none"
-              />
-            </div>
-
-            {/* Categorias */}
             <div>
               <label className="block text-xs font-semibold text-stone-300 mb-2">
-                Categorias Temáticas <span className="text-amber-500">*</span>
+                Temas <span className="text-amber-500">*</span>
               </label>
               <div className="flex flex-wrap gap-2">
-                {categoriasList.map((cat) => {
-                  const selected = categoriaIds.includes(cat.id);
+                {categoriasList.map((category) => {
+                  const selected = categoriaIds.includes(category.id);
                   return (
                     <button
-                      key={cat.id}
+                      key={category.id}
                       type="button"
-                      onClick={() => {
-                        setCategoriaIds((prev) =>
-                          selected ? prev.filter((id) => id !== cat.id) : [...prev, cat.id]
-                        );
-                      }}
-                      className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                      onClick={() => setCategoriaIds((current) =>
+                        selected ? current.filter((categoryId) => categoryId !== category.id) : [...current, category.id]
+                      )}
+                      className={'px-3 py-1 rounded-full text-xs font-medium border transition-colors ' + (
                         selected
                           ? 'bg-amber-600 border-amber-500 text-stone-950 font-bold'
                           : 'bg-stone-950 border-stone-800 text-stone-400 hover:text-stone-200'
-                      }`}
+                      )}
                     >
-                      {cat.nome}
+                      {category.nome}
                     </button>
                   );
                 })}
               </div>
+              <div className="mt-3 flex gap-2">
+                <input
+                  value={newTheme}
+                  onChange={(event) => setNewTheme(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      void handleCreateTheme();
+                    }
+                  }}
+                  placeholder="Criar novo tema"
+                  className="flex-1 bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
+                />
+                <button
+                  type="button"
+                  onClick={() => void handleCreateTheme()}
+                  disabled={creatingTheme || newTheme.trim().length < 2}
+                  className="px-4 py-2 bg-stone-800 hover:bg-stone-700 disabled:opacity-50 text-amber-300 font-bold text-xs rounded-lg border border-stone-700"
+                >
+                  {creatingTheme ? 'Criando...' : 'Adicionar tema'}
+                </button>
+              </div>
             </div>
 
-          </div>
+            <label className="block text-xs font-semibold text-stone-300">
+              Status
+              <select
+                value={status}
+                onChange={(event) => setStatus(event.target.value)}
+                className="mt-1 w-full sm:w-64 bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
+              >
+                <option value="RASCUNHO">Rascunho</option>
+                <option value="PUBLICADO">Publicado</option>
+                <option value="ARQUIVADO">Arquivado</option>
+              </select>
+            </label>
 
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((current) => !current)}
+              className="text-xs font-semibold text-stone-400 hover:text-amber-400"
+            >
+              {showAdvanced ? 'Ocultar opções avançadas' : 'Mostrar opções avançadas'}
+            </button>
+
+            {showAdvanced ? (
+              <div className="border-t border-stone-800 pt-4 space-y-4">
+                <label className="block text-xs font-semibold text-stone-300">
+                  Nível de profundidade
+                  <select
+                    value={nivel}
+                    onChange={(event) => setNivel(event.target.value)}
+                    className="mt-1 w-full sm:w-64 bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
+                  >
+                    <option value="INTRODUTORIO">Introdutório</option>
+                    <option value="INTERMEDIARIO">Intermediário</option>
+                    <option value="APROFUNDAMENTO">Aprofundamento</option>
+                  </select>
+                </label>
+                <label className="block text-xs font-semibold text-stone-300">
+                  Ressalvas pastorais
+                  <textarea
+                    rows={2}
+                    value={ressalvas}
+                    onChange={(event) => setRessalvas(event.target.value)}
+                    className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg p-3 text-xs text-stone-200"
+                  />
+                </label>
+                <label className="flex items-center gap-2 text-xs text-stone-300">
+                  <input type="checkbox" checked={destaque} onChange={(event) => setDestaque(event.target.checked)} />
+                  Destacar na página inicial
+                </label>
+              </div>
+            ) : null}
+          </div>
           {/* INTERNAL FORM: BOOK OR VIDEO */}
           {tipo === 'LIVRO' ? (
             <>
@@ -500,6 +540,7 @@ export const VeredasItemFormPage: React.FC = () => {
                 onChange={setBookData}
                 onLookupIsbn={handleIsbnLookup}
                 lookupLoading={bookLookupLoading}
+                showAdvanced={showAdvanced}
               />
               <BookAccessFields
                 accesses={bookAccesses}
@@ -536,184 +577,130 @@ function BookFormInternal({
   onChange,
   onLookupIsbn,
   lookupLoading,
+  showAdvanced,
 }: {
   data: any;
-  onChange: (d: any) => void;
+  onChange: (data: any) => void;
   onLookupIsbn: () => void;
   lookupLoading: boolean;
+  showAdvanced: boolean;
 }) {
   return (
     <div className="bg-stone-900 border border-stone-800 rounded-xl p-6 space-y-4">
       <h2 className="font-serif font-bold text-sm text-amber-400 uppercase tracking-wider flex items-center gap-2">
-        <BookOpen className="w-4 h-4" /> 2. Metadados do Livro
+        <BookOpen className="w-4 h-4" /> Livro
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-4 items-end">
-        <div>
-          <label className="block text-xs font-semibold text-stone-300 mb-1">ISBN-13</label>
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-end">
+        <label className="text-xs font-semibold text-stone-300">
+          ISBN
           <input
             type="text"
             inputMode="numeric"
-            value={data.isbn13}
-            onChange={(e) => onChange({ ...data, isbn13: e.target.value })}
-            placeholder="978..."
-            className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
+            value={data.isbn13 || data.isbn10}
+            onChange={(event) => {
+              const value = event.target.value;
+              onChange({ ...data, isbn13: value.replace(/\D/g, '').length > 10 ? value : '', isbn10: value.replace(/[^0-9X]/gi, '').length <= 10 ? value : '' });
+            }}
+            placeholder="ISBN-13 ou ISBN-10"
+            className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
           />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-stone-300 mb-1">ISBN-10</label>
-          <input
-            type="text"
-            value={data.isbn10}
-            onChange={(e) => onChange({ ...data, isbn10: e.target.value })}
-            placeholder="10 caracteres"
-            className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-stone-300 mb-1">ASIN Amazon</label>
-          <input
-            type="text"
-            value={data.asin}
-            onChange={(e) => onChange({ ...data, asin: e.target.value })}
-            placeholder="Identificado pelo link"
-            className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
-          />
-        </div>
+        </label>
         <button
           type="button"
           onClick={onLookupIsbn}
           disabled={lookupLoading || (!data.isbn13 && !data.isbn10)}
-          className="px-4 py-2 bg-stone-800 hover:bg-stone-700 disabled:opacity-50 text-amber-300 font-bold text-xs rounded-lg border border-stone-700 whitespace-nowrap"
+          className="px-4 py-2 bg-stone-800 hover:bg-stone-700 disabled:opacity-50 text-amber-300 font-bold text-xs rounded-lg border border-stone-700"
         >
           {lookupLoading ? 'Buscando...' : 'Buscar dados e capa'}
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-semibold text-stone-300 mb-1">Subtítulo</label>
-          <input
-            type="text"
-            value={data.subtitulo}
-            onChange={(e) => onChange({ ...data, subtitulo: e.target.value })}
-            className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
+      {data.capaUrl ? (
+        <div className="flex items-start gap-3 rounded-lg border border-stone-800 bg-stone-950 p-3">
+          <img
+            src={data.capaUrl}
+            alt="Prévia da capa do livro"
+            className="w-20 aspect-[2/3] object-cover rounded border border-stone-700"
           />
+          <div className="text-xs text-stone-400">
+            <p className="font-semibold text-stone-200">{data.subtitulo || data.editora || 'Capa encontrada'}</p>
+            <p className="mt-1">Os dados permanecem editáveis nas opções avançadas.</p>
+          </div>
         </div>
+      ) : null}
 
-        <div>
-          <label className="block text-xs font-semibold text-stone-300 mb-1">Editora</label>
-          <input
-            type="text"
-            value={data.editora}
-            onChange={(e) => onChange({ ...data, editora: e.target.value })}
-            className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
-          />
+      {showAdvanced ? (
+        <div className="border-t border-stone-800 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label className="text-xs text-stone-300">
+            Subtítulo
+            <input value={data.subtitulo} onChange={(event) => onChange({ ...data, subtitulo: event.target.value })} className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs" />
+          </label>
+          <label className="text-xs text-stone-300">
+            Editora
+            <input value={data.editora} onChange={(event) => onChange({ ...data, editora: event.target.value })} className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs" />
+          </label>
+          <label className="text-xs text-stone-300">
+            Ano
+            <input type="number" value={data.anoPublicacao} onChange={(event) => onChange({ ...data, anoPublicacao: event.target.value })} className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs" />
+          </label>
+          <label className="text-xs text-stone-300">
+            Páginas
+            <input type="number" value={data.numeroPaginas} onChange={(event) => onChange({ ...data, numeroPaginas: event.target.value })} className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs" />
+          </label>
+          <label className="text-xs text-stone-300">
+            ASIN Amazon
+            <input value={data.asin} onChange={(event) => onChange({ ...data, asin: event.target.value })} className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs" />
+          </label>
+          <label className="text-xs text-stone-300">
+            URL da capa
+            <input type="url" value={data.capaUrl} onChange={(event) => onChange({ ...data, capaUrl: event.target.value })} className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs" />
+          </label>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-xs font-semibold text-stone-300 mb-1">Ano de Publicação</label>
-          <input
-            type="number"
-            value={data.anoPublicacao}
-            onChange={(e) => onChange({ ...data, anoPublicacao: e.target.value })}
-            placeholder="Ex: 2024"
-            className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-stone-300 mb-1">Páginas</label>
-          <input
-            type="number"
-            value={data.numeroPaginas}
-            onChange={(e) => onChange({ ...data, numeroPaginas: e.target.value })}
-            placeholder="Ex: 320"
-            className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-stone-300 mb-1">URL da Capa</label>
-          <input
-            type="url"
-            value={data.capaUrl}
-            onChange={(e) => onChange({ ...data, capaUrl: e.target.value })}
-            placeholder="https://..."
-            className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
-          />
-          {data.capaUrl ? (
-            <div className="mt-3 flex items-start gap-3">
-              <img
-                src={data.capaUrl}
-                alt="Previa da capa do livro"
-                className="w-20 aspect-[2/3] object-cover rounded border border-stone-700 bg-stone-950"
-              />
-              <span className="text-[11px] text-stone-500">Capa encontrada. Voce ainda pode substituir a URL.</span>
-            </div>
-          ) : null}
-        </div>
-      </div>
+      ) : null}
     </div>
   );
 }
 
-/* Separate Internal Component for Video Form */
-function VideoFormInternal({ data, onChange, onParseYoutube }: { data: any; onChange: (d: any) => void; onParseYoutube: () => void }) {
+function VideoFormInternal({
+  data,
+  onChange,
+  onParseYoutube,
+}: {
+  data: any;
+  onChange: (data: any) => void;
+  onParseYoutube: () => void;
+}) {
   return (
     <div className="bg-stone-900 border border-stone-800 rounded-xl p-6 space-y-4">
       <h2 className="font-serif font-bold text-sm text-amber-400 uppercase tracking-wider flex items-center gap-2">
-        <Film className="w-4 h-4" /> 2. Metadados do Vídeo (YouTube)
+        <Film className="w-4 h-4" /> Vídeo
       </h2>
 
-      <div>
-        <label className="block text-xs font-semibold text-stone-300 mb-1">
-          URL Original do Vídeo <span className="text-amber-500">*</span>
-        </label>
-        <div className="flex gap-2">
-          <input
-            type="url"
-            required
-            value={data.urlOriginal}
-            onChange={(e) => onChange({ ...data, urlOriginal: e.target.value })}
-            placeholder="https://www.youtube.com/watch?v=..."
-            className="flex-1 bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
-          />
-          <button
-            type="button"
-            onClick={onParseYoutube}
-            className="px-3 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold text-xs rounded-lg border border-stone-700"
-          >
-            Detectar ID
-          </button>
-        </div>
-      </div>
+      <label className="block text-xs font-semibold text-stone-300">
+        Link do YouTube <span className="text-amber-500">*</span>
+        <input
+          type="url"
+          required
+          value={data.urlOriginal}
+          onChange={(event) => onChange({ ...data, urlOriginal: event.target.value })}
+          onBlur={() => void onParseYoutube()}
+          placeholder="https://www.youtube.com/watch?v=..."
+          className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
+        />
+      </label>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-semibold text-stone-300 mb-1">ID do YouTube</label>
-          <input
-            type="text"
-            value={data.youtubeId}
-            onChange={(e) => onChange({ ...data, youtubeId: e.target.value })}
-            placeholder="Ex: dQw4w9WgXcQ"
-            className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
-          />
+      {data.thumbnailUrl ? (
+        <div className="flex items-center gap-3 rounded-lg border border-stone-800 bg-stone-950 p-3">
+          <img src={data.thumbnailUrl} alt="Prévia do vídeo" className="w-32 aspect-video object-cover rounded" />
+          <div className="text-xs text-stone-400">
+            <p className="font-semibold text-stone-200">{data.canal || 'YouTube'}</p>
+            <p className="mt-1">Título, canal e miniatura foram identificados automaticamente.</p>
+          </div>
         </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-stone-300 mb-1">Canal</label>
-          <input
-            type="text"
-            value={data.canal}
-            onChange={(e) => onChange({ ...data, canal: e.target.value })}
-            placeholder="Ex: Igreja Batista Olaria"
-            className="w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
-          />
-        </div>
-      </div>
+      ) : (
+        <p className="text-[11px] text-stone-500">Ao sair do campo, título, canal e miniatura serão preenchidos automaticamente.</p>
+      )}
     </div>
   );
 }

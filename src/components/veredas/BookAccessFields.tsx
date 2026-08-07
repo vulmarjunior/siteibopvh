@@ -19,15 +19,63 @@ export interface BookAccessFormData {
   affiliateTag: string;
 }
 
-export function createEmptyBookAccess(ordem = 0): BookAccessFormData {
+type LinkMode = 'IMPRESSO' | 'KINDLE' | 'GRATUITO';
+
+function identifyDestination(url: string) {
+  try {
+    const hostname = new URL(url).hostname.replace(/^www\./, '').toLowerCase();
+    if (hostname.includes('amazon.') || hostname === 'amzn.to' || hostname === 'a.co') {
+      return { provedor: 'AMAZON', fornecedor: 'Amazon' };
+    }
+    if (hostname.includes('estantevirtual.')) {
+      return { provedor: 'ESTANTE_VIRTUAL', fornecedor: 'Estante Virtual' };
+    }
+    const name = hostname.split('.')[0]?.replace(/[-_]/g, ' ') || 'Site externo';
+    return {
+      provedor: hostname.includes('editora') ? 'EDITORA' : 'OUTRO',
+      fornecedor: name.split(' ').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+    };
+  } catch {
+    return { provedor: 'OUTRO', fornecedor: '' };
+  }
+}
+
+function modeOf(access: BookAccessFormData): LinkMode {
+  if (access.gratuito) return 'GRATUITO';
+  return access.formato === 'KINDLE' ? 'KINDLE' : 'IMPRESSO';
+}
+
+function withDetectedDetails(access: BookAccessFormData, url: string, mode: LinkMode): BookAccessFormData {
+  const destination = identifyDestination(url);
+  const suffix = destination.fornecedor ? ' na ' + destination.fornecedor : '';
   return {
-    key: `access-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    ...access,
+    url,
+    tipo: mode === 'GRATUITO' ? 'LEITURA_ONLINE' : 'COMPRA',
+    formato: mode === 'KINDLE' ? 'KINDLE' : mode === 'GRATUITO' ? 'WEB' : 'IMPRESSO',
+    provedor: destination.provedor,
+    fornecedor: destination.fornecedor,
+    textoBotao:
+      mode === 'GRATUITO'
+        ? 'Acessar gratuitamente'
+        : mode === 'KINDLE'
+          ? 'Comprar e-book' + suffix
+          : 'Comprar impresso' + suffix,
+    gratuito: mode === 'GRATUITO',
+    linkAssociado: /[?&]tag=/.test(url),
+    ativo: true,
+  };
+}
+
+export function createEmptyBookAccess(ordem = 0): BookAccessFormData {
+  return withDetectedDetails({
+    key: 'access-' + Date.now() + '-' + Math.random().toString(36).slice(2),
     tipo: 'COMPRA',
     formato: 'IMPRESSO',
-    provedor: 'AMAZON',
-    fornecedor: 'Amazon',
+    provedor: 'OUTRO',
+    fornecedor: '',
     url: '',
-    textoBotao: 'Comprar na Amazon',
+    textoBotao: 'Comprar impresso',
     gratuito: false,
     linkAssociado: false,
     producaoIbo: false,
@@ -36,7 +84,7 @@ export function createEmptyBookAccess(ordem = 0): BookAccessFormData {
     observacaoPublica: '',
     fonte: '',
     affiliateTag: '',
-  };
+  }, '', 'IMPRESSO');
 }
 
 interface BookAccessFieldsProps {
@@ -48,13 +96,9 @@ interface BookAccessFieldsProps {
 const inputClass =
   'w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200';
 
-export const BookAccessFields: React.FC<BookAccessFieldsProps> = ({
-  accesses,
-  onChange,
-  onNormalizeAmazon,
-}) => {
-  const update = (index: number, values: Partial<BookAccessFormData>) => {
-    onChange(accesses.map((access, current) => (current === index ? { ...access, ...values } : access)));
+export const BookAccessFields: React.FC<BookAccessFieldsProps> = ({ accesses, onChange, onNormalizeAmazon }) => {
+  const update = (index: number, access: BookAccessFormData) => {
+    onChange(accesses.map((current, currentIndex) => (currentIndex === index ? access : current)));
   };
 
   const remove = (index: number) => {
@@ -65,12 +109,8 @@ export const BookAccessFields: React.FC<BookAccessFieldsProps> = ({
     <section className="bg-stone-900 border border-stone-800 rounded-xl p-6 space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="font-serif font-bold text-sm text-amber-400 uppercase tracking-wider">
-            3. Links de aquisicao e acesso
-          </h2>
-          <p className="text-xs text-stone-400 mt-1">
-            Cadastre Amazon, editora, livrarias, sebos ou fontes gratuitas. Links de associado recebem aviso publico.
-          </p>
+          <h2 className="font-serif font-bold text-sm text-amber-400 uppercase tracking-wider">Links para acessar</h2>
+          <p className="text-xs text-stone-400 mt-1">Cole o endereço e escolha apenas a finalidade do link.</p>
         </div>
         <button
           type="button"
@@ -81,150 +121,64 @@ export const BookAccessFields: React.FC<BookAccessFieldsProps> = ({
         </button>
       </div>
 
-      {accesses.length === 0 && (
+      {accesses.length === 0 ? (
         <p className="text-xs text-stone-500 border border-dashed border-stone-700 rounded-lg p-4 text-center">
-          Nenhum link cadastrado. O livro ainda pode ser salvo sem opcao de aquisicao.
+          Nenhum link cadastrado.
         </p>
-      )}
+      ) : null}
 
-      {accesses.map((access, index) => (
-        <div key={access.key} className="bg-stone-950 border border-stone-800 rounded-xl p-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <strong className="text-xs text-stone-200">Link {index + 1}</strong>
-            <button
-              type="button"
-              onClick={() => remove(index)}
-              className="text-red-400 hover:text-red-300 p-1"
-              aria-label={`Remover link ${index + 1}`}
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </div>
+      {accesses.map((access, index) => {
+        const mode = modeOf(access);
+        return (
+          <div key={access.key} className="bg-stone-950 border border-stone-800 rounded-xl p-4 space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_190px_auto] gap-3 items-end">
+              <label className="text-xs text-stone-300">
+                Link
+                <input
+                  required
+                  type="url"
+                  value={access.url}
+                  onChange={(event) => update(index, withDetectedDetails(access, event.target.value, mode))}
+                  onBlur={() => {
+                    if (access.provedor === 'AMAZON' && access.url) void onNormalizeAmazon(index);
+                  }}
+                  className={inputClass}
+                  placeholder="https://..."
+                />
+              </label>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <label className="text-xs text-stone-300">
-              Tipo
-              <select value={access.tipo} onChange={(e) => update(index, { tipo: e.target.value })} className={inputClass}>
-                <option value="COMPRA">Compra</option>
-                <option value="LEITURA_ONLINE">Leitura online</option>
-                <option value="DOWNLOAD_INTEGRAL">Download integral</option>
-                <option value="AMOSTRA">Amostra</option>
-                <option value="PAGINA_OFICIAL">Pagina oficial</option>
-                <option value="EMPRESTIMO">Emprestimo</option>
-                <option value="MATERIAL_COMPLEMENTAR">Material complementar</option>
-              </select>
-            </label>
-
-            <label className="text-xs text-stone-300">
-              Provedor
-              <select
-                value={access.provedor}
-                onChange={(e) => {
-                  const provedor = e.target.value;
-                  update(index, {
-                    provedor,
-                    fornecedor: provedor === 'AMAZON' && !access.fornecedor ? 'Amazon' : access.fornecedor,
-                  });
-                }}
-                className={inputClass}
-              >
-                <option value="AMAZON">Amazon</option>
-                <option value="EDITORA">Editora</option>
-                <option value="LIVRARIA">Livraria</option>
-                <option value="ESTANTE_VIRTUAL">Estante Virtual</option>
-                <option value="GOOGLE_DRIVE">Google Drive</option>
-                <option value="ONEDRIVE">OneDrive</option>
-                <option value="SITE_AUTOR">Site do autor</option>
-                <option value="SITE_INSTITUCIONAL">Site institucional</option>
-                <option value="BIBLIOTECA_DIGITAL">Biblioteca digital</option>
-                <option value="OUTRO">Outro</option>
-              </select>
-            </label>
-
-            <label className="text-xs text-stone-300">
-              Formato
-              <select value={access.formato} onChange={(e) => update(index, { formato: e.target.value })} className={inputClass}>
-                <option value="IMPRESSO">Impresso</option>
-                <option value="KINDLE">Kindle</option>
-                <option value="PDF">PDF</option>
-                <option value="EPUB">EPUB</option>
-                <option value="WEB">Web</option>
-                <option value="OUTRO">Outro</option>
-              </select>
-            </label>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <label className="text-xs text-stone-300">
-              Fornecedor
-              <input value={access.fornecedor} onChange={(e) => update(index, { fornecedor: e.target.value })} className={inputClass} placeholder="Amazon, Editora Fiel..." />
-            </label>
-            <label className="text-xs text-stone-300">
-              Texto do botao
-              <input required value={access.textoBotao} onChange={(e) => update(index, { textoBotao: e.target.value })} className={inputClass} />
-            </label>
-          </div>
-
-          <label className="block text-xs text-stone-300">
-            URL
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input required type="url" value={access.url} onChange={(e) => update(index, { url: e.target.value })} className={inputClass} placeholder="https://..." />
-              {access.provedor === 'AMAZON' && (
-                <button
-                  type="button"
-                  onClick={() => onNormalizeAmazon(index)}
-                  disabled={!access.url}
-                  className="px-3 py-2 bg-stone-800 hover:bg-stone-700 disabled:opacity-50 text-amber-300 text-xs font-bold rounded-lg border border-stone-700 whitespace-nowrap flex items-center justify-center gap-1"
+              <label className="text-xs text-stone-300">
+                Finalidade
+                <select
+                  value={mode}
+                  onChange={(event) => update(index, withDetectedDetails(access, access.url, event.target.value as LinkMode))}
+                  className={inputClass}
                 >
-                  <ExternalLink className="w-3.5 h-3.5" /> Validar Amazon
-                </button>
-              )}
+                  <option value="IMPRESSO">Comprar impresso</option>
+                  <option value="KINDLE">Comprar e-book</option>
+                  <option value="GRATUITO">Acessar gratuitamente</option>
+                </select>
+              </label>
+
+              <button
+                type="button"
+                onClick={() => remove(index)}
+                className="text-red-400 hover:text-red-300 p-2"
+                aria-label={'Remover link ' + (index + 1)}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
-          </label>
 
-          {access.provedor === 'AMAZON' && (
-            <label className="block text-xs text-stone-300">
-              Tag de afiliado Amazon (opcional)
-              <input
-                value={access.affiliateTag}
-                onChange={(e) => update(index, { affiliateTag: e.target.value })}
-                className={inputClass}
-                placeholder="exemplo-20"
-              />
-            </label>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <label className="text-xs text-stone-300">
-              Fonte (opcional)
-              <input value={access.fonte} onChange={(e) => update(index, { fonte: e.target.value })} className={inputClass} />
-            </label>
-            <label className="text-xs text-stone-300">
-              Observacao publica
-              <input value={access.observacaoPublica} onChange={(e) => update(index, { observacaoPublica: e.target.value })} className={inputClass} />
-            </label>
+            {access.url ? (
+              <p className="text-[11px] text-stone-500 flex items-center gap-1.5">
+                <ExternalLink className="w-3 h-3" />
+                Botao publico: <span className="text-stone-300">{access.textoBotao}</span>
+              </p>
+            ) : null}
           </div>
-
-          <div className="flex flex-wrap gap-4 text-xs text-stone-300">
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={access.gratuito} onChange={(e) => update(index, { gratuito: e.target.checked })} />
-              Gratuito
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={access.linkAssociado} onChange={(e) => update(index, { linkAssociado: e.target.checked })} />
-              Link de associado
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={access.producaoIbo} onChange={(e) => update(index, { producaoIbo: e.target.checked })} />
-              Producao IBO
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={access.ativo} onChange={(e) => update(index, { ativo: e.target.checked })} />
-              Ativo
-            </label>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </section>
   );
 };

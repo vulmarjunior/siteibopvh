@@ -2,6 +2,15 @@
 
 ## [Em Desenvolvimento]
 
+### 2026-08-06 - Veredas IBO: formulario de cadastro simplificado
+
+- Um unico texto pastoral passa a alimentar a recomendacao e o resumo exibido nos cards.
+- Temas podem ser criados e selecionados durante o cadastro de livros e videos.
+- Links de livros agora pedem apenas URL e finalidade; destino e texto do botao sao identificados automaticamente.
+- Videos podem ser cadastrados pelo link do YouTube, com titulo, canal e miniatura preenchidos automaticamente.
+- Campos tecnicos foram movidos para opcoes avancadas ou tratados internamente.
+- Indicacao de link afiliado deixou de aparecer para o visitante.
+
 ### 2026-08-06 - Veredas IBO: busca automatica de capas
 
 - Campos ISBN-10 e ISBN-13 adicionados ao formulario administrativo de livros.

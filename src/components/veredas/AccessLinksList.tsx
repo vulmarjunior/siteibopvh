@@ -119,11 +119,7 @@ export const AccessLinksList: React.FC<AccessLinksListProps> = ({ acessos }) => 
                     <span className="text-[11px] font-medium text-stone-300">
                       {acesso.fornecedor || acesso.provedor || 'Livraria'}
                     </span>
-                    {acesso.linkAssociado && (
-                      <span className="text-[9px] text-amber-400/90 bg-amber-950/60 border border-amber-800/50 px-1.5 py-0.5 rounded">
-                        Link de associado
-                      </span>
-                    )}
+
                   </div>
                   {acesso.observacaoPublica && (
                     <p className="text-xs text-stone-400 mt-1">

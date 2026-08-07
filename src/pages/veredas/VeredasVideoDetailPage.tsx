@@ -170,16 +170,6 @@ export const VeredasVideoDetailPage: React.FC = () => {
           </section>
         )}
 
-        {/* SUMMARY / OVERVIEW */}
-        <section className="bg-stone-900 border border-stone-800 rounded-2xl p-6 sm:p-8 space-y-3">
-          <h3 className="font-serif font-bold text-stone-100 text-lg">
-            Resumo do Conteúdo
-          </h3>
-          <p className="text-sm text-stone-300 leading-relaxed whitespace-pre-line">
-            {item.resumo}
-          </p>
-        </section>
-
       </main>
 
       <VeredasFooter />

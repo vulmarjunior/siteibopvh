@@ -218,12 +218,30 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // UTILS IMPORTADORES ASSISTIDOS (/api/veredas/admin/importar/*)
   // ==========================================
 
-  router.post('/admin/importar/youtube', authMiddleware, (req, res) => {
+  router.post('/admin/importar/youtube', authMiddleware, async (req, res) => {
     const { url } = req.body;
     const parsed = parseYoutubeUrl(url);
 
     if (!parsed.isValid) {
       return res.status(400).json({ error: parsed.error || 'URL inválida' });
+    }
+
+    try {
+      const oembedResponse = await fetch(
+        'https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent(parsed.canonicalUrl!),
+        { signal: AbortSignal.timeout(5000) },
+      );
+      if (oembedResponse.ok) {
+        const metadata: any = await oembedResponse.json();
+        return res.json({
+          ...parsed,
+          title: metadata.title || null,
+          channel: metadata.author_name || null,
+          thumbnailUrl: metadata.thumbnail_url || parsed.thumbnailUrl,
+        });
+      }
+    } catch (error) {
+      console.warn('YouTube oEmbed lookup failed:', error);
     }
 
     res.json(parsed);
@@ -253,6 +271,35 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // ==========================================
   // ROTAS ADMINISTRATIVAS PROTEGIDAS (/api/veredas/admin/*)
   // ==========================================
+
+  router.post('/admin/categorias', authMiddleware, async (req, res) => {
+    const nome = typeof req.body?.nome === 'string' ? req.body.nome.trim() : '';
+    if (nome.length < 2 || nome.length > 60) {
+      return res.status(400).json({ error: 'Informe um tema entre 2 e 60 caracteres' });
+    }
+
+    const slug = generateSlug(nome);
+    const existing = await prisma.curadoriaCategoria.findFirst({
+      where: {
+        OR: [
+          { slug },
+          { nome: { equals: nome, mode: 'insensitive' } },
+        ],
+      },
+    });
+
+    if (existing) {
+      const categoria = existing.ativa
+        ? existing
+        : await prisma.curadoriaCategoria.update({ where: { id: existing.id }, data: { ativa: true } });
+      return res.json(categoria);
+    }
+
+    const categoria = await prisma.curadoriaCategoria.create({
+      data: { nome, slug, ativa: true },
+    });
+    res.status(201).json(categoria);
+  });
 
   // GET /api/veredas/admin/me (Verifica usuário atual)
   router.get('/admin/me', authMiddleware, (req: VeredasAuthenticatedRequest, res: Response) => {
