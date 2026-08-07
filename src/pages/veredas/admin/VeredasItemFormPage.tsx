@@ -45,7 +45,7 @@ export const VeredasItemFormPage: React.FC = () => {
     canal: '',
     duracaoSegundos: '',
     thumbnailUrl: '',
-    incorporavel: true,
+    incorporavel: false,
   });
 
   const [loading, setLoading] = useState(false);
@@ -113,7 +113,7 @@ export const VeredasItemFormPage: React.FC = () => {
                 canal: item.video.canal || '',
                 duracaoSegundos: item.video.duracaoSegundos ? String(item.video.duracaoSegundos) : '',
                 thumbnailUrl: item.video.thumbnailUrl || '',
-                incorporavel: item.video.incorporavel !== undefined ? Boolean(item.video.incorporavel) : true,
+                incorporavel: false,
               });
             }
           }
@@ -616,6 +616,19 @@ function BookFormInternal({
         </button>
       </div>
 
+      <label className="block text-xs font-semibold text-stone-300">
+        Link da capa <span className="font-normal text-stone-500">(opcional)</span>
+        <input
+          type="url"
+          value={data.capaUrl}
+          onChange={(event) => onChange({ ...data, capaUrl: event.target.value })}
+          placeholder="Cole aqui o link da imagem quando a busca não encontrar a capa"
+          className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs text-stone-200"
+        />
+        <span className="mt-1 block text-[11px] font-normal text-stone-500">
+          Se a busca por ISBN não encontrar a capa, cole o endereço da imagem neste campo.
+        </span>
+      </label>
       {data.capaUrl ? (
         <div className="flex items-start gap-3 rounded-lg border border-stone-800 bg-stone-950 p-3">
           <img
@@ -651,10 +664,6 @@ function BookFormInternal({
           <label className="text-xs text-stone-300">
             ASIN Amazon
             <input value={data.asin} onChange={(event) => onChange({ ...data, asin: event.target.value })} className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs" />
-          </label>
-          <label className="text-xs text-stone-300">
-            URL da capa
-            <input type="url" value={data.capaUrl} onChange={(event) => onChange({ ...data, capaUrl: event.target.value })} className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs" />
           </label>
         </div>
       ) : null}

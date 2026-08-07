@@ -385,7 +385,7 @@ export class ItemsService {
           canal: data.video?.canal || null,
           duracaoSegundos: data.video?.duracaoSegundos ? Number(data.video.duracaoSegundos) : null,
           thumbnailUrl: data.video?.thumbnailUrl || null,
-          incorporavel: data.video?.incorporavel !== undefined ? Boolean(data.video.incorporavel) : true,
+          incorporavel: false,
           participantes: {
             create: (data.video?.pessoaIds || []).map((pessoaId: number, idx: number) => ({
               pessoaId: Number(pessoaId),
@@ -481,7 +481,7 @@ export class ItemsService {
             canal: data.video?.canal || null,
             duracaoSegundos: data.video?.duracaoSegundos ? Number(data.video.duracaoSegundos) : null,
             thumbnailUrl: data.video?.thumbnailUrl || null,
-            incorporavel: data.video?.incorporavel !== false,
+            incorporavel: false,
           },
         });
       }
