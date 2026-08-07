@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Sparkles, AlertCircle, ShieldCheck, ArrowLeft, ExternalLink, Play } from 'lucide-react';
+import { Film, Sparkles, AlertCircle, ShieldCheck, ArrowLeft, ExternalLink, Play } from 'lucide-react';
 import { VeredasNavbar } from '../../components/veredas/VeredasNavbar';
 import { VeredasFooter } from '../../components/veredas/VeredasFooter';
 import { SharePageButton } from '../../components/veredas/SharePageButton';
@@ -63,6 +63,7 @@ export const VeredasVideoDetailPage: React.FC = () => {
   }
 
   const video = item.video || {};
+  const youtubeId = video.youtubeId;
   const urlOriginal = video.urlOriginal;
   const canal = video.canal;
   const participantes = video.participantes || [];
@@ -87,32 +88,44 @@ export const VeredasVideoDetailPage: React.FC = () => {
 
         {/* Video Player or Fallback Container */}
         <div className="bg-stone-900 border border-stone-800 rounded-2xl overflow-hidden shadow-2xl">
-          <div className="relative aspect-video bg-stone-950 flex flex-col items-center justify-center p-6 text-center space-y-4">
-            {video.thumbnailUrl ? (
-              <img
-                src={video.thumbnailUrl}
-                alt={item.titulo}
-                className="absolute inset-0 w-full h-full object-cover opacity-25"
+          {video.incorporavel && youtubeId ? (
+            <div className="relative aspect-video bg-black">
+              <iframe
+                src={`https://www.youtube.com/embed/${youtubeId}`}
+                title={item.titulo}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full border-0"
               />
-            ) : null}
-            <div className="relative z-10 space-y-3">
-              <Play className="w-16 h-16 text-amber-500 mx-auto" />
-              <h3 className="font-serif text-lg font-bold text-stone-200">
-                Assistir diretamente no YouTube
-              </h3>
-              <p className="text-xs text-stone-400 max-w-md">
-                O vídeo será aberto no YouTube. Para compartilhar esta indicação, use o botão acima e envie a página do Veredas IBO.
-              </p>
-              <a
-                href={urlOriginal}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-bold text-sm rounded-full transition-colors shadow-lg"
-              >
-                Assistir no YouTube <ExternalLink className="w-4 h-4" />
-              </a>
             </div>
-          </div>
+          ) : (
+            <div className="relative aspect-video bg-stone-950 flex flex-col items-center justify-center p-6 text-center space-y-4">
+              {video.thumbnailUrl && (
+                <img
+                  src={video.thumbnailUrl}
+                  alt={item.titulo}
+                  className="absolute inset-0 w-full h-full object-cover opacity-20"
+                />
+              )}
+              <div className="relative z-10 space-y-3">
+                <Play className="w-16 h-16 text-amber-500 mx-auto" />
+                <h3 className="font-serif text-lg font-bold text-stone-200">
+                  Assistir diretamente no YouTube
+                </h3>
+                <p className="text-xs text-stone-400 max-w-md">
+                  Este vídeo possui restrição de incorporação em sites externos ou deve ser assistido diretamente na página original.
+                </p>
+                <a
+                  href={urlOriginal}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-bold text-sm rounded-full transition-colors shadow-lg"
+                >
+                  Abrir no YouTube <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+          )}
 
           {/* Title & Metadata */}
           <div className="p-6 space-y-3 border-t border-stone-800">
