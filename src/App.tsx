@@ -16,6 +16,7 @@ const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage')
 const AdminModulesPage = lazy(() => import('./pages/admin/AdminModulesPage'));
 const AdminSeriesPage = lazy(() => import('./pages/admin/AdminSeriesManagementPage'));
 const AdminSeriesEditorPage = lazy(() => import('./pages/admin/AdminSeriesEditorModalPage'));
+const AdminSeriesPreviewPage = lazy(() => import('./pages/admin/AdminSeriesPreviewPage'));
 const AdminSeriesEmailPage = lazy(() => import('./pages/admin/AdminSeriesEmailPage'));
 const AdminProtectedRoute = lazy(() => import('./components/admin/AdminProtectedRoute'));
 
@@ -54,6 +55,7 @@ const App: React.FC = () => (
           <Route path="/admin/modulos" element={<AdminModulesPage />} />
           <Route path="/admin/series" element={<AdminSeriesPage />} />
           <Route path="/admin/series/:id" element={<AdminSeriesEditorPage />} />
+          <Route path="/admin/series/:id/preview" element={<AdminSeriesPreviewPage />} />
           <Route path="/admin/emails" element={<AdminSeriesEmailPage />} />
           <Route path="/admin/relogio" element={<AdminPrayerPage />} />
           <Route path="/admin/ebf" element={<AdminEbfPage />} />
