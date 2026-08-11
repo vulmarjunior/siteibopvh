@@ -50,7 +50,9 @@ npm run build
 - 96 testes aprovados em 15 arquivos.
 - ESLint aprovado sem avisos.
 - Build TypeScript/Vite aprovado.
-- Central Administrativa concluída localmente na branch `codex/central-etapa-0` e aguardando Preview na Vercel.
+- Central Administrativa concluída na branch `codex/central-etapa-0`, homologada na Preview da Vercel e reunida na PR #12.
+- Salvamento e preview editorial das séries homologados; a série em rascunho pode ser visualizada sem publicação pública.
+- PR #12 está tecnicamente apta para revisão e merge, mas produção ainda não recebeu as mudanças.
 - Produção permanece na `main`, sem receber ainda as mudanças da Central.
 - Teste controlado do Resend e procedimentos operacionais de banco continuam pendentes.
 
