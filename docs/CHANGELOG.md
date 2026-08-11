@@ -2,6 +2,19 @@
 
 ## [Em Desenvolvimento]
 
+### 2026-08-11 - Central Administrativa IBO
+
+- Central unificada com autenticação Supabase e permissões administrativas.
+- Ciclo de vida administrável para módulos e edições do portal.
+- Plataforma editorial de séries, painel semanal, preview e publicação agendada.
+- Parousia migrada para a API editorial, sem dependência operacional do JSON histórico.
+- Leitura e impressão de sermões com rodapé editorial dinâmico.
+- Veredas, Relógio de Oração e histórico da EBF incorporados à Central.
+- Painéis e autenticações administrativas legadas removidos.
+- Rotas administrativas protegidas por sessão, auditoria e tratamento seguro de dados pessoais.
+- Rotinas e documentação de homologação, backup, restauração e limites operacionais adicionadas.
+- Envio por Resend permanece pendente de teste controlado; não bloqueia a homologação das demais funções.
+
 ### 2026-08-06 - Registro de continuidade
 
 - Estado de hospedagem, GitHub, Vercel, DNS e Veredas consolidado em docs/CONTINUIDADE.md.

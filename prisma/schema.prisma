@@ -42,6 +42,8 @@ model PrayerTheme {
 
 model EbfRegistration {
   id            Int       @id @default(autoincrement())
+  editionId     String
+  edition       SiteEdition @relation(fields: [editionId], references: [id], onDelete: Restrict)
   childName     String
   age           Int
   colorGroup    String
@@ -53,6 +55,7 @@ model EbfRegistration {
 
   @@index([colorGroup])
   @@index([createdAt])
+  @@index([editionId, createdAt])
 }
 
 model ReadingSubscriber {
@@ -63,6 +66,263 @@ model ReadingSubscriber {
   active         Boolean    @default(true)
   subscribedAt   DateTime   @default(now())
   unsubscribedAt DateTime?
+  deliveries     EditorialEmailDelivery[]
+}
+
+enum SiteModuleStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  ENDED
+  ARCHIVED
+}
+
+enum SiteDirectAccessPolicy {
+  AVAILABLE
+  CLOSING_PAGE
+  UNAVAILABLE
+}
+
+model SiteModule {
+  id                   String                   @id
+  name                 String
+  path                 String                   @unique
+  status               SiteModuleStatus         @default(DRAFT)
+  visibleOnHome        Boolean                  @default(false)
+  visibleInNavigation  Boolean                  @default(false)
+  directAccess         SiteDirectAccessPolicy   @default(UNAVAILABLE)
+  publicOperationsOpen Boolean                  @default(false)
+  permanent            Boolean                  @default(false)
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
+  editions             SiteEdition[]
+
+  @@index([status])
+  @@index([visibleOnHome, status])
+  @@index([visibleInNavigation, status])
+}
+
+model SiteEdition {
+  id        String           @id @default(cuid())
+  moduleId  String
+  module    SiteModule       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  slug      String
+  name      String
+  year      Int?
+  status    SiteModuleStatus @default(DRAFT)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  metadata  Json?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  ebfRegistrations EbfRegistration[]
+
+  @@unique([moduleId, slug])
+  @@index([moduleId, status])
+  @@index([status, startsAt, endsAt])
+}
+
+enum EditorialSeriesStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ENDED
+  ARCHIVED
+}
+
+enum EditorialMessageStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EditorialMediaType {
+  VIDEO
+  AUDIO
+  IMAGE
+}
+
+enum EditorialEmailRunStatus {
+  RUNNING
+  COMPLETED
+  PARTIAL
+  FAILED
+}
+
+enum EditorialEmailDeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+model EditorialSeries {
+  id                  String                @id @default(cuid())
+  slug                String                @unique
+  title               String
+  subtitle            String?
+  description         String?
+  status              EditorialSeriesStatus @default(DRAFT)
+  startsAt            DateTime?
+  endsAt              DateTime?
+  publishedAt         DateTime?
+  defaultThumbnailUrl String?
+  emailEnabled        Boolean               @default(false)
+  capabilities        Json                  @default("{}")
+  customFields        Json                  @default("{}")
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  sections            EditorialSection[]
+  messages            EditorialMessage[]
+  emailRuns           EditorialEmailRun[]
+
+  @@index([status, publishedAt])
+  @@index([startsAt, endsAt])
+}
+
+model EditorialSection {
+  id        String            @id @default(cuid())
+  seriesId  String
+  series    EditorialSeries   @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  slug      String
+  title     String
+  order     Int               @default(0)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  messages  EditorialMessage[]
+
+  @@unique([seriesId, slug])
+  @@index([seriesId, order])
+}
+
+model EditorialMessage {
+  id              String                 @id @default(cuid())
+  seriesId        String
+  series          EditorialSeries        @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  sectionId       String?
+  section         EditorialSection?      @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  slug            String
+  order           Int
+  title           String
+  subtitle        String?
+  scheduledFor    DateTime
+  biblicalText    String
+  speaker         String?
+  summary         String?
+  description     String?
+  contentHtml     String?
+  sourceSystem    String?
+  externalId      String?
+  lastSyncedAt    DateTime?
+  status          EditorialMessageStatus @default(DRAFT)
+  publishedAt     DateTime?
+  customFields    Json                    @default("{}")
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  media           EditorialMedia[]
+  materials       EditorialMaterial[]
+  readingPlan     EditorialReadingPlan?
+  emailRuns       EditorialEmailRun[]
+
+  @@unique([seriesId, slug])
+  @@unique([seriesId, order])
+  @@unique([sourceSystem, externalId])
+  @@index([seriesId, status, scheduledFor])
+  @@index([sectionId, order])
+}
+
+model EditorialEmailRun {
+  id          String                  @id @default(cuid())
+  seriesId    String
+  series      EditorialSeries         @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  messageId   String
+  message     EditorialMessage        @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  weekStart   DateTime
+  status      EditorialEmailRunStatus @default(RUNNING)
+  recipientCount Int                  @default(0)
+  sentCount   Int                     @default(0)
+  failedCount Int                     @default(0)
+  startedAt   DateTime                @default(now())
+  completedAt DateTime?
+  error       String?
+  deliveries EditorialEmailDelivery[]
+
+  @@unique([seriesId, messageId, weekStart])
+  @@index([seriesId, startedAt])
+  @@index([messageId])
+}
+
+model EditorialEmailDelivery {
+  id           String                       @id @default(cuid())
+  runId        String
+  run          EditorialEmailRun            @relation(fields: [runId], references: [id], onDelete: Cascade)
+  subscriberId Int
+  subscriber   ReadingSubscriber            @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  status       EditorialEmailDeliveryStatus @default(PENDING)
+  providerId   String?
+  error        String?
+  sentAt       DateTime?
+  createdAt    DateTime                     @default(now())
+  updatedAt    DateTime                     @updatedAt
+
+  @@unique([runId, subscriberId])
+  @@index([subscriberId, createdAt])
+  @@index([runId, status])
+}
+
+model EditorialMedia {
+  id           String             @id @default(cuid())
+  messageId    String
+  message      EditorialMessage   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  type         EditorialMediaType
+  title        String?
+  url          String
+  provider     String?
+  externalId   String?
+  thumbnailUrl String?
+  order        Int                @default(0)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([messageId, type, order])
+}
+
+model EditorialMaterial {
+  id        String           @id @default(cuid())
+  messageId String
+  message   EditorialMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  title     String
+  type      String
+  url       String
+  order     Int              @default(0)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([messageId, order])
+}
+
+model EditorialReadingPlan {
+  id        String                 @id @default(cuid())
+  messageId String                 @unique
+  message   EditorialMessage       @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  theme     String
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+  days      EditorialReadingDay[]
+}
+
+model EditorialReadingDay {
+  id          String               @id @default(cuid())
+  planId      String
+  plan        EditorialReadingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  order       Int
+  dayLabel    String
+  biblicalText String
+  description String?
+
+  @@unique([planId, order])
+  @@index([planId, order])
 }
 
 // ==========================================

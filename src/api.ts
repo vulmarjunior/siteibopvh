@@ -8,11 +8,21 @@ import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import "dayjs/locale/pt-br.js";
 import { createVeredasRouter } from "./api/veredas/router.js";
+import { createAdminAuthRouter } from "./api/admin/auth.js";
+import { createAdminModulesRouter, createPublicModulesRouter, isModulePublicOperationOpen } from "./api/admin/modules.js";
+import { createEditorialSeriesRouter } from "./api/editorial.js";
+import { createAdminSeriesRouter } from "./api/admin/series.js";
+import { createAdminSeriesEmailRouter } from "./api/admin/seriesEmail.js";
+import { createAdminPrayerRouter } from "./api/admin/prayer.js";
+import { createAdminEbfRouter } from "./api/admin/ebf.js";
+import { createPublicEbfRouter } from "./api/public/ebf.js";
+import { createPublicParousiaRouter } from "./api/public/parousia.js";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 const TZ = "America/Porto_Velho";
+const escapeHtml = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]!);
 
 let prismaClient: PrismaClient | null = null;
 
@@ -47,6 +57,16 @@ function getResend() {
 }
 
 export const apiRouter = express.Router();
+apiRouter.use("/admin/auth", createAdminAuthRouter(prisma));
+apiRouter.use("/admin/modules", createAdminModulesRouter(prisma));
+apiRouter.use("/admin/series", createAdminSeriesRouter(prisma));
+apiRouter.use("/admin/series-email", createAdminSeriesEmailRouter(prisma));
+apiRouter.use("/admin/prayer", createAdminPrayerRouter(prisma));
+apiRouter.use("/admin/ebf", createAdminEbfRouter(prisma));
+apiRouter.use("/ebf", createPublicEbfRouter(prisma, getResend));
+apiRouter.use("/parousia", createPublicParousiaRouter(prisma, getResend));
+apiRouter.use("/modules", createPublicModulesRouter(prisma));
+apiRouter.use("/series", createEditorialSeriesRouter(prisma));
 
 export async function seed() {
   console.log("Starting database seeding check...");
@@ -104,53 +124,7 @@ apiRouter.get("/youtube-proxy", async (req, res) => {
 });
 
 apiRouter.get("/health", (req, res) => {
-  res.json({ status: "ok", message: "Relógio de Oração API is running" });
-});
-
-apiRouter.get("/debug", async (req, res) => {
-  try {
-    await prisma.$connect();
-    const themesCount = await prisma.prayerTheme.count();
-    const maskUrl = (url?: string) => {
-      if (!url) return "not set";
-      try {
-        const parsed = new URL(url);
-        return `${parsed.protocol}//${parsed.username}:****@${parsed.host}${parsed.pathname}${parsed.search}`;
-      } catch {
-        return "invalid format";
-      }
-    };
-
-    res.json({ 
-      status: "connected", 
-      themesCount,
-      env: {
-        dbUrl: maskUrl(process.env.DATABASE_URL),
-        directUrl: maskUrl(process.env.DIRECT_URL),
-        nodeEnv: process.env.NODE_ENV
-      }
-    });
-  } catch (error: any) {
-    res.status(500).json({ 
-      status: "error", 
-      message: error.message,
-      code: error.code,
-      meta: error.meta
-    });
-  }
-});
-
-apiRouter.post("/admin/seed", async (req, res) => {
-  const { password } = req.body;
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "Não autorizado" });
-  }
-  try {
-    await seed();
-    res.json({ success: true, message: "Database seeded successfully" });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
+  res.json({ status: "ok" });
 });
 
 // Get slots for a specific date
@@ -191,6 +165,9 @@ apiRouter.get("/relogio/slots", async (req, res) => {
 
 // Create a reservation
 apiRouter.post("/relogio/reserve", async (req, res) => {
+  if (!(await isModulePublicOperationOpen(prisma, "relogio"))) {
+    return res.status(410).json({ error: "As reservas do Relógio de Oração estão fechadas neste momento." });
+  }
   const { date, timeStart, timeEnd, name, email, prayerThemes, personalRequest, repeatDays = 1 } = req.body;
 
   if (!date || !timeStart || !timeEnd || !name || !email) {
@@ -325,12 +302,12 @@ apiRouter.post("/relogio/reserve", async (req, res) => {
         const formattedDate = dayjs.tz(reservations[0].date, TZ).locale('pt-br').format('dddd, D [de] MMMM [de] YYYY');
         const diaDaSemana = dayjs.tz(reservations[0].date, TZ).locale('pt-br').format('dddd');
 
-        const themesHtml = (prayerThemes || []).map((t: string) => `<li>✦ <strong>${t}</strong></li>`).join("");
+        const themesHtml = (prayerThemes || []).map((t: string) => `<li>✦ <strong>${escapeHtml(t)}</strong></li>`).join("");
         
         const personalRequestHtml = personalRequest ? `
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
             <h3 style="color: #111; font-size: 16px; margin-bottom: 10px;">💬 SEU PEDIDO PESSOAL</h3>
-            <p style="font-style: italic; color: #555;">"${personalRequest}"</p>
+            <p style="font-style: italic; color: #555;">"${escapeHtml(personalRequest)}"</p>
             <p style="font-size: 14px; color: #666;">Que o Senhor ouça e responda segundo a Sua perfeita vontade.</p>
           </div>
         ` : "";
@@ -347,7 +324,7 @@ apiRouter.post("/relogio/reserve", async (req, res) => {
               </div>
               
               <div style="padding: 40px 30px; line-height: 1.6;">
-                <p style="font-size: 18px; margin-bottom: 20px;">Querido(a) <strong>${name.split(" ")[0]}</strong>,</p>
+                <p style="font-size: 18px; margin-bottom: 20px;">Querido(a) <strong>${escapeHtml(name.split(" ")[0])}</strong>,</p>
                 
                 <p style="font-style: italic; color: #666; margin-bottom: 20px;">"Não cessamos de orar por vós." — Colossenses 1.9</p>
                 
@@ -387,7 +364,7 @@ apiRouter.post("/relogio/reserve", async (req, res) => {
 
                 <div style="margin-top: 30px; padding: 25px; background-color: #fffbeb; border-radius: 12px; border: 1px solid #fef3c7;">
                   <h3 style="color: #92400e; font-size: 16px; margin-top: 0; margin-bottom: 10px;">📖 PALAVRA DE ENCORAJAMENTO</h3>
-                  <div style="white-space: pre-wrap; color: #92400e; font-size: 15px;">${encouragementWord}</div>
+                  <div style="white-space: pre-wrap; color: #92400e; font-size: 15px;">${escapeHtml(encouragementWord)}</div>
                 </div>
 
                 <div style="margin-top: 40px; text-align: center; border-top: 1px solid #eee; padding-top: 30px;">
@@ -563,100 +540,6 @@ apiRouter.get("/relogio/stats", async (req, res) => {
   }
 });
 
-// Admin: Get reservations
-apiRouter.get("/admin/reservations", async (req, res) => {
-  const { date, password } = req.query;
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "Não autorizado" });
-  }
-
-  try {
-    const reservations = await prisma.reservation.findMany({
-      where: {
-        date: date as string,
-        cancelledAt: null,
-      },
-      orderBy: { timeStart: "asc" },
-    });
-    res.json(reservations);
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao buscar reservas" });
-  }
-});
-
-// Admin: Update reservation
-apiRouter.post("/admin/update/:id", async (req, res) => {
-  const { id } = req.params;
-  const { name, email, prayerThemes, personalRequest, password } = req.body;
-
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "Não autorizado" });
-  }
-
-  try {
-    await prisma.reservation.update({
-      where: { id: parseInt(id) },
-      data: { 
-        name, 
-        email, 
-        prayerThemes: JSON.stringify(prayerThemes || []),
-        personalRequest
-      },
-    });
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao atualizar reserva" });
-  }
-});
-
-// Admin: Cancel reservation
-apiRouter.post("/admin/cancel/:id", async (req, res) => {
-  const { id } = req.params;
-  const { password } = req.body;
-
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "Não autorizado" });
-  }
-
-  try {
-    console.log(`Admin attempting to delete reservation ID: ${id}`);
-    await prisma.reservation.delete({
-      where: { id: parseInt(id) },
-    });
-    console.log(`Reservation ID ${id} deleted successfully`);
-    res.json({ success: true });
-  } catch (error) {
-    console.error("Error deleting reservation:", error);
-    res.status(500).json({ error: "Erro ao excluir reserva" });
-  }
-});
-
-// Admin: Export CSV
-apiRouter.get("/admin/export/csv", async (req, res) => {
-  const { password } = req.query;
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).send("Não autorizado");
-  }
-
-  try {
-    const reservations = await prisma.reservation.findMany({
-      where: { cancelledAt: null },
-      orderBy: [{ date: "desc" }, { timeStart: "asc" }],
-    });
-
-    let csv = "ID,Data,Inicio,Fim,Nome,Email,Temas,ReservadoEm\n";
-    reservations.forEach((r) => {
-      csv += `${r.id},${r.date},${r.timeStart},${r.timeEnd},"${r.name}","${r.email}","${(r.prayerThemes || "").replace(/"/g, '""')}",${r.reservedAt.toISOString()}\n`;
-    });
-
-    res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", "attachment; filename=reservas_relogio.csv");
-    res.status(200).send(csv);
-  } catch (error) {
-    res.status(500).send("Erro ao exportar CSV");
-  }
-});
-
 // Public: Get active prayer themes
 apiRouter.get("/relogio/themes", async (req, res) => {
   try {
@@ -670,366 +553,4 @@ apiRouter.get("/relogio/themes", async (req, res) => {
   }
 });
 
-// Admin: Get all config
-apiRouter.get("/admin/config", async (req, res) => {
-  const { password } = req.query;
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "Não autorizado" });
-  }
-  try {
-    const configs = await prisma.config.findMany();
-    res.json(configs);
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao buscar configurações" });
-  }
-});
-
-// Admin: Update config
-apiRouter.post("/admin/config", async (req, res) => {
-  const { key, value, password } = req.body;
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "Não autorizado" });
-  }
-  try {
-    await prisma.config.upsert({
-      where: { key },
-      update: { value },
-      create: { key, value },
-    });
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao atualizar configuração" });
-  }
-});
-
-// Admin: Get all themes
-apiRouter.get("/admin/themes", async (req, res) => {
-  const { password } = req.query;
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "Não autorizado" });
-  }
-  try {
-    const themes = await prisma.prayerTheme.findMany({
-      orderBy: { order: "asc" },
-    });
-    res.json(themes);
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao buscar temas" });
-  }
-});
-
-// Admin: Create/Update theme
-apiRouter.post("/admin/themes", async (req, res) => {
-  const { id, label, active, order, password } = req.body;
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "Não autorizado" });
-  }
-  try {
-    if (id) {
-      await prisma.prayerTheme.update({
-        where: { id },
-        data: { label, active, order },
-      });
-    } else {
-      await prisma.prayerTheme.create({
-        data: { label, active, order: order || 0 },
-      });
-    }
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao salvar tema" });
-  }
-});
-
-// Admin: Delete theme
-apiRouter.delete("/admin/themes/:id", async (req, res) => {
-  const { id } = req.params;
-  const { password } = req.query;
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "Não autorizado" });
-  }
-  try {
-    await prisma.prayerTheme.delete({
-      where: { id: parseInt(id) },
-    });
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao excluir tema" });
-  }
-});
-
-// Admin: Test Email
-apiRouter.post("/admin/test-email", async (req, res) => {
-  const { email, password } = req.body;
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "Não autorizado" });
-  }
-
-  const resend = getResend();
-  if (!resend) {
-    return res.status(400).json({ error: "RESEND_API_KEY não configurada no ambiente." });
-  }
-
-  try {
-    await resend.emails.send({
-      from: "IBO Relógio <contato@ibopvh.com.br>",
-      to: email,
-      subject: "Teste de Configuração — Relógio de Oração IBO",
-      html: `
-        <h1>Teste bem-sucedido!</h1>
-        <p>Se você está lendo isso, a integração com o Resend está funcionando corretamente.</p>
-        <p><strong>Atenção:</strong> O remetente configurado é <strong>contato@ibopvh.com.br</strong>.</p>
-      `,
-    });
-    res.json({ success: true });
-  } catch (error: any) {
-    console.error("Error sending test email:", error);
-    res.status(500).json({ error: error.message || "Erro ao enviar e-mail de teste." });
-  }
-});
-
-const ebfColor = (age: number) => age <= 5 ? "Amarelo" : age <= 7 ? "Verde" : age <= 9 ? "Azul" : "Vermelho";
-
-apiRouter.post("/ebf/registrations", async (req, res) => {
-  const childName = String(req.body.childName || "").trim();
-  const guardianName = String(req.body.guardianName || "").trim();
-  const phone = String(req.body.phone || "").replace(/\D/g, "");
-  const age = Number(req.body.age);
-  const visitor = req.body.visitor;
-  if (childName.length < 3 || guardianName.length < 3 || !Number.isInteger(age) || age < 3 || age > 12 || phone.length < 10 || phone.length > 11 || typeof visitor !== "boolean") {
-    return res.status(400).json({ error: "Revise os dados informados." });
-  }
-  try {
-    const colorGroup = ebfColor(age);
-    const registration = await prisma.ebfRegistration.create({ data: { childName, age, colorGroup, guardianName, phone, visitor } });
-    const resend = getResend();
-    if (resend) {
-      try {
-        await resend.emails.send({
-          from: "EBF IBO <contato@ibopvh.com.br>", to: "contato@ibopvh.com.br",
-          subject: `Nova inscrição EBF — ${childName}`,
-          html: `<h2>Nova inscrição — EBF 2026</h2><p><b>Criança:</b> ${childName}</p><p><b>Idade:</b> ${age} anos</p><p><b>Grupo:</b> ${colorGroup}</p><p><b>Responsável:</b> ${guardianName}</p><p><b>Telefone:</b> ${phone}</p><p><b>Visitante:</b> ${visitor ? "Sim" : "Não"}</p>`
-        });
-      } catch (emailError) { console.error("EBF email error:", emailError); }
-    }
-    res.status(201).json({ success: true, id: registration.id, colorGroup });
-  } catch (error) { console.error("EBF registration error:", error); res.status(500).json({ error: "Não foi possível concluir a inscrição." }); }
-});
-
-apiRouter.get("/ebf/admin/registrations", async (req, res) => {
-  if (req.query.password !== process.env.ADMIN_PASSWORD) return res.status(401).json({ error: "Não autorizado" });
-  const registrations = await prisma.ebfRegistration.findMany({ where: { cancelledAt: null }, orderBy: [{ colorGroup: "asc" }, { childName: "asc" }] });
-  res.json(registrations);
-});
-
-apiRouter.delete("/ebf/admin/registrations/:id", async (req, res) => {
-  if (req.query.password !== process.env.ADMIN_PASSWORD) return res.status(401).json({ error: "Não autorizado" });
-  await prisma.ebfRegistration.update({ where: { id: Number(req.params.id) }, data: { cancelledAt: new Date() } });
-  res.json({ success: true });
-});
-
-apiRouter.get("/ebf/admin/export.csv", async (req, res) => {
-  if (req.query.password !== process.env.ADMIN_PASSWORD) return res.status(401).send("Não autorizado");
-  const rows = await prisma.ebfRegistration.findMany({ where: { cancelledAt: null }, orderBy: { childName: "asc" } });
-  const escape = (v: unknown) => `"${String(v).replace(/"/g, '""')}"`;
-  const csv = ["Nome,Idade,Grupo,Responsável,Telefone,Visitante,Inscrição", ...rows.map(r => [r.childName,r.age,r.colorGroup,r.guardianName,r.phone,r.visitor ? "Sim":"Não",r.createdAt.toISOString()].map(escape).join(","))].join("\n");
-  res.setHeader("Content-Type", "text/csv; charset=utf-8"); res.setHeader("Content-Disposition", "attachment; filename=inscricoes-ebf-2026.csv"); res.send("\uFEFF" + csv);
-});
-
-// ── Parousia: Inscrição para leitura semanal por e-mail ──
-
-async function sendWelcomeEmail(email: string, subscriberToken: string) {
-  try {
-    const { buildWeeklyReadingEmail } = await import("./lib/email-templates/weekly-reading");
-    const sermoes = await import("./data/sermoes.json").then((m) => m.default);
-
-    const hoje = new Date();
-    const sermoeVigente = sermoes
-      .filter((s: any) => s.leituras && s.leituras.dias.length > 0 && new Date(`${s.data}T00:00:00`) <= hoje)
-      .sort((a: any, b: any) => new Date(b.data).getTime() - new Date(a.data).getTime())[0];
-
-    if (!sermoeVigente || !sermoeVigente.leituras) return;
-
-    const siteUrl = process.env.APP_URL || "https://www.ibopvh.com.br";
-    const unsubscribeUrl = `${siteUrl}/api/parousia/unsubscribe?token=${subscriberToken}`;
-
-    const html = buildWeeklyReadingEmail({
-      sermoeNumero: sermoeVigente.numero,
-      sermoeTitulo: sermoeVigente.titulo,
-      tema: sermoeVigente.leituras.tema,
-      dias: sermoeVigente.leituras.dias,
-      unsubscribeUrl,
-      siteUrl,
-    });
-
-    const resend = getResend();
-    if (!resend) return;
-
-    await resend.emails.send({
-      from: "IBO Parousia <contato@ibopvh.com.br>",
-      to: email,
-      subject: `Leitura da Semana — #${sermoeVigente.numero} ${sermoeVigente.titulo}`,
-      html,
-    });
-
-    console.log(`[parousia] Welcome email sent to ${email} (sermon #${sermoeVigente.numero})`);
-  } catch (err) {
-    console.error(`[parousia] Failed to send welcome email to ${email}:`, err);
-  }
-}
-
-apiRouter.post("/parousia/subscribe", async (req, res) => {
-  const email = String(req.body.email || "").trim().toLowerCase();
-  const name = req.body.name ? String(req.body.name).trim() : null;
-
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return res.status(400).json({ error: "E-mail inválido." });
-  }
-
-  try {
-    const existing = await prisma.readingSubscriber.findUnique({ where: { email } });
-
-    if (existing && existing.active) {
-      return res.json({ success: true, message: "Este e-mail já está inscrito." });
-    }
-
-    let subscriberToken: string;
-
-    if (existing && !existing.active) {
-      await prisma.readingSubscriber.update({
-        where: { email },
-        data: { active: true, unsubscribedAt: null, name: name || existing.name },
-      });
-      subscriberToken = existing.token;
-      res.json({ success: true, message: "Inscrição reativada com sucesso!" });
-    } else {
-      const token = crypto.randomBytes(32).toString("hex");
-      await prisma.readingSubscriber.create({
-        data: { email, name, token },
-      });
-      subscriberToken = token;
-      res.json({ success: true, message: "Inscrição realizada com sucesso!" });
-    }
-
-    sendWelcomeEmail(email, subscriberToken).catch((err) => {
-      console.error("Error sending welcome email:", err);
-    });
-  } catch (error) {
-    console.error("Error subscribing:", error);
-    res.status(500).json({ error: "Não foi possível concluir a inscrição." });
-  }
-});
-
-apiRouter.get("/parousia/unsubscribe", async (req, res) => {
-  const token = String(req.query.token || "");
-  if (!token) {
-    return res.status(400).send("<html><body><h1>Token inválido</h1></body></html>");
-  }
-
-  try {
-    const subscriber = await prisma.readingSubscriber.findUnique({ where: { token } });
-    if (!subscriber) {
-      return res.status(404).send("<html><body><h1>Assinatura não encontrada</h1></body></html>");
-    }
-
-    await prisma.readingSubscriber.update({
-      where: { token },
-      data: { active: false, unsubscribedAt: new Date() },
-    });
-
-    res.send(`<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Inscrição cancelada</title>
-<style>body{font-family:sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#0f1115;color:#d4af37;}
-.box{text-align:center;padding:3rem;}.box h1{font-size:1.5rem;margin-bottom:1rem;}.box p{color:#9ca3af;font-size:0.9rem;}</style>
-</head><body><div class="box"><h1>Inscrição cancelada</h1><p>Você não receberá mais e-mails com as leituras semanais.</p><p><a href="/da-ascensao-a-parousia" style="color:#d4af37;">Voltar ao hotsite</a></p></div></body></html>`);
-  } catch (error) {
-    console.error("Error unsubscribing:", error);
-    res.status(500).send("<html><body><h1>Erro ao cancelar inscrição</h1></body></html>");
-  }
-});
-
-apiRouter.get("/parousia/today", async (_req, res) => {
-  try {
-    const sermoes = await import("./data/sermoes.json").then(m => m.default);
-    const hoje = new Date();
-    const diaSemana = hoje.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
-
-    // Encontrar o sermão mais recente cuja data <= hoje
-    const sermoeVigente = sermoes
-      .filter((s: any) => new Date(`${s.data}T00:00:00`) <= hoje)
-      .sort((a: any, b: any) => new Date(b.data).getTime() - new Date(a.data).getTime())[0];
-
-    if (!sermoeVigente || !sermoeVigente.leituras) {
-      return res.json({ message: "Nenhuma leitura disponível para hoje." });
-    }
-
-    const diasSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-    const diaAtual = diasSemana[diaSemana];
-    const leitura = sermoeVigente.leituras.dias.find((d: any) => d.dia === diaAtual);
-
-    res.json({
-      sermoe: { numero: sermoeVigente.numero, titulo: sermoeVigente.titulo },
-      tema: sermoeVigente.leituras.tema,
-      dia: diaAtual,
-      leitura: leitura || null,
-    });
-  } catch (error) {
-    console.error("Error fetching today reading:", error);
-    res.status(500).json({ error: "Erro ao buscar leitura do dia." });
-  }
-});
-
-// ── Parousia: Teste de envio de e-mail semanal ──
-
-apiRouter.post("/parousia/test-email", async (req, res) => {
-  if (req.body.password !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "Não autorizado" });
-  }
-
-  const { email } = req.body;
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return res.status(400).json({ error: "E-mail inválido." });
-  }
-
-  try {
-    const { buildWeeklyReadingEmail } = await import("./lib/email-templates/weekly-reading");
-    const sermoes = await import("./data/sermoes.json").then(m => m.default);
-
-    // Encontrar sermão vigente: o mais recente cuja data já passou e tem leituras
-    const hoje = new Date();
-    const sermoeVigente = sermoes
-      .filter((s: any) => s.leituras && s.leituras.dias.length > 0 && new Date(`${s.data}T00:00:00`) <= hoje)
-      .sort((a: any, b: any) => new Date(b.data).getTime() - new Date(a.data).getTime())[0];
-
-    if (!sermoeVigente || !sermoeVigente.leituras) {
-      return res.status(404).json({ error: "Nenhum sermão com leituras encontrado." });
-    }
-
-    const siteUrl = process.env.APP_URL || "https://www.ibopvh.com.br";
-    const html = buildWeeklyReadingEmail({
-      sermoeNumero: sermoeVigente.numero,
-      sermoeTitulo: sermoeVigente.titulo,
-      tema: sermoeVigente.leituras.tema,
-      dias: sermoeVigente.leituras.dias,
-      unsubscribeUrl: "#teste",
-      siteUrl,
-    });
-
-    const resend = getResend();
-    await resend.emails.send({
-      from: "IBO Parousia <contato@ibopvh.com.br>",
-      to: email,
-      subject: `[TESTE] Leitura da Semana — #${sermoeVigente.numero} ${sermoeVigente.titulo}`,
-      html,
-    });
-
-    res.json({
-      success: true,
-      message: `E-mail de teste enviado para ${email}`,
-      sermoe: `#${sermoeVigente.numero} ${sermoeVigente.titulo}`,
-    });
-  } catch (error: any) {
-    console.error("Error sending test email:", error);
-    res.status(500).json({ error: error.message || "Erro ao enviar e-mail de teste." });
-  }
-});
+apiRouter.use((_req, res) => res.status(404).json({ error: "Endpoint não encontrado" }));

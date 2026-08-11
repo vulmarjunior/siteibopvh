@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
+import { useSiteModules } from '../../lib/modules/siteModulesClient';
 const SLIDES = [
   /*
   {
@@ -40,18 +41,14 @@ const SLIDES = [
     cta: 'Nossa programação',
     link: '#horarios'
   },
-  {
-    id: 4,
-    image: '/images/ebf-2026-banner.jpeg',
-    subtitle: 'Escola Bíblica de Férias • 18 de julho às 16h',
-    title: 'Em Busca do Maior Tesouro',
-    description: 'Uma aventura inesquecível para crianças de 3 a 12 anos descobrirem o maior tesouro de todos: Jesus!',
-    cta: 'Veja as fotos',
-    link: '/ebf'
-  },
 ];
 
 const Hero: React.FC = () => {
+  const modules = useSiteModules();
+  const visibleSlides = SLIDES.filter(slide => {
+    const module = modules.find(item => item.path === slide.link);
+    return !module || module.visibleOnHome;
+  });
   const [currentSlide, setCurrentSlide] = useState(0);
   // Refs para manipulação direta do DOM (Parallax de Alta Performance 60fps)
   const parallaxRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -85,15 +82,19 @@ const Hero: React.FC = () => {
   useEffect(() => {
     // 8000ms = 8 segundos por slide
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+      setCurrentSlide((prev) => (prev + 1) % Math.max(visibleSlides.length, 1));
     }, 8000);
     return () => clearInterval(timer);
-  }, []);
+  }, [visibleSlides.length]);
+
+  useEffect(() => { if (currentSlide >= visibleSlides.length) setCurrentSlide(0); }, [currentSlide, visibleSlides.length]);
+
+  if (visibleSlides.length === 0) return null;
 
   return (
     <div id="#" className="relative h-[85vh] w-full overflow-hidden bg-stone-900">
       {/* Container de Imagens com Parallax */}
-      {SLIDES.map((slide, index) => (
+      {visibleSlides.map((slide, index) => (
         <div
           key={slide.id}
           className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'
@@ -118,37 +119,37 @@ const Hero: React.FC = () => {
         <div className="max-w-3xl text-white z-10 pt-20">
           <div className="overflow-hidden mb-4">
             <span className="inline-block text-olaria font-bold tracking-[0.2em] uppercase text-sm md:text-base animate-fade-in-left" key={`sub-${currentSlide}`}>
-              {SLIDES[currentSlide].subtitle}
+              {visibleSlides[currentSlide].subtitle}
             </span>
           </div>
 
           <h1 className="text-5xl md:text-7xl font-serif font-bold leading-tight mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }} key={`tit-${currentSlide}`}>
-            {SLIDES[currentSlide].title}
+            {visibleSlides[currentSlide].title}
           </h1>
 
           <p className="text-lg md:text-xl text-stone-200 mb-10 max-w-xl font-sans leading-relaxed animate-fade-in-up" style={{ animationDelay: '200ms' }} key={`desc-${currentSlide}`}>
-            {SLIDES[currentSlide].description}
+            {visibleSlides[currentSlide].description}
           </p>
 
           {/* Botão de Ação Dinâmico */}
-          {SLIDES[currentSlide].link.startsWith('/') && !SLIDES[currentSlide].link.startsWith('//') && !SLIDES[currentSlide].link.startsWith('http') ? (
+          {visibleSlides[currentSlide].link.startsWith('/') && !visibleSlides[currentSlide].link.startsWith('//') && !visibleSlides[currentSlide].link.startsWith('http') ? (
             <Link
-              to={SLIDES[currentSlide].link}
+              to={visibleSlides[currentSlide].link}
               className="group inline-flex items-center gap-3 bg-olaria hover:bg-olaria-500 text-white font-bold py-4 px-10 rounded-none transition-all duration-300 animate-fade-in cursor-pointer"
               key={`btn-${currentSlide}`}
             >
-              {SLIDES[currentSlide].cta}
+              {visibleSlides[currentSlide].cta}
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           ) : (
             <a
-              href={SLIDES[currentSlide].link}
-              target={SLIDES[currentSlide].link.startsWith('http') ? "_blank" : "_self"}
-              rel={SLIDES[currentSlide].link.startsWith('http') ? "noopener noreferrer" : ""}
+              href={visibleSlides[currentSlide].link}
+              target={visibleSlides[currentSlide].link.startsWith('http') ? "_blank" : "_self"}
+              rel={visibleSlides[currentSlide].link.startsWith('http') ? "noopener noreferrer" : ""}
               className="group inline-flex items-center gap-3 bg-olaria hover:bg-olaria-500 text-white font-bold py-4 px-10 rounded-none transition-all duration-300 animate-fade-in cursor-pointer"
               key={`btn-${currentSlide}`}
             >
-              {SLIDES[currentSlide].cta}
+              {visibleSlides[currentSlide].cta}
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </a>
           )}
@@ -157,7 +158,7 @@ const Hero: React.FC = () => {
 
       {/* Indicadores de Navegação (Dots) */}
       <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-3 z-20">
-        {SLIDES.map((_, index) => (
+        {visibleSlides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}

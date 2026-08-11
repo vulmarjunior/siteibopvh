@@ -10,10 +10,12 @@ import { FooterSerie } from '../../components/parousia/FooterSerie';
 import { HeaderSerie } from '../../components/parousia/HeaderSerie';
 import { FooterParousia } from '../../components/parousia/FooterParousia';
 import { SEOHead } from '../../components/parousia/SEOHead';
+import { useParousiaSermons } from '../../lib/parousia-editorial-client';
 
 export const ParousiaPage: React.FC = () => {
+  const { sermons, source } = useParousiaSermons();
   return (
-    <div className="bg-[#0f1115] min-h-screen font-sans text-gray-300 selection:bg-[#d4af37] selection:text-[#0f1115]">
+    <div data-editorial-source={source} className="bg-[#0f1115] min-h-screen font-sans text-gray-300 selection:bg-[#d4af37] selection:text-[#0f1115]">
       <SEOHead
         title="Da Ascensão à Parousia — O Livro da Longa Peregrinação"
         description="Acompanhe a caminhada da Igreja desde a ascensão de Cristo até a esperança final da Nova Jerusalém. Série de mensagens da Igreja Batista Olaria."
@@ -21,9 +23,9 @@ export const ParousiaPage: React.FC = () => {
       <HeaderSerie />
       <HeroSerie />
       <SobreSerie />
-      <MapaPeregrinacao />
-      <ProgramacaoSermoes />
-      <MensagensDisponiveis />
+      <MapaPeregrinacao sermoes={sermons} />
+      <ProgramacaoSermoes sermoes={sermons} />
+      <MensagensDisponiveis sermoes={sermons} />
       <MateriaisApoio />
       <ConvideAlguem />
       <FooterSerie />

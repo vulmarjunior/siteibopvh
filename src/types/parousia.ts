@@ -27,10 +27,12 @@ export interface Sermon {
   slug: string;
   data: string; // YYYY-MM-DD
   titulo: string;
+  pregador?: string;
   textoBiblico: string;
   ato: string;
   movimento: string;
   descricao: string;
+  conteudoHtml?: string;
   youtubeId?: string;
   youtubeUrl?: string;
   audioUrl?: string;

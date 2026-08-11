@@ -1,6 +1,6 @@
 # Continuidade do projeto
 
-Atualizado em 2026-08-06.
+Atualizado em 2026-08-11.
 
 ## Estado atual
 
@@ -47,11 +47,12 @@ npm run build
 
 ## Última validação
 
-- 72 testes aprovados.
+- 96 testes aprovados em 15 arquivos.
 - ESLint aprovado sem avisos.
 - Build TypeScript/Vite aprovado.
-- Deploy de produção do commit `8b92a26` aprovado pela Vercel.
-- Página pública do vídeo verificada com HTTP 200.
+- Central Administrativa concluída localmente na branch `codex/central-etapa-0` e aguardando Preview na Vercel.
+- Produção permanece na `main`, sem receber ainda as mudanças da Central.
+- Teste controlado do Resend e procedimentos operacionais de banco continuam pendentes.
 
 ## Regras de continuidade
 

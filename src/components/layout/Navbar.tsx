@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Church, Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import LiturgicalBookmark from './LiturgicalBookmark';
+import { useSiteModules } from '../../lib/modules/siteModulesClient';
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const modules = useSiteModules();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,7 +32,7 @@ const Navbar: React.FC = () => {
 
   const navLinks = [
     { name: 'Home', href: '/' },
-    { name: 'Relógio de Oração', href: '/relogio' },
+    ...modules.filter(module => module.visibleInNavigation).map(module => ({ name: module.name, href: module.path })),
     { name: 'A Igreja', href: '/#identidade' },
     { name: 'Sermões', href: '/#sermoes' },
     { name: 'Contribua', href: '/#contribua' },

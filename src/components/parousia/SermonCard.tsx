@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Download, Image as ImageIcon, Share2, BookOpen, CheckCircle2, Circle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Play, Download, Share2, BookOpen, CheckCircle2, Circle, ChevronDown, ChevronUp, FileText, Headphones, ExternalLink } from 'lucide-react';
 import { Sermon } from '../../types/parousia';
 import { getSermonStatus, getYoutubeWatchUrl, SermonStatus } from '../../lib/parousia-utils';
 import { StatusBadge } from './StatusBadge';
+import { SermonContentModal } from './SermonContentModal';
 
 interface SermonCardProps {
   sermon: Sermon;
@@ -10,6 +11,7 @@ interface SermonCardProps {
 
 export const SermonCard: React.FC<SermonCardProps> = ({ sermon }) => {
   const [showLeituras, setShowLeituras] = useState(false);
+  const [showContent, setShowContent] = useState(false);
   const [leiturasConcluidas, setLeiturasConcluidas] = useState<Record<string, boolean>>({});
 
   const status = getSermonStatus(sermon);
@@ -54,7 +56,7 @@ export const SermonCard: React.FC<SermonCardProps> = ({ sermon }) => {
   };
 
   return (
-    <div className="bg-[#1a1d24] rounded-lg overflow-hidden border border-gray-800 flex flex-col h-full transition-transform hover:-translate-y-1 hover:shadow-xl hover:shadow-black/50">
+    <div id={sermon.slug} className="bg-[#1a1d24] rounded-lg overflow-hidden border border-gray-800 flex flex-col h-full transition-transform hover:-translate-y-1 hover:shadow-xl hover:shadow-black/50">
       {/* Thumbnail */}
       <div className="relative aspect-video w-full bg-gray-900 border-b border-gray-800">
         <img 
@@ -107,6 +109,24 @@ export const SermonCard: React.FC<SermonCardProps> = ({ sermon }) => {
               Esboço
             </a>
           )}
+
+          {sermon.conteudoHtml && (
+            <button onClick={() => setShowContent(true)} className="flex items-center gap-1.5 rounded bg-gray-800 px-3 py-1.5 text-sm text-gray-300 transition-colors hover:bg-gray-700 hover:text-white">
+              <FileText className="h-4 w-4" />Ler / PDF
+            </button>
+          )}
+
+          {sermon.audioUrl && (
+            <a href={sermon.audioUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 rounded bg-gray-800 px-3 py-1.5 text-sm text-gray-300 transition-colors hover:bg-gray-700 hover:text-white">
+              <Headphones className="h-4 w-4" />Ouvir
+            </a>
+          )}
+
+          {sermon.materiais?.map(material => (
+            <a key={`${material.tipo}-${material.url}`} href={material.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 rounded bg-gray-800 px-3 py-1.5 text-sm text-gray-300 transition-colors hover:bg-gray-700 hover:text-white">
+              <ExternalLink className="h-4 w-4" />{material.titulo}
+            </a>
+          ))}
 
           {sermon.leituras && (
             <button 
@@ -171,6 +191,7 @@ export const SermonCard: React.FC<SermonCardProps> = ({ sermon }) => {
           </div>
         )}
       </div>
+      {showContent && <SermonContentModal sermon={sermon} onClose={() => setShowContent(false)} />}
     </div>
   );
 };
