@@ -5,6 +5,7 @@
 ### 2026-08-11 - Central Administrativa IBO
 
 - Central unificada com autenticação Supabase e permissões administrativas.
+- Navegação global persistente padronizada entre o Dashboard e todos os módulos administrativos.
 - Ciclo de vida administrável para módulos e edições do portal.
 - Plataforma editorial de séries, painel semanal, preview e publicação agendada.
 - Parousia migrada para a API editorial, sem dependência operacional do JSON histórico.

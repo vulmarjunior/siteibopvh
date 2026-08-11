@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import { clearAdminSession, getAdminAccessToken } from '../../lib/admin/session';
+import AdminGlobalNavigation from './AdminGlobalNavigation';
 
 export default function AdminProtectedRoute() {
   const [status, setStatus] = useState<'loading' | 'allowed' | 'denied'>('loading');
@@ -30,6 +31,8 @@ export default function AdminProtectedRoute() {
 
   if (status === 'loading') return <LoadingSpinner />;
   if (status === 'denied') return <Navigate to="/admin/login" replace state={{ from: location.pathname }} />;
-  return <Outlet />;
+  return <>
+    <AdminGlobalNavigation />
+    <Outlet />
+  </>;
 }
-
