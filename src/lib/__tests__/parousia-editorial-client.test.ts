@@ -24,4 +24,8 @@ describe('adaptador editorial da Parousia', () => {
     const sermon = toParousiaSermon({ ...base, status: 'PUBLISHED', media: [{ type: 'VIDEO', url: 'https://youtu.be/dQw4w9WgXcQ', youtubeId: 'dQw4w9WgXcQ' }, { type: 'IMAGE', title: 'thumb', url: '/thumb.jpg' }], materials: [{ title: 'Esboço', type: 'PDF', url: '/esboco.pdf' }], readingPlan: { theme: 'Tema', days: [{ dayLabel: 'Segunda', biblicalText: 'João 1', description: 'Leia' }] } });
     expect(getSermonStatus(sermon)).toBe('disponivel'); expect(sermon.youtubeId).toBe('dQw4w9WgXcQ'); expect(sermon.artes?.thumb).toBe('/thumb.jpg'); expect(sermon.pdfUrl).toBe('/esboco.pdf'); expect(sermon.leituras?.dias).toHaveLength(1);
   });
+  it('considera o texto completo um material disponível', () => {
+    const sermon = toParousiaSermon({ ...base, status: 'PUBLISHED', contentHtml: '<p>Texto do sermão</p>', media: [] });
+    expect(getSermonStatus(sermon)).toBe('disponivel');
+  });
 });

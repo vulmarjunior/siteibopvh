@@ -12,10 +12,21 @@ export type EditorialMessageForm = {
 
 const input = 'mt-1 w-full rounded-lg border border-stone-700 bg-stone-950 px-3 py-2 text-sm';
 
+function publicStatusFor(value: EditorialMessageForm) {
+  if (value.status === 'DRAFT' || value.status === 'ARCHIVED') return { label: 'Não exibida no site', tone: 'text-stone-400 border-stone-700' };
+  const scheduledFor = value.scheduledFor ? new Date(value.scheduledFor) : null;
+  if (scheduledFor && !Number.isNaN(scheduledFor.getTime()) && scheduledFor.getTime() > Date.now()) return { label: 'Em breve', tone: 'text-stone-300 border-stone-600' };
+  const hasMaterial = Boolean(value.videoUrl.trim() || value.audioUrl.trim() || value.materialUrl.trim() || value.contentHtml.trim());
+  return hasMaterial
+    ? { label: 'Disponível', tone: 'text-emerald-300 border-emerald-700' }
+    : { label: 'Pregado — materiais em breve', tone: 'text-amber-300 border-amber-700' };
+}
+
 export function AdminMessageEditorModal({ value, saving, onChange, onClose, onSubmit }: {
   value: EditorialMessageForm; saving: boolean; onChange: (value: EditorialMessageForm) => void;
   onClose: () => void; onSubmit: (event: React.FormEvent, contentHtml: string) => void;
 }) {
+  const publicStatus = publicStatusFor(value);
   useEffect(() => {
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -45,7 +56,10 @@ export function AdminMessageEditorModal({ value, saving, onChange, onClose, onSu
           <label className="text-sm">Material por URL<input type="url" className={input} value={value.materialUrl} onChange={event => onChange({ ...value, materialUrl: event.target.value })} /></label>
         </div></section>
         <section><h3 className="mb-3 text-sm font-bold text-amber-400">Plano de leitura</h3><label className="block text-sm">Tema<input className={input} value={value.readingTheme} onChange={event => onChange({ ...value, readingTheme: event.target.value })} /></label>{value.readingTheme && <div className="mt-4 space-y-3">{value.readingDays.map((day, index) => <div key={index} className="grid gap-3 rounded-xl border border-stone-800 bg-stone-950 p-3 md:grid-cols-3"><input aria-label="Dia" className={input} value={day.dayLabel} onChange={event => updateDay(index, { dayLabel: event.target.value })} /><input aria-label="Texto bíblico da leitura" className={input} value={day.biblicalText} onChange={event => updateDay(index, { biblicalText: event.target.value })} /><input aria-label="Descrição da leitura" className={input} value={day.description} onChange={event => updateDay(index, { description: event.target.value })} /></div>)}<button type="button" onClick={() => onChange({ ...value, readingDays: [...value.readingDays, { dayLabel: '', biblicalText: '', description: '' }] })} className="text-sm text-amber-400">+ Adicionar leitura</button></div>}</section>
-        <label className="block max-w-xs text-sm">Status<select className={input} value={value.status} onChange={event => onChange({ ...value, status: event.target.value })}><option value="DRAFT">Rascunho</option><option value="SCHEDULED">Agendada</option><option value="PUBLISHED">Publicada</option><option value="ARCHIVED">Arquivada</option></select></label>
+        <section className="grid gap-4 md:grid-cols-2 md:items-end">
+          <label className="block text-sm">Status administrativo<select className={input} value={value.status} onChange={event => onChange({ ...value, status: event.target.value })}><option value="DRAFT">Rascunho</option><option value="SCHEDULED">Agendada</option><option value="PUBLISHED">Publicada</option><option value="ARCHIVED">Arquivada</option></select></label>
+          <div><p className="text-sm">Etiqueta no site</p><div className={`mt-1 rounded-lg border bg-stone-950 px-3 py-2 text-sm font-semibold ${publicStatus.tone}`}>{publicStatus.label}</div><p className="mt-1 text-xs text-stone-500">Calculada automaticamente pela data e pelos materiais cadastrados.</p></div>
+        </section>
       </div>
       <footer className="flex shrink-0 justify-end gap-3 border-t border-stone-800 bg-stone-900 px-5 py-4"><button type="button" onClick={onClose} disabled={saving} className="rounded-xl border border-stone-700 px-5 py-2 text-sm">Cancelar</button><button disabled={saving} className="flex items-center gap-2 rounded-xl bg-amber-600 px-5 py-2 font-bold text-stone-950"><Save className="h-4 w-4" />{saving ? 'Salvando...' : 'Salvar mensagem'}</button></footer>
     </form>

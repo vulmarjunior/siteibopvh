@@ -14,7 +14,9 @@ export function getSermonStatus(sermao: Sermon): SermonStatus | string {
     sermao.youtubeId ||
     sermao.youtubeUrl ||
     sermao.audioUrl ||
-    sermao.pdfUrl;
+    sermao.pdfUrl ||
+    sermao.conteudoHtml ||
+    sermao.materiais?.length;
 
   if (dataSermao > hoje) {
     return 'em_breve';
