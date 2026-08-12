@@ -2,6 +2,16 @@
 
 ## [Em Desenvolvimento]
 
+### 2026-08-12 - Central Administrativa publicada
+
+- Central publicada em produção após migração aditiva do banco oficial.
+- As 43 inscrições existentes da EBF foram preservadas e vinculadas à edição histórica de 2026.
+- As 23 mensagens reais da Parousia, 12 mídias e 138 leituras foram importadas sem divergências.
+- Etiquetas públicas dos sermões voltaram a ser calculadas automaticamente pela data e pela disponibilidade de conteúdo.
+- Formulário administrativo passou a mostrar separadamente o status técnico e a etiqueta exibida no site.
+- Relógio de Oração, Veredas, Parousia e rotas administrativas foram verificados após os deploys.
+- Estado final, pendências operacionais e orientação para a próxima sessão registrados em `central-administrativa/estado-final-2026-08-12.md`.
+
 ### 2026-08-11 - Central Administrativa IBO
 
 - Central unificada com autenticação Supabase e permissões administrativas.

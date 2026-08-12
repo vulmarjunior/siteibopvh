@@ -665,4 +665,6 @@ A contratação de plano pago deverá ser considerada por métrica concreta ou r
 
 ## 8. Próximo passo
 
-Revisar e aprovar este plano. Após aprovação, iniciar exclusivamente a **Etapa 0 — Baseline, segurança e inventário**.
+Implementação principal concluída e publicada em 12 de agosto de 2026. O estado consolidado está em `docs/central-administrativa/estado-final-2026-08-12.md`.
+
+O próximo ciclo será dedicado às melhorias de UX identificadas nos testes manuais de produção e à validação controlada do Resend. As migrações estruturais e a importação da Parousia não devem ser repetidas.
