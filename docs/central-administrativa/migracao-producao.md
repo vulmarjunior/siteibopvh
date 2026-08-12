@@ -6,9 +6,18 @@ Data de preparação: 12 de agosto de 2026.
 
 - migração aditiva preparada em `supabase/migrations/20260812211723_central_producao_aditiva.sql`;
 - validações locais concluídas;
-- migração ainda não aplicada ao projeto `ibopvh-producao` (`tyqdxqfuppmwtkxbpvho`);
+- migração aplicada ao projeto `ibopvh-producao` (`tyqdxqfuppmwtkxbpvho`) em 12 de agosto de 2026 pelo plugin oficial do Supabase;
 - nenhuma série editorial fictícia será inserida;
 - os serviços Relógio de Oração, Veredas e assinantes de leituras não têm suas tabelas recriadas ou esvaziadas.
+
+## Validação posterior
+
+- 6 módulos e 1 edição histórica criados;
+- 43 de 43 inscrições da EBF vinculadas à edição `ebf-2026`;
+- contagens anteriores preservadas: 232 reservas, 7 temas, 8 assinantes, 5 itens do Veredas e 1 administrador;
+- endpoints públicos do Relógio, temas, Veredas e Parousia responderam HTTP 200;
+- nenhuma série editorial foi importada nesta operação;
+- advisors não indicaram erro crítico; os avisos informativos de RLS sem política refletem o acesso deliberado pelo backend Prisma.
 
 ## O que a migração acrescenta
 
