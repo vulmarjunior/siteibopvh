@@ -14,7 +14,6 @@ export function toParousiaSermon(message: EditorialMessageDto): Sermon {
   const audio = message.media.find(item => item.type === 'AUDIO');
   const images = Object.fromEntries(message.media.filter(item => item.type === 'IMAGE').map(item => [item.title || 'thumb', item.url]));
   const pdf = message.materials.find(item => item.type.toUpperCase() === 'PDF');
-  const hasMaterial = Boolean(video || audio || pdf);
   return {
     numero: String(message.order).padStart(2, '0'), slug: message.slug, data: message.scheduledFor.slice(0, 10),
     titulo: message.title, pregador: message.speaker || undefined, textoBiblico: message.biblicalText,
@@ -22,7 +21,7 @@ export function toParousiaSermon(message: EditorialMessageDto): Sermon {
     descricao: message.description || message.summary || '', conteudoHtml: message.contentHtml || undefined,
     youtubeId: video?.youtubeId || undefined,
     youtubeUrl: video?.url || undefined, audioUrl: audio?.url || undefined, pdfUrl: pdf?.url || undefined,
-    statusManual: String(message.customFields?.statusManual || (message.status === 'SCHEDULED' ? 'em_breve' : hasMaterial ? 'disponivel' : 'pregado_materiais_em_breve')),
+    statusManual: message.customFields?.statusManual ? String(message.customFields.statusManual) : undefined,
     artes: { ...(message.customFields?.artes || {}), ...images },
     materiais: message.materials.filter(item => item !== pdf).map(item => ({ titulo: item.title, tipo: item.type, url: item.url })),
     leituras: message.readingPlan ? { tema: message.readingPlan.theme, dias: message.readingPlan.days.map(day => ({ dia: day.dayLabel, texto: day.biblicalText, descricao: day.description || '' })) } : undefined,
