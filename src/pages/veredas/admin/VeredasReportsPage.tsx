@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabaseClient } from '../../../lib/veredas/supabaseClient';
+import { getAdminAccessToken } from '../../../lib/admin/session';
 import { AlertTriangle, CheckCircle2, ArrowLeft, ExternalLink } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
@@ -12,9 +12,9 @@ export const VeredasReportsPage: React.FC = () => {
   useEffect(() => {
     async function loadReports() {
       try {
-        const token = localStorage.getItem('veredas_access_token') || (await supabaseClient.auth.getSession()).data.session?.access_token;
+        const token = await getAdminAccessToken();
         if (!token) {
-          navigate('/admin/veredas/login');
+          navigate('/admin/login');
           return;
         }
 
@@ -23,7 +23,7 @@ export const VeredasReportsPage: React.FC = () => {
         });
 
         if (!res.ok) {
-          navigate('/admin/veredas/login');
+          navigate('/admin/login');
           return;
         }
 
@@ -41,7 +41,7 @@ export const VeredasReportsPage: React.FC = () => {
 
   const handleResolve = async (id: number) => {
     try {
-      const token = localStorage.getItem('veredas_access_token') || (await supabaseClient.auth.getSession()).data.session?.access_token;
+      const token = await getAdminAccessToken();
       const res = await fetch(`/api/veredas/admin/relatos/${id}/resolver`, {
         method: 'PUT',
         headers: {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabaseClient } from '../../../lib/veredas/supabaseClient';
-import { BookOpen, Film, AlertTriangle, FileText, PlusCircle, LogOut, Edit, Trash2, CheckCircle, Archive, ExternalLink } from 'lucide-react';
+import { clearAdminSession, getAdminAccessToken } from '../../../lib/admin/session';
+import { BookOpen, Film, AlertTriangle, FileText, PlusCircle, LogOut, Edit, Trash2, CheckCircle, Archive, ExternalLink, LayoutDashboard } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
 export const VeredasDashboardPage: React.FC = () => {
@@ -17,9 +17,9 @@ export const VeredasDashboardPage: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('veredas_access_token') || (await supabaseClient.auth.getSession()).data.session?.access_token;
+      const token = await getAdminAccessToken();
       if (!token) {
-        navigate('/admin/veredas/login');
+        navigate('/admin/login');
         return;
       }
 
@@ -29,8 +29,8 @@ export const VeredasDashboardPage: React.FC = () => {
       ]);
 
       if (!resStats.ok || !resItems.ok) {
-        localStorage.removeItem('veredas_access_token');
-        navigate('/admin/veredas/login');
+        await clearAdminSession();
+        navigate('/admin/login');
         return;
       }
 
@@ -55,7 +55,7 @@ export const VeredasDashboardPage: React.FC = () => {
   const handlePublish = async (id: number) => {
     setActionLoadingId(id);
     try {
-      const token = localStorage.getItem('veredas_access_token');
+      const token = await getAdminAccessToken();
       const res = await fetch(`/api/veredas/admin/items/${id}/publicar`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -73,7 +73,7 @@ export const VeredasDashboardPage: React.FC = () => {
   const handleArchive = async (id: number) => {
     setActionLoadingId(id);
     try {
-      const token = localStorage.getItem('veredas_access_token');
+      const token = await getAdminAccessToken();
       const res = await fetch(`/api/veredas/admin/items/${id}/arquivar`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -93,7 +93,7 @@ export const VeredasDashboardPage: React.FC = () => {
 
     setActionLoadingId(id);
     try {
-      const token = localStorage.getItem('veredas_access_token');
+      const token = await getAdminAccessToken();
       const res = await fetch(`/api/veredas/admin/items/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
@@ -109,12 +109,8 @@ export const VeredasDashboardPage: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    localStorage.removeItem('veredas_access_token');
-    localStorage.removeItem('veredas_user');
-    try { await supabaseClient.auth.signOut(); } catch (e) {
-      // Ignore sign out error
-    }
-    navigate('/admin/veredas/login');
+    await clearAdminSession();
+    navigate('/admin/login');
   };
 
   const filteredItems = items.filter((item) => {
@@ -142,6 +138,12 @@ export const VeredasDashboardPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <Link
+            to="/admin"
+            className="px-3.5 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 font-medium text-xs rounded-lg flex items-center gap-1.5 transition-colors border border-stone-700"
+          >
+            <LayoutDashboard className="w-3.5 h-3.5" /> Central
+          </Link>
           <Link
             to="/veredas"
             target="_blank"

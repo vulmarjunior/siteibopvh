@@ -1,6 +1,6 @@
 import React from 'react';
-import sermoesData from '../../data/sermoes.json';
-import { parseSermoes, getSermonStatus } from '../../lib/parousia-utils';
+import { getSermonStatus } from '../../lib/parousia-utils';
+import type { Sermon } from '../../types/parousia';
 
 const etapas = [
   { num: '1', titulo: 'Ascensão', movimentos: ['Ascensão'] },
@@ -13,8 +13,7 @@ const etapas = [
   { num: '8', titulo: 'Nova Jerusalém', movimentos: ['Nova Jerusalém'] },
 ];
 
-function getEtapaAtual(): number {
-  const sermoes = parseSermoes(sermoesData);
+function getEtapaAtual(sermoes: Sermon[]): number {
   let etapaIdx = 0;
 
   for (const s of sermoes) {
@@ -28,8 +27,8 @@ function getEtapaAtual(): number {
   return etapaIdx;
 }
 
-export const MapaPeregrinacao: React.FC = () => {
-  const etapaAtual = getEtapaAtual();
+export const MapaPeregrinacao: React.FC<{ sermoes: Sermon[] }> = ({ sermoes }) => {
+  const etapaAtual = getEtapaAtual(sermoes);
 
   return (
     <section className="bg-[#15181d] py-20 px-6 border-y border-gray-800">
