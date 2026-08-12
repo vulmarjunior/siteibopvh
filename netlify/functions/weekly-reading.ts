@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Resend } from "resend";
+import { readFile } from "node:fs/promises";
 import { buildWeeklyReadingEmail } from "../../src/lib/email-templates/weekly-reading";
 
 // Config: toda segunda-feira às 11h UTC = 7h Porto Velho
@@ -44,9 +45,9 @@ export default async () => {
   console.log("[weekly-reading] Iniciando envio semanal...");
 
   // 1. Ler sermoes.json
-  const sermoes: SermoeData[] = await import("../../src/data/sermoes.json").then(
-    (m) => m.default
-  );
+  const sermoes = JSON.parse(
+    await readFile(new URL("../../src/data/sermoes.json", import.meta.url), "utf8")
+  ) as SermoeData[];
 
   // 2. Calcular segunda-feira da semana atual (horário de Porto Velho)
   const now = new Date();

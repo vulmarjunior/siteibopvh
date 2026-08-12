@@ -1,4 +1,5 @@
 import express from "express";
+import { readFile } from "node:fs/promises";
 import { PrismaClient } from "@prisma/client";
 import { Resend } from "resend";
 import ical, { ICalAlarmType } from "ical-generator";
@@ -47,6 +48,10 @@ function getResend() {
 }
 
 export const apiRouter = express.Router();
+
+async function loadParousiaSermons() {
+  return JSON.parse(await readFile(new URL("./data/sermoes.json", import.meta.url), "utf8"));
+}
 
 export async function seed() {
   console.log("Starting database seeding check...");
@@ -841,7 +846,7 @@ apiRouter.get("/ebf/admin/export.csv", async (req, res) => {
 async function sendWelcomeEmail(email: string, subscriberToken: string) {
   try {
     const { buildWeeklyReadingEmail } = await import("./lib/email-templates/weekly-reading");
-    const sermoes = await import("./data/sermoes.json").then((m) => m.default);
+    const sermoes = await loadParousiaSermons();
 
     const hoje = new Date();
     const sermoeVigente = sermoes
@@ -950,7 +955,7 @@ apiRouter.get("/parousia/unsubscribe", async (req, res) => {
 
 apiRouter.get("/parousia/today", async (_req, res) => {
   try {
-    const sermoes = await import("./data/sermoes.json").then(m => m.default);
+    const sermoes = await loadParousiaSermons();
     const hoje = new Date();
     const diaSemana = hoje.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
 
@@ -993,7 +998,7 @@ apiRouter.post("/parousia/test-email", async (req, res) => {
 
   try {
     const { buildWeeklyReadingEmail } = await import("./lib/email-templates/weekly-reading");
-    const sermoes = await import("./data/sermoes.json").then(m => m.default);
+    const sermoes = await loadParousiaSermons();
 
     // Encontrar sermão vigente: o mais recente cuja data já passou e tem leituras
     const hoje = new Date();
