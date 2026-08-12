@@ -2,6 +2,10 @@
 
 Data: 8 de agosto de 2026.
 
+## Produção
+
+Em 12 de agosto de 2026, a série real foi importada no projeto `ibopvh-producao` pelo plugin oficial do Supabase. A verificação posterior confirmou 23 mensagens, 12 mídias, 23 planos, 138 dias de leitura e nenhuma divergência em relação à fonte histórica. Relógio, Veredas e Parousia continuaram respondendo HTTP 200.
+
 ## Implementado
 
 - importador idempotente `npm run import:parousia`;

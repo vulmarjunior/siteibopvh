@@ -16,7 +16,9 @@ Data de preparação: 12 de agosto de 2026.
 - 43 de 43 inscrições da EBF vinculadas à edição `ebf-2026`;
 - contagens anteriores preservadas: 232 reservas, 7 temas, 8 assinantes, 5 itens do Veredas e 1 administrador;
 - endpoints públicos do Relógio, temas, Veredas e Parousia responderam HTTP 200;
-- nenhuma série editorial foi importada nesta operação;
+- série real `Da Ascensão à Parousia` importada em operação separada pelo plugin oficial do Supabase;
+- importação validada com 23 mensagens (7 publicadas e 16 agendadas), 12 mídias, 23 planos e 138 dias de leitura;
+- comparação com `src/data/sermoes.json`: zero mensagens ausentes, divergentes ou extras;
 - advisors não indicaram erro crítico; os avisos informativos de RLS sem política refletem o acesso deliberado pelo backend Prisma.
 
 ## O que a migração acrescenta
