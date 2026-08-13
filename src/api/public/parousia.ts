@@ -4,6 +4,7 @@ import type { PrismaClient } from '@prisma/client';
 import type { Resend } from 'resend';
 import { isModulePublicOperationOpen } from '../admin/modules.js';
 import { currentReadingDay, selectCurrentWeeklyReading } from '../../lib/editorial/weeklyReading.js';
+import { consumeRateLimit } from '../../lib/server/rateLimit.js';
 
 export function createPublicParousiaRouter(prisma: PrismaClient, getResend: () => Resend | null) {
   const router = express.Router();
@@ -19,6 +20,8 @@ export function createPublicParousiaRouter(prisma: PrismaClient, getResend: () =
   }
 
   router.post('/subscribe', async (req, res) => {
+    const rateLimit = await consumeRateLimit(prisma, req, { scope: 'series-subscribe', limit: 8, windowMs: 60 * 60 * 1000 });
+    if (!rateLimit.allowed) { res.setHeader('Retry-After', rateLimit.retryAfterSeconds); return res.status(429).json({ error: 'Muitas tentativas de inscrição. Tente novamente mais tarde.' }); }
     if (!(await isModulePublicOperationOpen(prisma, 'parousia'))) return res.status(410).json({ error: 'As inscrições para esta série estão fechadas neste momento.' });
     const email = String(req.body.email || '').trim().toLowerCase();
     const name = req.body.name ? String(req.body.name).trim() : null;

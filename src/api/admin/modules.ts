@@ -34,6 +34,12 @@ export function createAdminModulesRouter(prisma: PrismaClient) {
 
     const before = await prisma.siteModule.findUnique({ where: { id: moduleId } });
     if (!before) return res.status(404).json({ error: 'Módulo não encontrado' });
+    if (before.permanent && ['ENDED', 'ARCHIVED'].includes(status)) {
+      return res.status(409).json({ error: 'Módulos permanentes não podem ser encerrados ou arquivados' });
+    }
+    if (status !== 'ACTIVE' && Boolean(publicOperationsOpen)) {
+      return res.status(409).json({ error: 'Operações públicas só podem permanecer abertas em módulos ativos' });
+    }
     const updated = await prisma.siteModule.update({
       where: { id: moduleId },
       data: { status, visibleOnHome: Boolean(visibleOnHome), visibleInNavigation: Boolean(visibleInNavigation), directAccess, publicOperationsOpen: Boolean(publicOperationsOpen) },

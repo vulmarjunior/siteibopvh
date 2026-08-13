@@ -18,10 +18,6 @@ export const VeredasDashboardPage: React.FC = () => {
     try {
       setLoading(true);
       const token = await getAdminAccessToken();
-      if (!token) {
-        navigate('/admin/login');
-        return;
-      }
 
       const [resStats, resItems] = await Promise.all([
         fetch('/api/veredas/admin/dashboard', { headers: { Authorization: `Bearer ${token}` } }),
@@ -109,6 +105,8 @@ export const VeredasDashboardPage: React.FC = () => {
   };
 
   const handleLogout = async () => {
+    const token = await getAdminAccessToken();
+    await fetch('/api/admin/auth/logout', { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {} }).catch(() => undefined);
     await clearAdminSession();
     navigate('/admin/login');
   };

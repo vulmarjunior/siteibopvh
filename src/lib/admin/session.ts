@@ -13,12 +13,21 @@ export interface AdminSessionUser {
 export async function getAdminAccessToken(): Promise<string | null> {
   const stored = localStorage.getItem(ADMIN_TOKEN_KEY);
   if (stored) return stored;
-  return (await supabaseClient.auth.getSession()).data.session?.access_token ?? null;
+  return null;
 }
 
-export function saveAdminSession(token: string, user: AdminSessionUser): void {
-  localStorage.setItem(ADMIN_TOKEN_KEY, token);
+export function saveAdminSession(user: AdminSessionUser): void {
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
   localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(user));
+}
+
+export function getStoredAdminUser(): AdminSessionUser | null {
+  try {
+    const stored = localStorage.getItem(ADMIN_USER_KEY);
+    return stored ? JSON.parse(stored) as AdminSessionUser : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function clearAdminSession(): Promise<void> {

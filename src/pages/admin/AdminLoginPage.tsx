@@ -20,7 +20,7 @@ export default function AdminLoginPage() {
       const response = await fetch('/api/admin/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Falha ao autenticar');
-      saveAdminSession(data.access_token, data.user);
+      saveAdminSession(data.user);
       const destination = (location.state as { from?: string } | null)?.from || '/admin';
       navigate(destination, { replace: true });
     } catch (loginError) {

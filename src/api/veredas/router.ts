@@ -1,15 +1,13 @@
 import express, { Response } from 'express';
-import { PrismaClient, CuradoriaStatus, CuradoriaMotivoRelato, CuradoriaStatusRelato } from '@prisma/client';
+import { PrismaClient, CuradoriaPapelUsuario, CuradoriaStatus, CuradoriaMotivoRelato, CuradoriaStatusRelato } from '@prisma/client';
 import { ItemsService } from '../../lib/veredas/services/itemsService.js';
-import { createAuthMiddleware, VeredasAuthenticatedRequest } from './authMiddleware.js';
+import { createAuthMiddleware, requireRole, VeredasAuthenticatedRequest } from './authMiddleware.js';
 import { validateReportPayload, validateItemPayload, validateAccessPayload } from '../../lib/veredas/validation.js';
 import { checkReportRateLimit, generateIpHash } from '../../lib/veredas/rateLimit.js';
 import { parseYoutubeUrl } from '../../lib/veredas/youtube.js';
 import { parseAmazonUrl } from '../../lib/veredas/amazon.js';
 import { lookupBookByIsbn } from '../../lib/veredas/books.js';
 import { generateSlug } from '../../lib/veredas/slug.js';
-
-import { getSupabaseServer } from '../../lib/veredas/supabaseServer.js';
 
 export function createVeredasRouter(prisma: PrismaClient) {
   const router = express.Router();
@@ -19,47 +17,6 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // ==========================================
   // ROTAS PÚBLICAS (/api/veredas/*)
   // ==========================================
-
-  // POST /api/veredas/auth/login (Proxied login via serverless to prevent client-side network tunnel blocks)
-  router.post('/auth/login', async (req, res) => {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'E-mail e senha são obrigatórios' });
-    }
-
-    try {
-      const supabase = getSupabaseServer();
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error || !data.session) {
-        return res.status(401).json({ error: 'E-mail ou senha incorretos' });
-      }
-
-      const usuario = await prisma.curadoriaUsuario.findUnique({
-        where: { id: data.session.user.id },
-      });
-
-      if (!usuario) {
-        return res.status(403).json({ error: 'Usuário não cadastrado como curador ou administrador' });
-      }
-
-      if (!usuario.ativo) {
-        return res.status(403).json({ error: 'Acesso suspenso ou inativo' });
-      }
-
-      res.json({
-        access_token: data.session.access_token,
-        usuario,
-      });
-    } catch (err) {
-      console.error('Login proxy error:', err);
-      res.status(500).json({ error: 'Erro no servidor de autenticação' });
-    }
-  });
 
   // GET /api/veredas/items
   router.get('/items', async (req, res) => {
@@ -218,7 +175,9 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // UTILS IMPORTADORES ASSISTIDOS (/api/veredas/admin/importar/*)
   // ==========================================
 
-  router.post('/admin/importar/youtube', authMiddleware, async (req, res) => {
+  router.use('/admin', authMiddleware, requireRole(CuradoriaPapelUsuario.CURADOR));
+
+  router.post('/admin/importar/youtube', async (req, res) => {
     const { url } = req.body;
     const parsed = parseYoutubeUrl(url);
 
@@ -247,7 +206,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
     res.json(parsed);
   });
 
-  router.post('/admin/importar/amazon', authMiddleware, (req, res) => {
+  router.post('/admin/importar/amazon', (req, res) => {
     const { url, affiliateTag } = req.body;
     const parsed = parseAmazonUrl(url, affiliateTag);
 
@@ -258,7 +217,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
     res.json(parsed);
   });
 
-  router.post('/admin/importar/isbn', authMiddleware, async (req, res) => {
+  router.post('/admin/importar/isbn', async (req, res) => {
     const result = await lookupBookByIsbn(req.body?.isbn);
 
     if (!result.isValid) {
@@ -272,7 +231,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // ROTAS ADMINISTRATIVAS PROTEGIDAS (/api/veredas/admin/*)
   // ==========================================
 
-  router.post('/admin/categorias', authMiddleware, async (req, res) => {
+  router.post('/admin/categorias', async (req, res) => {
     const nome = typeof req.body?.nome === 'string' ? req.body.nome.trim() : '';
     if (nome.length < 2 || nome.length > 60) {
       return res.status(400).json({ error: 'Informe um tema entre 2 e 60 caracteres' });
@@ -302,12 +261,12 @@ export function createVeredasRouter(prisma: PrismaClient) {
   });
 
   // GET /api/veredas/admin/me (Verifica usuário atual)
-  router.get('/admin/me', authMiddleware, (req: VeredasAuthenticatedRequest, res: Response) => {
+  router.get('/admin/me', (req: VeredasAuthenticatedRequest, res: Response) => {
     res.json(req.veredasUser);
   });
 
   // GET /api/veredas/admin/dashboard
-  router.get('/admin/dashboard', authMiddleware, async (req, res) => {
+  router.get('/admin/dashboard', async (req, res) => {
     try {
       const [
         totalVideos,
@@ -340,7 +299,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   });
 
   // GET /api/veredas/admin/items (Listagem completa para o painel admin)
-  router.get('/admin/items', authMiddleware, async (req, res) => {
+  router.get('/admin/items', async (req, res) => {
     try {
       const { status, tipo } = req.query;
       const items = await itemsService.getAdminItems(status as string, tipo as string);
@@ -352,7 +311,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   });
 
   // GET /api/veredas/admin/items/:id (Busca item específico por ID para edição)
-  router.get('/admin/items/:id', authMiddleware, async (req, res) => {
+  router.get('/admin/items/:id', async (req, res) => {
     try {
       const id = Number(req.params.id);
       const item = await itemsService.getAdminItemById(id);
@@ -367,19 +326,21 @@ export function createVeredasRouter(prisma: PrismaClient) {
   });
 
   // DELETE /api/veredas/admin/items/:id (Exclusão de conteúdo)
-  router.delete('/admin/items/:id', authMiddleware, async (req: VeredasAuthenticatedRequest, res: Response) => {
+  router.delete('/admin/items/:id', requireRole(CuradoriaPapelUsuario.ADMIN), async (req: VeredasAuthenticatedRequest, res: Response) => {
     try {
       const id = Number(req.params.id);
-      const deleted = await itemsService.deleteAdminItem(id);
-
-      await prisma.curadoriaAuditoria.create({
-        data: {
-          usuarioId: req.veredasUser!.id,
-          usuarioEmail: req.veredasUser!.email,
-          acao: 'EXCLUIR',
-          entidade: 'CuradoriaItem',
-          entidadeId: String(id),
-        },
+      const deleted = await prisma.$transaction(async (tx) => {
+        const item = await tx.curadoriaItem.delete({ where: { id } });
+        await tx.curadoriaAuditoria.create({
+          data: {
+            usuarioId: req.veredasUser!.id,
+            usuarioEmail: req.veredasUser!.email,
+            acao: 'EXCLUIR',
+            entidade: 'CuradoriaItem',
+            entidadeId: String(id),
+          },
+        });
+        return item;
       });
 
       res.json(deleted);
@@ -390,7 +351,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   });
 
   // POST /api/veredas/admin/items (Criação de Vídeo ou Livro)
-  router.post('/admin/items', authMiddleware, async (req: VeredasAuthenticatedRequest, res: Response) => {
+  router.post('/admin/items', async (req: VeredasAuthenticatedRequest, res: Response) => {
     try {
       const validation = validateItemPayload(req.body);
       if (!validation.isValid) {
@@ -418,7 +379,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
     }
   });
   // PUT /api/veredas/admin/items/:id (Atualizacao de Video ou Livro)
-  router.put('/admin/items/:id', authMiddleware, async (req: VeredasAuthenticatedRequest, res: Response) => {
+  router.put('/admin/items/:id', async (req: VeredasAuthenticatedRequest, res: Response) => {
     try {
       const validation = validateItemPayload(req.body);
       if (!validation.isValid) {
@@ -451,26 +412,24 @@ export function createVeredasRouter(prisma: PrismaClient) {
 
 
   // POST /api/veredas/admin/items/:id/publicar
-  router.post('/admin/items/:id/publicar', authMiddleware, async (req: VeredasAuthenticatedRequest, res: Response) => {
+  router.post('/admin/items/:id/publicar', async (req: VeredasAuthenticatedRequest, res: Response) => {
     try {
       const id = Number(req.params.id);
-      const item = await prisma.curadoriaItem.update({
-        where: { id },
-        data: {
-          status: CuradoriaStatus.PUBLICADO,
-          publicadoEm: new Date(),
-          arquivadoEm: null,
-        },
-      });
-
-      await prisma.curadoriaAuditoria.create({
-        data: {
-          usuarioId: req.veredasUser!.id,
-          usuarioEmail: req.veredasUser!.email,
-          acao: 'PUBLICAR',
-          entidade: 'CuradoriaItem',
-          entidadeId: String(item.id),
-        },
+      const item = await prisma.$transaction(async (tx) => {
+        const updated = await tx.curadoriaItem.update({
+          where: { id },
+          data: { status: CuradoriaStatus.PUBLICADO, publicadoEm: new Date(), arquivadoEm: null },
+        });
+        await tx.curadoriaAuditoria.create({
+          data: {
+            usuarioId: req.veredasUser!.id,
+            usuarioEmail: req.veredasUser!.email,
+            acao: 'PUBLICAR',
+            entidade: 'CuradoriaItem',
+            entidadeId: String(updated.id),
+          },
+        });
+        return updated;
       });
 
       res.json(item);
@@ -481,25 +440,24 @@ export function createVeredasRouter(prisma: PrismaClient) {
   });
 
   // POST /api/veredas/admin/items/:id/arquivar
-  router.post('/admin/items/:id/arquivar', authMiddleware, async (req: VeredasAuthenticatedRequest, res: Response) => {
+  router.post('/admin/items/:id/arquivar', async (req: VeredasAuthenticatedRequest, res: Response) => {
     try {
       const id = Number(req.params.id);
-      const item = await prisma.curadoriaItem.update({
-        where: { id },
-        data: {
-          status: CuradoriaStatus.ARQUIVADO,
-          arquivadoEm: new Date(),
-        },
-      });
-
-      await prisma.curadoriaAuditoria.create({
-        data: {
-          usuarioId: req.veredasUser!.id,
-          usuarioEmail: req.veredasUser!.email,
-          acao: 'ARQUIVAR',
-          entidade: 'CuradoriaItem',
-          entidadeId: String(item.id),
-        },
+      const item = await prisma.$transaction(async (tx) => {
+        const updated = await tx.curadoriaItem.update({
+          where: { id },
+          data: { status: CuradoriaStatus.ARQUIVADO, arquivadoEm: new Date() },
+        });
+        await tx.curadoriaAuditoria.create({
+          data: {
+            usuarioId: req.veredasUser!.id,
+            usuarioEmail: req.veredasUser!.email,
+            acao: 'ARQUIVAR',
+            entidade: 'CuradoriaItem',
+            entidadeId: String(updated.id),
+          },
+        });
+        return updated;
       });
 
       res.json(item);
@@ -510,7 +468,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   });
 
   // GET /api/veredas/admin/relatos
-  router.get('/admin/relatos', authMiddleware, async (req, res) => {
+  router.get('/admin/relatos', async (req, res) => {
     try {
       const relatos = await prisma.curadoriaLinkRelato.findMany({
         orderBy: { criadoEm: 'desc' },
@@ -534,7 +492,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   });
 
   // POST /api/veredas/admin/relatos/:id/resolver
-  router.post('/admin/relatos/:id/resolver', authMiddleware, async (req: VeredasAuthenticatedRequest, res: Response) => {
+  router.post('/admin/relatos/:id/resolver', async (req: VeredasAuthenticatedRequest, res: Response) => {
     try {
       const id = Number(req.params.id);
       const relato = await prisma.curadoriaLinkRelato.update({

@@ -4,7 +4,18 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/api/:path((?!cron/weekly-reading$).*)",
+      "source": "/api/veredas/:path*",
+      "destination": "/api/veredas-entry?path=:path*"
+    },
+    { "source": "/api/admin/auth/:path*", "destination": "/api/admin-auth-entry?path=:path*" },
+    { "source": "/api/admin/modules/:path*", "destination": "/api/admin-modules-entry?path=:path*" },
+    { "source": "/api/admin/series-email/:path*", "destination": "/api/admin-series-email-entry?path=:path*" },
+    { "source": "/api/admin/series/:path*", "destination": "/api/admin-series-entry?path=:path*" },
+    { "source": "/api/admin/prayer/:path*", "destination": "/api/admin-prayer-entry?path=:path*" },
+    { "source": "/api/admin/ebf/:path*", "destination": "/api/admin-ebf-entry?path=:path*" },
+    { "source": "/api/admin/users/:path*", "destination": "/api/admin-users-entry?path=:path*" },
+    {
+      "source": "/api/:path((?!cron/weekly-reading$|health$|veredas(?:/.*)?$|admin(?:/.*)?$).*)",
       "destination": "/api/index"
     },
     {

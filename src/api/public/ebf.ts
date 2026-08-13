@@ -2,6 +2,7 @@ import express from 'express';
 import type { PrismaClient } from '@prisma/client';
 import type { Resend } from 'resend';
 import { isModulePublicOperationOpen } from '../admin/modules.js';
+import { consumeRateLimit } from '../../lib/server/rateLimit.js';
 
 const ebfColor = (age: number) => age <= 5 ? 'Amarelo' : age <= 7 ? 'Verde' : age <= 9 ? 'Azul' : 'Vermelho';
 const escapeHtml = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]!);
@@ -9,6 +10,8 @@ const escapeHtml = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, c
 export function createPublicEbfRouter(prisma: PrismaClient, getResend: () => Resend | null) {
   const router = express.Router();
   router.post('/registrations', async (req, res) => {
+    const rateLimit = await consumeRateLimit(prisma, req, { scope: 'ebf-registration', limit: 6, windowMs: 60 * 60 * 1000 });
+    if (!rateLimit.allowed) { res.setHeader('Retry-After', rateLimit.retryAfterSeconds); return res.status(429).json({ error: 'Limite de inscrições atingido. Tente novamente mais tarde.' }); }
     if (!(await isModulePublicOperationOpen(prisma, 'ebf'))) return res.status(410).json({ error: 'As inscrições para a EBF estão encerradas.' });
     const childName = String(req.body.childName || '').trim();
     const guardianName = String(req.body.guardianName || '').trim();

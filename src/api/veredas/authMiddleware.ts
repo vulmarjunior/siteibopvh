@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { PrismaClient, CuradoriaPapelUsuario, CuradoriaUsuario } from '@prisma/client';
 import { getSupabaseServer } from '../../lib/veredas/supabaseServer.js';
+import { clearAdminSessionCookie, getAdminAuthToken, isUnsafeCrossOriginRequest, setAdminSessionCookie } from '../../lib/admin/authCookie.js';
 
 export interface VeredasAuthenticatedRequest extends Request {
   veredasUser?: CuradoriaUsuario;
@@ -12,20 +13,20 @@ export interface VeredasAuthenticatedRequest extends Request {
  */
 export function createAuthMiddleware(prisma: PrismaClient) {
   return async (req: VeredasAuthenticatedRequest, res: Response, next: NextFunction) => {
-    const authHeader = req.headers.authorization;
+    const auth = getAdminAuthToken(req);
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!auth) {
       return res.status(401).json({ error: 'Token de autenticação não fornecido' });
     }
-
-    const token = authHeader.substring(7).trim();
+    if (isUnsafeCrossOriginRequest(req, auth.source)) return res.status(403).json({ error: 'Origem da requisição não autorizada' });
 
     try {
       // Official SDK validation against Supabase Auth API
       const supabase = getSupabaseServer();
-      const { data: { user }, error } = await supabase.auth.getUser(token);
+      const { data: { user }, error } = await supabase.auth.getUser(auth.token);
 
       if (error || !user) {
+        if (auth.source === 'cookie') clearAdminSessionCookie(res);
         return res.status(401).json({ error: 'Sessão inválida ou expirada. Efetue login novamente.' });
       }
 
@@ -49,6 +50,7 @@ export function createAuthMiddleware(prisma: PrismaClient) {
       }).catch((err) => console.error('Error updating last access:', err));
 
       req.veredasUser = usuario;
+      if (auth.source === 'bearer') setAdminSessionCookie(res, auth.token);
       next();
     } catch (err) {
       console.error('Veredas Auth Middleware error:', err);
