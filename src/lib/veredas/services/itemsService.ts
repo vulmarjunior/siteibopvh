@@ -118,7 +118,7 @@ export class ItemsService {
               },
             },
           },
-          curso: { include: { aulas: { orderBy: { ordem: 'asc' } } } },
+          curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
         },
       ];
     }
@@ -216,7 +216,7 @@ export class ItemsService {
             },
           },
         },
-        curso: { include: { aulas: { orderBy: { ordem: 'asc' } } } },
+        curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
       },
     });
 
@@ -257,7 +257,7 @@ export class ItemsService {
             participantes: { include: { pessoa: true } },
           },
         },
-        curso: { include: { aulas: { orderBy: { ordem: 'asc' } } } },
+        curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
       },
     });
   }
@@ -283,7 +283,7 @@ export class ItemsService {
             participantes: { include: { pessoa: true } },
           },
         },
-        curso: { include: { aulas: { orderBy: { ordem: 'asc' } } } },
+        curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
       },
     });
   }
@@ -416,6 +416,13 @@ export class ItemsService {
               thumbnailUrl: aula.thumbnailUrl || `https://img.youtube.com/vi/${aula.youtubeId}/hqdefault.jpg`,
             })),
           },
+          materiais: {
+            create: (data.curso.materiais || []).map((material: any, index: number) => ({
+              ordem: index + 1,
+              titulo: material.titulo.trim(),
+              url: material.url.trim(),
+            })),
+          },
         },
       };
     }
@@ -425,7 +432,7 @@ export class ItemsService {
       include: {
         livro: true,
         video: true,
-        curso: { include: { aulas: { orderBy: { ordem: 'asc' } } } },
+        curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
         categorias: true,
       },
     });
@@ -526,6 +533,14 @@ export class ItemsService {
                 thumbnailUrl: aula.thumbnailUrl || `https://img.youtube.com/vi/${aula.youtubeId}/hqdefault.jpg`,
               })),
             },
+            materiais: {
+              deleteMany: {},
+              create: (data.curso.materiais || []).map((material: any, index: number) => ({
+                ordem: index + 1,
+                titulo: material.titulo.trim(),
+                url: material.url.trim(),
+              })),
+            },
           },
         });
       }
@@ -536,7 +551,7 @@ export class ItemsService {
           categorias: { include: { categoria: true } },
           livro: { include: { acessos: { orderBy: { ordem: 'asc' } } } },
           video: true,
-          curso: { include: { aulas: { orderBy: { ordem: 'asc' } } } },
+          curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
         },
       });
     });

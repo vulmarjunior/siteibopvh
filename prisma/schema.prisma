@@ -511,6 +511,7 @@ model CuradoriaCurso {
   canal         String?
   thumbnailUrl  String?
   aulas         CuradoriaCursoAula[]
+  materiais     CuradoriaCursoMaterial[]
 
   @@index([itemId])
 }
@@ -529,6 +530,18 @@ model CuradoriaCursoAula {
   @@unique([cursoId, youtubeId])
   @@index([cursoId, ordem])
   @@index([youtubeId])
+}
+
+model CuradoriaCursoMaterial {
+  id       Int            @id @default(autoincrement())
+  cursoId  Int
+  curso    CuradoriaCurso @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  ordem    Int
+  titulo   String
+  url      String
+
+  @@unique([cursoId, ordem])
+  @@index([cursoId, ordem])
 }
 
 model CuradoriaCategoria {

@@ -145,6 +145,17 @@ export function validateCoursePayload(payload: any): ValidationResult<any> {
       ids.add(aula.youtubeId);
     });
   }
+  if (payload.materiais !== undefined && !Array.isArray(payload.materiais)) {
+    errors.push('A lista de materiais é inválida');
+  } else {
+    (payload.materiais || []).forEach((material: any, index: number) => {
+      if (!material.titulo || material.titulo.trim().length < 2) errors.push(`Material ${index + 1}: informe o nome`);
+      try {
+        const url = new URL(material.url);
+        if (!['http:', 'https:'].includes(url.protocol)) throw new Error('protocol');
+      } catch { errors.push(`Material ${index + 1}: informe um link válido`); }
+    });
+  }
   return { isValid: errors.length === 0, errors, data: errors.length === 0 ? payload : undefined };
 }
 

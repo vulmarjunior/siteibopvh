@@ -13,6 +13,8 @@ type CourseLessonFormData = {
   thumbnailUrl: string;
 };
 
+type CourseMaterialFormData = { key: string; titulo: string; url: string };
+
 export const VeredasItemFormPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const isEditing = Boolean(id);
@@ -58,7 +60,7 @@ export const VeredasItemFormPage: React.FC = () => {
 
   const [courseData, setCourseData] = useState({
     urlOriginal: '', playlistId: '', canal: '', thumbnailUrl: '',
-    aulas: [] as CourseLessonFormData[],
+    aulas: [] as CourseLessonFormData[], materiais: [] as CourseMaterialFormData[],
   });
 
   const [loading, setLoading] = useState(false);
@@ -138,6 +140,9 @@ export const VeredasItemFormPage: React.FC = () => {
                   urlOriginal: aula.urlOriginal || '',
                   youtubeId: aula.youtubeId || '',
                   thumbnailUrl: aula.thumbnailUrl || '',
+                })),
+                materiais: (item.curso.materiais || []).map((material: any, index: number) => ({
+                  key: `material-${material.id || index}`, titulo: material.titulo || '', url: material.url || '',
                 })),
               });
             }
@@ -749,7 +754,7 @@ function VideoFormInternal({
 }
 
 function CourseFormInternal({ data, onChange, setTitle }: {
-  data: { urlOriginal: string; playlistId: string; canal: string; thumbnailUrl: string; aulas: CourseLessonFormData[] };
+  data: { urlOriginal: string; playlistId: string; canal: string; thumbnailUrl: string; aulas: CourseLessonFormData[]; materiais: CourseMaterialFormData[] };
   onChange: React.Dispatch<React.SetStateAction<typeof data>>;
   setTitle: React.Dispatch<React.SetStateAction<string>>;
 }) {
@@ -800,6 +805,19 @@ function CourseFormInternal({ data, onChange, setTitle }: {
             <div className="flex items-center justify-between"><strong className="text-xs text-amber-300">Aula {index + 1}</strong><button type="button" aria-label={`Remover aula ${index + 1}`} onClick={() => onChange((current) => ({ ...current, aulas: current.aulas.filter((_, i) => i !== index) }))} className="text-stone-500 hover:text-red-400"><Trash2 className="w-4 h-4" /></button></div>
             <input type="url" required value={aula.urlOriginal} onChange={(event) => { const parsed = parseYoutubeUrl(event.target.value); updateLesson(index, { urlOriginal: event.target.value, youtubeId: parsed.youtubeId || '', thumbnailUrl: parsed.thumbnailUrl || '' }); }} onBlur={() => void readLesson(index)} placeholder="Link do vídeo desta aula" className="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs" />
             <input required value={aula.titulo} onChange={(event) => updateLesson(index, { titulo: event.target.value })} placeholder="Título da aula" className="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs" />
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center justify-between border-t border-stone-800 pt-5">
+        <div><h3 className="text-sm font-bold text-stone-200">Materiais complementares</h3><p className="text-[11px] text-stone-500">Somente links externos; nenhum arquivo será armazenado.</p></div>
+        <button type="button" onClick={() => onChange((current) => ({ ...current, materiais: [...current.materiais, { key: crypto.randomUUID(), titulo: '', url: '' }] }))} className="px-3 py-2 bg-stone-800 text-amber-300 rounded-lg text-xs font-bold flex items-center gap-1"><Plus className="w-4 h-4" /> Adicionar link</button>
+      </div>
+      <div className="space-y-3">
+        {data.materiais.map((material, index) => (
+          <div key={material.key} className="grid sm:grid-cols-[1fr_1.5fr_auto] gap-2 rounded-xl border border-stone-800 bg-stone-950 p-4">
+            <input required value={material.titulo} onChange={(event) => onChange((current) => ({ ...current, materiais: current.materiais.map((item, i) => i === index ? { ...item, titulo: event.target.value } : item) }))} placeholder="Nome do material" className="bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs" />
+            <input type="url" required value={material.url} onChange={(event) => onChange((current) => ({ ...current, materiais: current.materiais.map((item, i) => i === index ? { ...item, url: event.target.value } : item) }))} placeholder="https://..." className="bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs" />
+            <button type="button" aria-label={`Remover material ${index + 1}`} onClick={() => onChange((current) => ({ ...current, materiais: current.materiais.filter((_, i) => i !== index) }))} className="p-2 text-stone-500 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
           </div>
         ))}
       </div>

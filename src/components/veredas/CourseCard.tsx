@@ -4,10 +4,11 @@ import { GraduationCap, Play } from 'lucide-react';
 
 export const CourseCard: React.FC<{ item: any }> = ({ item }) => {
   const course = item.curso || {};
+  const thumbnailUrl = course.thumbnailUrl || course.aulas?.[0]?.thumbnailUrl || (course.aulas?.[0]?.youtubeId ? `https://img.youtube.com/vi/${course.aulas[0].youtubeId}/hqdefault.jpg` : null);
   return (
     <article className="group bg-stone-900 border border-stone-800 rounded-xl overflow-hidden hover:border-amber-700/60 transition-all flex flex-col h-full">
       <Link to={`/veredas/curso/${item.slug}`} className="relative aspect-video bg-stone-950 block overflow-hidden">
-        {course.thumbnailUrl ? <img src={course.thumbnailUrl} alt={item.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform" /> : <div className="w-full h-full flex items-center justify-center"><GraduationCap className="w-12 h-12 text-amber-600/50" /></div>}
+        {thumbnailUrl ? <img src={thumbnailUrl} alt={item.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform" /> : <div className="w-full h-full flex items-center justify-center"><GraduationCap className="w-12 h-12 text-amber-600/50" /></div>}
         <div className="absolute inset-0 bg-stone-950/30 flex items-center justify-center"><div className="w-12 h-12 rounded-full bg-amber-500/90 text-stone-950 flex items-center justify-center"><Play className="w-6 h-6 fill-current" /></div></div>
         <span className="absolute bottom-2 right-2 bg-stone-950/90 px-2 py-1 rounded text-[10px]">{course.aulas?.length || 0} aulas</span>
       </Link>
