@@ -4,7 +4,15 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/api/:path((?!cron/weekly-reading$|health$).*)",
+      "source": "/api/veredas/:path*",
+      "destination": "/api/veredas-entry?path=:path*"
+    },
+    {
+      "source": "/api/admin/:path*",
+      "destination": "/api/admin-entry?path=:path*"
+    },
+    {
+      "source": "/api/:path((?!cron/weekly-reading$|health$|veredas(?:/.*)?$|admin(?:/.*)?$).*)",
       "destination": "/api/index"
     },
     {
