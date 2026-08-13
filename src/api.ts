@@ -208,7 +208,7 @@ apiRouter.post("/relogio/reserve", async (req, res) => {
       // advisory lock prevents concurrent requests from accepting the same last vacancy.
       for (const currentDate of datesToReserve) {
         const lockKey = `prayer-slot:${currentDate}:${timeStart}`;
-        await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`;
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`;
 
         const [existingCount, duplicate] = await Promise.all([
           tx.reservation.count({ where: { date: currentDate, timeStart, cancelledAt: null } }),

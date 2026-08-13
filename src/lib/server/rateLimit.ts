@@ -23,7 +23,9 @@ export async function consumeRateLimit(
   const lockKey = `api-rate:${options.scope}:${hash}`;
 
   const allowed = await prisma.$transaction(async (tx) => {
-    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`;
+    // pg_advisory_xact_lock returns PostgreSQL void. $queryRaw attempts to
+    // deserialize that value and fails in Prisma before the protected action.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`;
     const count = await tx.apiRateLimitEvent.count({ where: { scope: options.scope, keyHash: hash, createdAt: { gte: since } } });
     if (count >= options.limit) return false;
     await tx.apiRateLimitEvent.create({ data: { scope: options.scope, keyHash: hash } });

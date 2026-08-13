@@ -18,7 +18,10 @@ export default function AdminLoginPage() {
     setError(null);
     try {
       const response = await fetch('/api/admin/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
-      const data = await response.json();
+      const contentType = response.headers.get('content-type') || '';
+      const data = contentType.includes('application/json')
+        ? await response.json()
+        : { error: response.ok ? 'Resposta inválida do servidor' : 'O servidor de autenticação está temporariamente indisponível' };
       if (!response.ok) throw new Error(data.error || 'Falha ao autenticar');
       saveAdminSession(data.user);
       const destination = (location.state as { from?: string } | null)?.from || '/admin';
