@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { getAdminAccessToken } from '../../../lib/admin/session';
 import { BookOpen, Film, ArrowLeft, Save, AlertCircle } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { BookAccessFields, BookAccessFormData } from '../../../components/veredas/BookAccessFields';
@@ -59,9 +58,7 @@ export const VeredasItemFormPage: React.FC = () => {
       .then((data) => { if (Array.isArray(data)) setCategoriasList(data); });
 
     if (id) {
-      getAdminAccessToken().then((token) => fetch(`/api/veredas/admin/items/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      }))
+      fetch(`/api/veredas/admin/items/${id}`)
         .then((r) => r.json())
         .then((item) => {
           if (item && !item.error) {
@@ -123,12 +120,10 @@ export const VeredasItemFormPage: React.FC = () => {
   const handleYoutubeParser = async () => {
     if (!videoData.urlOriginal) return;
     try {
-      const token = await getAdminAccessToken();
       const res = await fetch('/api/veredas/admin/importar/youtube', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ url: videoData.urlOriginal }),
       });
@@ -156,12 +151,10 @@ export const VeredasItemFormPage: React.FC = () => {
     setErrorMsg(null);
     setSuccessMsg(null);
     try {
-      const token = await getAdminAccessToken();
       const res = await fetch('/api/veredas/admin/importar/amazon', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ url: access.url, affiliateTag: access.affiliateTag || undefined }),
       });
@@ -188,7 +181,6 @@ export const VeredasItemFormPage: React.FC = () => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: 'Bearer ' + token,
             },
             body: JSON.stringify({ isbn: parsed.asin }),
           });
@@ -231,12 +223,10 @@ export const VeredasItemFormPage: React.FC = () => {
     setErrorMsg(null);
     setSuccessMsg(null);
     try {
-      const token = await getAdminAccessToken();
       const res = await fetch('/api/veredas/admin/importar/isbn', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + token,
         },
         body: JSON.stringify({ isbn }),
       });
@@ -273,12 +263,10 @@ export const VeredasItemFormPage: React.FC = () => {
     setCreatingTheme(true);
     setErrorMsg(null);
     try {
-      const token = await getAdminAccessToken();
       const response = await fetch('/api/veredas/admin/categorias', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + token,
         },
         body: JSON.stringify({ nome }),
       });
@@ -302,12 +290,6 @@ export const VeredasItemFormPage: React.FC = () => {
     setErrorMsg(null);
 
     try {
-      const token = await getAdminAccessToken();
-      if (!token) {
-        navigate('/admin/login');
-        return;
-      }
-
       const payload = {
         tipo,
         titulo,
@@ -327,7 +309,6 @@ export const VeredasItemFormPage: React.FC = () => {
         method: isEditing ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });

@@ -76,6 +76,12 @@ Validação final em produção com credenciais fictícias:
 
 O usuário confirmou que o problema visual permanece em um vídeo depois de entrar na Central.
 
+### Novo sintoma relatado na retomada
+
+Ao tentar editar e salvar qualquer um dos dois vídeos abaixo, o usuário era enviado de volta para a tela de login. A causa foi localizada no formulário administrativo do Veredas: ele ainda exigia o token Bearer legado no `localStorage`, embora o login atual use cookie HttpOnly. Como o token legado é removido após o login, o formulário interpretava a ausência como logout e redirecionava antes de enviar a alteração.
+
+O formulário foi ajustado para usar o cookie de sessão nas consultas, importadores e salvamento, mantendo a validação de autenticação no servidor.
+
 A causa mais provável não é mais o frontend: registros históricos continuam com `incorporavel=false`. Eles não foram reativados automaticamente por segurança.
 
 Na resposta pública de produção observada durante a sessão, estes vídeos estavam desativados:
