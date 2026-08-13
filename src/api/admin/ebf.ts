@@ -4,7 +4,9 @@ import { createAdminAuthMiddleware, type AdminAuthenticatedRequest } from './aut
 import { hasAdminPermission } from '../../lib/admin/permissions.js';
 
 function csvCell(value: unknown): string {
-  return `"${String(value ?? '').replace(/"/g, '""')}"`;
+  const raw = String(value ?? '');
+  const safe = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
+  return `"${safe.replace(/"/g, '""')}"`;
 }
 
 export function createAdminEbfRouter(prisma: PrismaClient) {

@@ -1,18 +1,23 @@
 import { BookOpen, CalendarClock, LayoutDashboard, Mail, Shield, Users } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { getStoredAdminUser } from '../../lib/admin/session';
+import { hasAdminPermission, type AdminPermission } from '../../lib/admin/permissions';
 
 const items = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, matches: (path: string) => path === '/admin' },
-  { label: 'Módulos', href: '/admin/modulos', icon: LayoutDashboard, matches: (path: string) => path.startsWith('/admin/modulos') },
-  { label: 'Séries', href: '/admin/series', icon: CalendarClock, matches: (path: string) => path.startsWith('/admin/series') },
-  { label: 'E-mails', href: '/admin/emails', icon: Mail, matches: (path: string) => path.startsWith('/admin/emails') },
-  { label: 'Veredas', href: '/admin/veredas', icon: BookOpen, matches: (path: string) => path.startsWith('/admin/veredas') },
-  { label: 'Relógio', href: '/admin/relogio', icon: Shield, matches: (path: string) => path.startsWith('/admin/relogio') },
-  { label: 'EBF', href: '/admin/ebf', icon: Users, matches: (path: string) => path.startsWith('/admin/ebf') },
+  { label: 'Módulos', href: '/admin/modulos', icon: LayoutDashboard, permission: 'modules:manage', matches: (path: string) => path.startsWith('/admin/modulos') },
+  { label: 'Séries', href: '/admin/series', icon: CalendarClock, permission: 'series:edit', matches: (path: string) => path.startsWith('/admin/series') },
+  { label: 'E-mails', href: '/admin/emails', icon: Mail, permission: 'email:manage', matches: (path: string) => path.startsWith('/admin/emails') },
+  { label: 'Veredas', href: '/admin/veredas', icon: BookOpen, permission: 'veredas:manage', matches: (path: string) => path.startsWith('/admin/veredas') },
+  { label: 'Relógio', href: '/admin/relogio', icon: Shield, permission: 'prayer:manage', matches: (path: string) => path.startsWith('/admin/relogio') },
+  { label: 'EBF', href: '/admin/ebf', icon: Users, permission: 'ebf:manage', matches: (path: string) => path.startsWith('/admin/ebf') },
+  { label: 'Usuários', href: '/admin/usuarios', icon: Users, permission: 'users:manage', matches: (path: string) => path.startsWith('/admin/usuarios') },
 ];
 
 export default function AdminGlobalNavigation() {
   const { pathname } = useLocation();
+  const role = getStoredAdminUser()?.role;
+  const visibleItems = items.filter((item) => !('permission' in item) || Boolean(role && hasAdminPermission(role, item.permission as AdminPermission)));
 
   return <nav aria-label="Navegação principal da Central" className="sticky top-0 z-40 border-b border-stone-800 bg-stone-950/95 text-stone-200 shadow-lg backdrop-blur">
     <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2">
@@ -21,7 +26,7 @@ export default function AdminGlobalNavigation() {
       </Link>
       <div className="h-6 w-px shrink-0 bg-stone-800" />
       <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto" role="list">
-        {items.map(({ label, href, icon: Icon, matches }) => {
+        {visibleItems.map(({ label, href, icon: Icon, matches }) => {
           const active = matches(pathname);
           return <Link
             key={href}

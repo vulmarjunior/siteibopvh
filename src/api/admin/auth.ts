@@ -2,6 +2,8 @@ import express, { NextFunction, Request, Response } from 'express';
 import type { CuradoriaUsuario, PrismaClient } from '@prisma/client';
 import { getSupabaseServer } from '../../lib/veredas/supabaseServer.js';
 import { mapLegacyCuradoriaRole, type AdminRole } from '../../lib/admin/permissions.js';
+import { consumeRateLimit } from '../../lib/server/rateLimit.js';
+import { clearAdminSessionCookie, getAdminAuthToken, isUnsafeCrossOriginRequest, setAdminSessionCookie } from '../../lib/admin/authCookie.js';
 
 export interface AdminUser {
   id: string;
@@ -20,20 +22,24 @@ function toAdminUser(user: CuradoriaUsuario): AdminUser {
 
 export function createAdminAuthMiddleware(prisma: PrismaClient) {
   return async (req: AdminAuthenticatedRequest, res: Response, next: NextFunction) => {
-    const authorization = req.headers.authorization;
-    if (!authorization?.startsWith('Bearer ')) {
+    const auth = getAdminAuthToken(req);
+    if (!auth) {
       return res.status(401).json({ error: 'Token de autenticação não fornecido' });
     }
+    if (isUnsafeCrossOriginRequest(req, auth.source)) return res.status(403).json({ error: 'Origem da requisição não autorizada' });
 
     try {
-      const token = authorization.slice(7).trim();
-      const { data: { user }, error } = await getSupabaseServer().auth.getUser(token);
-      if (error || !user) return res.status(401).json({ error: 'Sessão inválida ou expirada' });
+      const { data: { user }, error } = await getSupabaseServer().auth.getUser(auth.token);
+      if (error || !user) {
+        if (auth.source === 'cookie') clearAdminSessionCookie(res);
+        return res.status(401).json({ error: 'Sessão inválida ou expirada' });
+      }
 
       const legacyUser = await prisma.curadoriaUsuario.findUnique({ where: { id: user.id } });
       if (!legacyUser || !legacyUser.ativo) return res.status(403).json({ error: 'Usuário sem acesso à Central Administrativa' });
 
       req.adminUser = toAdminUser(legacyUser);
+      if (auth.source === 'bearer') setAdminSessionCookie(res, auth.token);
       next();
     } catch (error) {
       console.error('Admin authentication error:', error);
@@ -50,6 +56,8 @@ export function createAdminAuthRouter(prisma: PrismaClient) {
     const email = typeof req.body?.email === 'string' ? req.body.email.trim() : '';
     const password = typeof req.body?.password === 'string' ? req.body.password : '';
     if (!email || !password) return res.status(400).json({ error: 'E-mail e senha são obrigatórios' });
+    const rateLimit = await consumeRateLimit(prisma, req, { scope: 'admin-login', limit: 8, windowMs: 15 * 60 * 1000, discriminator: email.toLowerCase() });
+    if (!rateLimit.allowed) { res.setHeader('Retry-After', rateLimit.retryAfterSeconds); return res.status(429).json({ error: 'Muitas tentativas. Aguarde antes de tentar novamente.' }); }
 
     try {
       const { data, error } = await getSupabaseServer().auth.signInWithPassword({ email, password });
@@ -60,7 +68,8 @@ export function createAdminAuthRouter(prisma: PrismaClient) {
 
       const user = toAdminUser(legacyUser);
       await prisma.curadoriaAuditoria.create({ data: { usuarioId: user.id, usuarioEmail: user.email, acao: 'LOGIN', entidade: 'AdminSession', entidadeId: user.id } }).catch((auditError) => console.error('Admin login audit error:', auditError));
-      return res.json({ access_token: data.session.access_token, user });
+      setAdminSessionCookie(res, data.session.access_token, data.session.expires_at);
+      return res.json({ user });
     } catch (error) {
       console.error('Admin login error:', error);
       return res.status(500).json({ error: 'Erro no servidor de autenticação' });
@@ -70,6 +79,9 @@ export function createAdminAuthRouter(prisma: PrismaClient) {
   router.get('/me', authenticate, (req: AdminAuthenticatedRequest, res) => res.json(req.adminUser));
   router.post('/logout', authenticate, async (req: AdminAuthenticatedRequest, res) => {
     const user = req.adminUser!;
+    const auth = getAdminAuthToken(req);
+    if (auth) await getSupabaseServer().auth.admin.signOut(auth.token, 'local').catch((logoutError) => console.error('Supabase logout error:', logoutError));
+    clearAdminSessionCookie(res);
     await prisma.curadoriaAuditoria.create({ data: { usuarioId: user.id, usuarioEmail: user.email, acao: 'LOGOUT', entidade: 'AdminSession', entidadeId: user.id } }).catch((auditError) => console.error('Admin logout audit error:', auditError));
     return res.json({ success: true });
   });

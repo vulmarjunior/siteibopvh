@@ -9,7 +9,21 @@ function idParam(value: string | string[]): number | null {
 }
 
 function csvCell(value: unknown): string {
-  return `"${String(value ?? '').replace(/"/g, '""')}"`;
+  const raw = String(value ?? '');
+  const safe = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
+  return `"${safe.replace(/"/g, '""')}"`;
+}
+
+const PRAYER_CONFIG_KEYS = new Set(['slot_capacity', 'email_encouragement']);
+
+function validatePrayerConfig(key: string, value: string): string | null {
+  if (!PRAYER_CONFIG_KEYS.has(key)) return 'Configuração não permitida';
+  if (key === 'slot_capacity') {
+    const capacity = Number(value);
+    if (!Number.isInteger(capacity) || capacity < 1 || capacity > 100) return 'A capacidade deve ser um inteiro entre 1 e 100';
+  }
+  if (key === 'email_encouragement' && value.length > 5000) return 'O texto de encorajamento excede 5.000 caracteres';
+  return null;
 }
 
 export function createAdminPrayerRouter(prisma: PrismaClient) {
@@ -77,11 +91,12 @@ export function createAdminPrayerRouter(prisma: PrismaClient) {
     res.send(`\uFEFFID,Data,Inicio,Fim,Nome,Email,Temas,ReservadoEm\n${rows.join('\n')}`);
   });
 
-  router.get('/config', async (_req, res) => res.json(await prisma.config.findMany({ orderBy: { key: 'asc' } })));
+  router.get('/config', async (_req, res) => res.json(await prisma.config.findMany({ where: { key: { in: [...PRAYER_CONFIG_KEYS] } }, orderBy: { key: 'asc' } })));
   router.put('/config/:key', async (req: AdminAuthenticatedRequest, res) => {
     const key = Array.isArray(req.params.key) ? req.params.key[0] : req.params.key;
     const value = String(req.body?.value ?? '');
-    if (!key || key.length > 100 || value.length > 5000) return res.status(400).json({ error: 'Configuração inválida' });
+    const validationError = validatePrayerConfig(key, value);
+    if (validationError) return res.status(400).json({ error: validationError });
     const updated = await prisma.config.upsert({ where: { key }, update: { value }, create: { key, value } });
     const user = req.adminUser!;
     await prisma.curadoriaAuditoria.create({ data: { usuarioId: user.id, usuarioEmail: user.email, acao: 'ATUALIZAR_CONFIG_ORACAO', entidade: 'Config', entidadeId: key } });

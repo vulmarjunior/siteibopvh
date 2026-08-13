@@ -709,6 +709,19 @@ function VideoFormInternal({
       ) : (
         <p className="text-[11px] text-stone-500">Ao sair do campo, título, canal e miniatura serão preenchidos automaticamente.</p>
       )}
+
+      <label className="flex items-start gap-3 rounded-lg border border-stone-800 bg-stone-950 p-3 text-xs text-stone-300">
+        <input
+          type="checkbox"
+          checked={Boolean(data.incorporavel)}
+          onChange={(event) => onChange({ ...data, incorporavel: event.target.checked })}
+          className="mt-0.5 h-4 w-4 accent-amber-500"
+        />
+        <span>
+          <strong className="block text-stone-200">Reproduzir dentro do Veredas</strong>
+          Desative somente quando o YouTube bloquear a incorporação. Vídeos antigos podem precisar desta opção reativada manualmente.
+        </span>
+      </label>
     </div>
   );
 }

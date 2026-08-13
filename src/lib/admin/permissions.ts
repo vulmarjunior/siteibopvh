@@ -24,6 +24,14 @@ export function hasAdminPermission(role: AdminRole, permission: AdminPermission)
   return ROLE_PERMISSIONS[role].includes(permission);
 }
 
-export function mapLegacyCuradoriaRole(role: 'ADMIN' | 'CURADOR'): AdminRole {
-  return role === 'ADMIN' ? 'ADMIN_GERAL' : 'CURADOR_VEREDAS';
+export function mapLegacyCuradoriaRole(role: 'ADMIN' | 'CURADOR' | 'EDITOR' | 'OPERADOR'): AdminRole {
+  if (role === 'ADMIN') return 'ADMIN_GERAL';
+  if (role === 'CURADOR') return 'CURADOR_VEREDAS';
+  return role;
+}
+
+export function toPersistedAdminRole(role: AdminRole): 'ADMIN' | 'CURADOR' | 'EDITOR' | 'OPERADOR' {
+  if (role === 'ADMIN_GERAL') return 'ADMIN';
+  if (role === 'CURADOR_VEREDAS') return 'CURADOR';
+  return role;
 }

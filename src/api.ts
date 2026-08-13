@@ -15,8 +15,10 @@ import { createAdminSeriesRouter } from "./api/admin/series.js";
 import { createAdminSeriesEmailRouter } from "./api/admin/seriesEmail.js";
 import { createAdminPrayerRouter } from "./api/admin/prayer.js";
 import { createAdminEbfRouter } from "./api/admin/ebf.js";
+import { createAdminUsersRouter } from "./api/admin/users.js";
 import { createPublicEbfRouter } from "./api/public/ebf.js";
 import { createPublicParousiaRouter } from "./api/public/parousia.js";
+import { consumeRateLimit } from "./lib/server/rateLimit.js";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -63,6 +65,7 @@ apiRouter.use("/admin/series", createAdminSeriesRouter(prisma));
 apiRouter.use("/admin/series-email", createAdminSeriesEmailRouter(prisma));
 apiRouter.use("/admin/prayer", createAdminPrayerRouter(prisma));
 apiRouter.use("/admin/ebf", createAdminEbfRouter(prisma));
+apiRouter.use("/admin/users", createAdminUsersRouter(prisma));
 apiRouter.use("/ebf", createPublicEbfRouter(prisma, getResend));
 apiRouter.use("/parousia", createPublicParousiaRouter(prisma, getResend));
 apiRouter.use("/modules", createPublicModulesRouter(prisma));
@@ -165,6 +168,8 @@ apiRouter.get("/relogio/slots", async (req, res) => {
 
 // Create a reservation
 apiRouter.post("/relogio/reserve", async (req, res) => {
+  const rateLimit = await consumeRateLimit(prisma, req, { scope: 'prayer-reservation', limit: 12, windowMs: 60 * 60 * 1000 });
+  if (!rateLimit.allowed) { res.setHeader('Retry-After', rateLimit.retryAfterSeconds); return res.status(429).json({ error: 'Limite de reservas atingido. Tente novamente mais tarde.' }); }
   if (!(await isModulePublicOperationOpen(prisma, "relogio"))) {
     return res.status(410).json({ error: "As reservas do Relógio de Oração estão fechadas neste momento." });
   }
@@ -185,68 +190,66 @@ apiRouter.post("/relogio/reserve", async (req, res) => {
       return res.status(400).json({ error: "Não é possível reservar um horário que já passou." });
     }
 
-    // Check capacity for ALL requested days first
-    const capacityConfig = await prisma.config.findUnique({ where: { key: "slot_capacity" } });
-    const capacity = parseInt(capacityConfig?.value || "4");
-
     const startDate = dayjs.tz(date, TZ);
     const datesToReserve: string[] = [];
 
     for (let i = 0; i < numDays; i++) {
       const current = startDate.add(i, 'day');
-      const currentStr = current.format("YYYY-MM-DD");
-      
-      const existingCount = await prisma.reservation.count({
-        where: {
-          date: currentStr,
-          timeStart,
-          cancelledAt: null,
-        },
-      });
-
-      if (existingCount >= capacity) {
-        return res.status(400).json({ 
-          error: `O horário ${timeStart} está lotado no dia ${current.format('DD/MM/YYYY')}.` 
-        });
-      }
-
-      // Check duplicate email for same slot on this day
-      const duplicate = await prisma.reservation.findFirst({
-        where: {
-          date: currentStr,
-          timeStart,
-          email,
-          cancelledAt: null,
-        },
-      });
-
-      if (duplicate) {
-        return res.status(400).json({ 
-          error: `Você já reservou o horário ${timeStart} no dia ${current.format('DD/MM/YYYY')}.` 
-        });
-      }
-      
-      datesToReserve.push(currentStr);
+      datesToReserve.push(current.format("YYYY-MM-DD"));
     }
 
-    // Create all reservations
-    const reservations = [];
-    for (const d of datesToReserve) {
-      const cancelToken = crypto.randomBytes(32).toString("hex");
-      const reservation = await prisma.reservation.create({
-        data: {
-          date: d,
-          timeStart,
-          timeEnd,
-          name,
-          email,
-          prayerThemes: JSON.stringify(prayerThemes || []),
-          personalRequest,
-          cancelToken,
-        },
-      });
-      reservations.push(reservation);
-    }
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const reservations = await prisma.$transaction(async (tx) => {
+      const capacityConfig = await tx.config.findUnique({ where: { key: "slot_capacity" } });
+      const parsedCapacity = Number.parseInt(capacityConfig?.value || "4", 10);
+      const capacity = Number.isInteger(parsedCapacity) && parsedCapacity > 0 ? parsedCapacity : 4;
+
+      // Serialize reservations for each date/time slot. The transaction-level
+      // advisory lock prevents concurrent requests from accepting the same last vacancy.
+      for (const currentDate of datesToReserve) {
+        const lockKey = `prayer-slot:${currentDate}:${timeStart}`;
+        await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`;
+
+        const [existingCount, duplicate] = await Promise.all([
+          tx.reservation.count({ where: { date: currentDate, timeStart, cancelledAt: null } }),
+          tx.reservation.findFirst({ where: { date: currentDate, timeStart, email: normalizedEmail, cancelledAt: null }, select: { id: true } }),
+        ]);
+
+        if (existingCount >= capacity) {
+          throw new Error(`SLOT_FULL:${currentDate}`);
+        }
+        if (duplicate) {
+          throw new Error(`DUPLICATE_SLOT:${currentDate}`);
+        }
+      }
+
+      const created = [];
+      for (const currentDate of datesToReserve) {
+        created.push(await tx.reservation.create({
+          data: {
+            date: currentDate,
+            timeStart,
+            timeEnd,
+            name: String(name).trim(),
+            email: normalizedEmail,
+            prayerThemes: JSON.stringify(prayerThemes || []),
+            personalRequest,
+            cancelToken: crypto.randomBytes(32).toString("hex"),
+          },
+        }));
+      }
+      return created;
+    }).catch((transactionError) => {
+      const message = transactionError instanceof Error ? transactionError.message : '';
+      const [code, failedDate] = message.split(':');
+      if (code === 'SLOT_FULL') {
+        throw Object.assign(new Error(`O horário ${timeStart} está lotado no dia ${dayjs(failedDate).format('DD/MM/YYYY')}.`), { statusCode: 409 });
+      }
+      if (code === 'DUPLICATE_SLOT') {
+        throw Object.assign(new Error(`Você já reservou o horário ${timeStart} no dia ${dayjs(failedDate).format('DD/MM/YYYY')}.`), { statusCode: 409 });
+      }
+      throw transactionError;
+    });
 
     // Send email for the first one (or a summary)
     const resend = getResend();
@@ -401,6 +404,10 @@ apiRouter.post("/relogio/reserve", async (req, res) => {
 
     res.json({ success: true, count: reservations.length });
   } catch (error) {
+    const statusCode = typeof (error as { statusCode?: unknown })?.statusCode === 'number'
+      ? (error as { statusCode: number }).statusCode
+      : 500;
+    if (statusCode !== 500) return res.status(statusCode).json({ error: (error as Error).message });
     console.error("Error creating reservation:", error);
     res.status(500).json({ error: "Failed to create reservation" });
   }

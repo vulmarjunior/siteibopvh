@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import LoadingSpinner from '../ui/LoadingSpinner';
-import { clearAdminSession, getAdminAccessToken } from '../../lib/admin/session';
+import { clearAdminSession, getAdminAccessToken, saveAdminSession } from '../../lib/admin/session';
 import AdminGlobalNavigation from './AdminGlobalNavigation';
 
 export default function AdminProtectedRoute() {
@@ -12,14 +12,15 @@ export default function AdminProtectedRoute() {
     let active = true;
     async function validateSession() {
       const token = await getAdminAccessToken();
-      if (!token) return active && setStatus('denied');
       try {
-        const response = await fetch('/api/admin/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+        const response = await fetch('/api/admin/auth/me', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
         if (!response.ok) {
           await clearAdminSession();
           if (active) setStatus('denied');
           return;
         }
+        const user = await response.json();
+        saveAdminSession(user);
         if (active) setStatus('allowed');
       } catch {
         if (active) setStatus('denied');

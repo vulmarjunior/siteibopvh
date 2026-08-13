@@ -16,13 +16,27 @@ export function parseYoutubeUrl(url: string): YoutubeParseResult {
   }
 
   const trimmed = url.trim();
+  let youtubeId: string | null = /^[a-zA-Z0-9_-]{11}$/.test(trimmed) ? trimmed : null;
 
-  // RegEx for standard watch, shortened youtu.be, embed, and shorts links
-  const regex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/;
-  const match = trimmed.match(regex);
+  if (!youtubeId) {
+    try {
+      const parsedUrl = new URL(trimmed);
+      const hostname = parsedUrl.hostname.toLowerCase().replace(/^www\./, '').replace(/^m\./, '');
+      if (hostname === 'youtu.be') {
+        youtubeId = parsedUrl.pathname.split('/').filter(Boolean)[0] || null;
+      } else if (hostname === 'youtube.com' || hostname === 'youtube-nocookie.com') {
+        youtubeId = parsedUrl.searchParams.get('v');
+        if (!youtubeId) {
+          const [route, id] = parsedUrl.pathname.split('/').filter(Boolean);
+          if (['embed', 'shorts', 'live', 'v'].includes(route)) youtubeId = id || null;
+        }
+      }
+    } catch {
+      youtubeId = null;
+    }
+  }
 
-  if (match && match[1]) {
-    const youtubeId = match[1];
+  if (youtubeId && /^[a-zA-Z0-9_-]{11}$/.test(youtubeId)) {
     return {
       youtubeId,
       thumbnailUrl: `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`,

@@ -15,6 +15,19 @@ describe('parseYoutubeUrl', () => {
     expect(res.youtubeId).toBe('dQw4w9WgXcQ');
   });
 
+  it.each([
+    'https://www.youtube.com/live/dQw4w9WgXcQ?si=example',
+    'https://youtube.com/shorts/dQw4w9WgXcQ',
+    'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
+    'dQw4w9WgXcQ',
+  ])('should extract youtubeId from supported format %s', (url) => {
+    expect(parseYoutubeUrl(url).youtubeId).toBe('dQw4w9WgXcQ');
+  });
+
+  it('should reject lookalike domains', () => {
+    expect(parseYoutubeUrl('https://youtube.com.example.org/watch?v=dQw4w9WgXcQ').isValid).toBe(false);
+  });
+
   it('should return error for invalid URL', () => {
     const res = parseYoutubeUrl('not-a-url');
     expect(res.isValid).toBe(false);

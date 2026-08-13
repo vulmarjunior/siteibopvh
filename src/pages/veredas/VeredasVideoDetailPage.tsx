@@ -67,6 +67,12 @@ export const VeredasVideoDetailPage: React.FC = () => {
   const urlOriginal = video.urlOriginal;
   const canal = video.canal;
   const participantes = video.participantes || [];
+  const fallbackTitle = youtubeId
+    ? 'Assistir diretamente no YouTube'
+    : 'Vídeo do YouTube não identificado';
+  const fallbackMessage = youtubeId
+    ? 'A incorporação deste vídeo foi desativada na curadoria. Você ainda pode assistir pela página original.'
+    : 'Não foi possível identificar o vídeo a partir da URL cadastrada. A curadoria precisa revisar este conteúdo.';
 
   return (
     <div className="min-h-screen bg-stone-950 text-stone-100 font-sans flex flex-col">
@@ -110,10 +116,10 @@ export const VeredasVideoDetailPage: React.FC = () => {
               <div className="relative z-10 space-y-3">
                 <Play className="w-16 h-16 text-amber-500 mx-auto" />
                 <h3 className="font-serif text-lg font-bold text-stone-200">
-                  Assistir diretamente no YouTube
+                  {fallbackTitle}
                 </h3>
                 <p className="text-xs text-stone-400 max-w-md">
-                  Este vídeo possui restrição de incorporação em sites externos ou deve ser assistido diretamente na página original.
+                  {fallbackMessage}
                 </p>
                 <a
                   href={urlOriginal}
