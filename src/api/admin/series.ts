@@ -3,7 +3,6 @@ import type { Prisma, PrismaClient } from '@prisma/client';
 import { createAdminAuthMiddleware, type AdminAuthenticatedRequest } from './auth.js';
 import { hasAdminPermission } from '../../lib/admin/permissions.js';
 import { extractYoutubeId } from '../../lib/editorial/service.js';
-import { sanitizeEditorialHtml } from '../../lib/editorial/sanitizeContent.js';
 
 const seriesInclude = {
   sections: { orderBy: { order: 'asc' as const } },
@@ -13,7 +12,8 @@ const slugify = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036
 const text = (value: unknown) => typeof value === 'string' ? value.trim() : '';
 const optional = (value: unknown) => text(value) || null;
 
-function messageData(body: any) {
+async function messageData(body: any) {
+  const { sanitizeEditorialHtml } = await import('../../lib/editorial/sanitizeContent.js');
   const title = text(body.title); const biblicalText = text(body.biblicalText); const scheduledFor = new Date(body.scheduledFor);
   const order = Number(body.order);
   if (!title || !biblicalText || !Number.isInteger(order) || order < 1 || Number.isNaN(scheduledFor.getTime())) throw new Error('Preencha número, título, data e texto bíblico.');
@@ -69,7 +69,7 @@ export function createAdminSeriesRouter(prisma: PrismaClient) {
   router.post('/:id/messages', async (req: AdminAuthenticatedRequest, res) => {
     const seriesId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     try {
-      const data = messageData(req.body);
+      const data = await messageData(req.body);
       console.info('[admin-series] creating message', { seriesId, contentHtmlLength: data.core.contentHtml?.length ?? 0 });
       if (data.core.status === 'PUBLISHED' && !hasAdminPermission(req.adminUser!.role, 'series:publish')) return res.status(403).json({ error: 'Sem permissão para publicar.' });
       const created = await prisma.editorialMessage.create({ data: { ...data.core, seriesId, media: { create: data.media }, materials: { create: data.materials }, readingPlan: data.readingPlan ? { create: { theme: data.readingPlan.theme, days: { create: data.readingPlan.days } } } : undefined }, include: seriesInclude.messages.include });
@@ -81,7 +81,7 @@ export function createAdminSeriesRouter(prisma: PrismaClient) {
     const seriesId = Array.isArray(req.params.seriesId) ? req.params.seriesId[0] : req.params.seriesId;
     const messageId = Array.isArray(req.params.messageId) ? req.params.messageId[0] : req.params.messageId;
     try {
-      const data = messageData(req.body);
+      const data = await messageData(req.body);
       console.info('[admin-series] updating message', { messageId, contentHtmlLength: data.core.contentHtml?.length ?? 0 });
       const before = await prisma.editorialMessage.findFirst({ where: { id: messageId, seriesId }, select: { status: true } });
       if (!before) return res.status(404).json({ error: 'Mensagem não encontrada nesta série.' });
