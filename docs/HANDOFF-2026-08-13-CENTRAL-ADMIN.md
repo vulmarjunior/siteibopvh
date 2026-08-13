@@ -2,6 +2,15 @@
 
 Atualizado em 13 de agosto de 2026.
 
+## Veredas — cursos e playlists do YouTube
+
+- O cadastro agora distingue `LIVRO`, `VIDEO` (um vídeo) e `CURSO` (uma playlist organizada em aulas).
+- Cursos armazenam a URL/ID da playlist e uma lista ordenada de aulas com título, URL, ID e miniatura do YouTube.
+- O catálogo ganhou `/veredas/cursos`; cada curso possui página própria em `/veredas/curso/:slug`.
+- O usuário navega pela lista de aulas ou pelos botões “Aula anterior” e “Próxima aula”.
+- As aulas são incluídas manualmente e ordenadas no formulário, sem dependência da API autenticada do YouTube.
+- Migração de produção aplicada: `20260813230605_add_veredas_courses.sql`.
+
 ## Estado oficial
 
 - Repositório: `https://github.com/vulmarjunior/siteibopvh`

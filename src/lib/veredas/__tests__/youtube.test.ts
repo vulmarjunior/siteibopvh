@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseYoutubeUrl } from '../youtube';
+import { parseYoutubePlaylistUrl, parseYoutubeUrl } from '../youtube';
 
 describe('parseYoutubeUrl', () => {
   it('should extract youtubeId from watch?v= URL', () => {
@@ -32,5 +32,26 @@ describe('parseYoutubeUrl', () => {
     const res = parseYoutubeUrl('not-a-url');
     expect(res.isValid).toBe(false);
     expect(res.youtubeId).toBeNull();
+  });
+});
+
+describe('parseYoutubePlaylistUrl', () => {
+  it('extracts playlist and selected lesson from a watch URL', () => {
+    const result = parseYoutubePlaylistUrl('https://www.youtube.com/watch?v=bC7xJEInK5Y&list=PLRPNvughqc8TZCaQ5Qk5Jv3udPxuecoR4');
+    expect(result).toMatchObject({
+      isValid: true,
+      playlistId: 'PLRPNvughqc8TZCaQ5Qk5Jv3udPxuecoR4',
+      firstVideoId: 'bC7xJEInK5Y',
+      embedUrl: 'https://www.youtube.com/embed/videoseries?list=PLRPNvughqc8TZCaQ5Qk5Jv3udPxuecoR4',
+    });
+  });
+
+  it('accepts a pure playlist URL', () => {
+    expect(parseYoutubePlaylistUrl('https://www.youtube.com/playlist?list=PLRPNvughqc8TZCaQ5Qk5Jv3udPxuecoR4').playlistId)
+      .toBe('PLRPNvughqc8TZCaQ5Qk5Jv3udPxuecoR4');
+  });
+
+  it('rejects a video without a playlist', () => {
+    expect(parseYoutubePlaylistUrl('https://youtu.be/bC7xJEInK5Y').isValid).toBe(false);
   });
 });

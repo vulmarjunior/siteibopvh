@@ -5,6 +5,7 @@ import { VeredasNavbar } from '../../components/veredas/VeredasNavbar';
 import { VeredasFooter } from '../../components/veredas/VeredasFooter';
 import { BookCard } from '../../components/veredas/BookCard';
 import { VideoCard } from '../../components/veredas/VideoCard';
+import { CourseCard } from '../../components/veredas/CourseCard';
 import { Helmet } from 'react-helmet-async';
 
 export const VeredasHomePage: React.FC = () => {
@@ -117,7 +118,7 @@ export const VeredasHomePage: React.FC = () => {
                   />
                 ) : (
                   <img
-                    src={destaquePrincipal.video?.thumbnailUrl || '/placeholder-video.png'}
+                    src={(destaquePrincipal.tipo === 'CURSO' ? destaquePrincipal.curso?.thumbnailUrl : destaquePrincipal.video?.thumbnailUrl) || '/placeholder-video.png'}
                     alt={destaquePrincipal.titulo}
                     className="w-full aspect-video object-cover rounded-lg shadow-2xl border border-stone-800"
                   />
@@ -148,7 +149,7 @@ export const VeredasHomePage: React.FC = () => {
 
                 <div className="pt-2">
                   <Link
-                    to={destaquePrincipal.tipo === 'LIVRO' ? `/veredas/livro/${destaquePrincipal.slug}` : `/veredas/video/${destaquePrincipal.slug}`}
+                    to={destaquePrincipal.tipo === 'LIVRO' ? `/veredas/livro/${destaquePrincipal.slug}` : destaquePrincipal.tipo === 'VIDEO' ? `/veredas/video/${destaquePrincipal.slug}` : `/veredas/curso/${destaquePrincipal.slug}`}
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs sm:text-sm rounded-lg transition-colors shadow"
                   >
                     Acessar indicação completa <ArrowRight className="w-4 h-4" />
@@ -212,8 +213,10 @@ export const VeredasHomePage: React.FC = () => {
               {recentes.map((item) => (
                 item.tipo === 'LIVRO' ? (
                   <BookCard key={item.id} item={item} />
-                ) : (
+                ) : item.tipo === 'VIDEO' ? (
                   <VideoCard key={item.id} item={item} />
+                ) : (
+                  <CourseCard key={item.id} item={item} />
                 )
               ))}
             </div>

@@ -78,7 +78,7 @@ export function validateItemPayload(payload: any): ValidationResult<any> {
 
   const tiposValidos = Object.values(CuradoriaTipoItem);
   if (!payload.tipo || !tiposValidos.includes(payload.tipo)) {
-    errors.push('Tipo de item (VIDEO ou LIVRO) é inválido');
+    errors.push('Tipo de item (VÍDEO, LIVRO ou CURSO) é inválido');
   }
 
   const statusValidos = Object.values(CuradoriaStatus);
@@ -102,6 +102,11 @@ export function validateItemPayload(payload: any): ValidationResult<any> {
     errors.push(...videoValidation.errors);
   }
 
+  if (payload.tipo === CuradoriaTipoItem.CURSO) {
+    const courseValidation = validateCoursePayload(payload.curso || {});
+    errors.push(...courseValidation.errors);
+  }
+
   if (payload.status && !statusValidos.includes(payload.status)) {
     errors.push('Status informado é inválido');
   }
@@ -115,6 +120,32 @@ export function validateItemPayload(payload: any): ValidationResult<any> {
     errors,
     data: payload,
   };
+}
+
+export function validateCoursePayload(payload: any): ValidationResult<any> {
+  const errors: string[] = [];
+  if (!payload.urlOriginal || typeof payload.urlOriginal !== 'string' || !payload.urlOriginal.startsWith('http')) {
+    errors.push('URL original da playlist é obrigatória e deve ser válida');
+  }
+  if (!payload.playlistId || typeof payload.playlistId !== 'string') {
+    errors.push('ID da playlist é obrigatório');
+  }
+  if (!Array.isArray(payload.aulas) || payload.aulas.length === 0) {
+    errors.push('O curso deve possuir ao menos uma aula');
+  } else {
+    const ids = new Set<string>();
+    payload.aulas.forEach((aula: any, index: number) => {
+      if (!aula.titulo || typeof aula.titulo !== 'string' || aula.titulo.trim().length < 2) {
+        errors.push(`Aula ${index + 1}: informe o título`);
+      }
+      if (!aula.youtubeId || !/^[a-zA-Z0-9_-]{11}$/.test(aula.youtubeId)) {
+        errors.push(`Aula ${index + 1}: vídeo do YouTube inválido`);
+      }
+      if (ids.has(aula.youtubeId)) errors.push(`Aula ${index + 1}: vídeo duplicado`);
+      ids.add(aula.youtubeId);
+    });
+  }
+  return { isValid: errors.length === 0, errors, data: errors.length === 0 ? payload : undefined };
 }
 
 export function validateBookPayload(payload: any): ValidationResult<any> {

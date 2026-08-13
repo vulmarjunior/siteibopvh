@@ -91,6 +91,7 @@ export class ItemsService {
             ],
           },
         },
+        { curso: { aulas: { some: { titulo: { contains: query, mode: 'insensitive' } } } } },
       ];
     }
 
@@ -117,6 +118,7 @@ export class ItemsService {
               },
             },
           },
+          curso: { include: { aulas: { orderBy: { ordem: 'asc' } } } },
         },
       ];
     }
@@ -214,6 +216,7 @@ export class ItemsService {
             },
           },
         },
+        curso: { include: { aulas: { orderBy: { ordem: 'asc' } } } },
       },
     });
 
@@ -254,6 +257,7 @@ export class ItemsService {
             participantes: { include: { pessoa: true } },
           },
         },
+        curso: { include: { aulas: { orderBy: { ordem: 'asc' } } } },
       },
     });
   }
@@ -279,6 +283,7 @@ export class ItemsService {
             participantes: { include: { pessoa: true } },
           },
         },
+        curso: { include: { aulas: { orderBy: { ordem: 'asc' } } } },
       },
     });
   }
@@ -395,6 +400,24 @@ export class ItemsService {
           },
         },
       };
+    } else if (data.tipo === CuradoriaTipoItem.CURSO) {
+      itemData.curso = {
+        create: {
+          playlistId: data.curso.playlistId,
+          urlOriginal: data.curso.urlOriginal,
+          canal: data.curso.canal || null,
+          thumbnailUrl: data.curso.thumbnailUrl || data.curso.aulas[0]?.thumbnailUrl || null,
+          aulas: {
+            create: data.curso.aulas.map((aula: any, index: number) => ({
+              ordem: index + 1,
+              titulo: aula.titulo.trim(),
+              youtubeId: aula.youtubeId,
+              urlOriginal: aula.urlOriginal || `https://www.youtube.com/watch?v=${aula.youtubeId}&list=${data.curso.playlistId}`,
+              thumbnailUrl: aula.thumbnailUrl || `https://img.youtube.com/vi/${aula.youtubeId}/hqdefault.jpg`,
+            })),
+          },
+        },
+      };
     }
 
     return this.prisma.curadoriaItem.create({
@@ -402,6 +425,7 @@ export class ItemsService {
       include: {
         livro: true,
         video: true,
+        curso: { include: { aulas: { orderBy: { ordem: 'asc' } } } },
         categorias: true,
       },
     });
@@ -413,7 +437,7 @@ export class ItemsService {
     return this.prisma.$transaction(async (tx) => {
       const existing = await tx.curadoriaItem.findUnique({
         where: { id },
-        include: { livro: true, video: true },
+        include: { livro: true, video: true, curso: true },
       });
 
       if (!existing) return null;
@@ -484,6 +508,26 @@ export class ItemsService {
             incorporavel: data.video?.incorporavel !== false,
           },
         });
+      } else if (existing.tipo === CuradoriaTipoItem.CURSO && existing.curso) {
+        await tx.curadoriaCurso.update({
+          where: { id: existing.curso.id },
+          data: {
+            playlistId: data.curso.playlistId,
+            urlOriginal: data.curso.urlOriginal,
+            canal: data.curso.canal || null,
+            thumbnailUrl: data.curso.thumbnailUrl || data.curso.aulas[0]?.thumbnailUrl || null,
+            aulas: {
+              deleteMany: {},
+              create: data.curso.aulas.map((aula: any, index: number) => ({
+                ordem: index + 1,
+                titulo: aula.titulo.trim(),
+                youtubeId: aula.youtubeId,
+                urlOriginal: aula.urlOriginal || `https://www.youtube.com/watch?v=${aula.youtubeId}&list=${data.curso.playlistId}`,
+                thumbnailUrl: aula.thumbnailUrl || `https://img.youtube.com/vi/${aula.youtubeId}/hqdefault.jpg`,
+              })),
+            },
+          },
+        });
       }
 
       return tx.curadoriaItem.findUnique({
@@ -492,6 +536,7 @@ export class ItemsService {
           categorias: { include: { categoria: true } },
           livro: { include: { acessos: { orderBy: { ordem: 'asc' } } } },
           video: true,
+          curso: { include: { aulas: { orderBy: { ordem: 'asc' } } } },
         },
       });
     });

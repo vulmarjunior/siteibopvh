@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { BookOpen, Film, Search, Filter, Sparkles } from 'lucide-react';
+import { BookOpen, Film, GraduationCap, Search, Filter, Sparkles } from 'lucide-react';
 import { VeredasNavbar } from '../../components/veredas/VeredasNavbar';
 import { VeredasFooter } from '../../components/veredas/VeredasFooter';
 import { BookCard } from '../../components/veredas/BookCard';
 import { VideoCard } from '../../components/veredas/VideoCard';
+import { CourseCard } from '../../components/veredas/CourseCard';
 import { Helmet } from 'react-helmet-async';
 
 export const VeredasCatalogPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialType = searchParams.get('tipo') || (window.location.pathname.includes('videos') ? 'VIDEO' : 'LIVRO');
+  const initialType = searchParams.get('tipo') || (window.location.pathname.includes('cursos') ? 'CURSO' : window.location.pathname.includes('videos') ? 'VIDEO' : 'LIVRO');
   
-  const [tipo, setTipo] = useState<'LIVRO' | 'VIDEO'>(initialType as any);
+  const [tipo, setTipo] = useState<'LIVRO' | 'VIDEO' | 'CURSO'>(initialType as any);
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [categoria, setCategoria] = useState(searchParams.get('categoria') || '');
   const [nivel, setNivel] = useState(searchParams.get('nivel') || '');
@@ -60,7 +61,7 @@ export const VeredasCatalogPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-stone-950 text-stone-100 font-sans flex flex-col">
       <Helmet>
-        <title>Catálogo Veredas IBO — {tipo === 'LIVRO' ? 'Livros Indicados' : 'Vídeos Indicados'}</title>
+        <title>Catálogo Veredas IBO — {tipo === 'LIVRO' ? 'Livros Indicados' : tipo === 'VIDEO' ? 'Vídeos Indicados' : 'Cursos Indicados'}</title>
       </Helmet>
 
       <VeredasNavbar />
@@ -101,6 +102,12 @@ export const VeredasCatalogPage: React.FC = () => {
             >
               <Film className="w-4 h-4" />
               Vídeos
+            </button>
+            <button
+              onClick={() => setTipo('CURSO')}
+              className={`flex-1 sm:flex-none px-5 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all ${tipo === 'CURSO' ? 'bg-amber-600 text-stone-950 shadow' : 'text-stone-400 hover:text-stone-200'}`}
+            >
+              <GraduationCap className="w-4 h-4" /> Cursos
             </button>
           </div>
         </div>
@@ -174,8 +181,10 @@ export const VeredasCatalogPage: React.FC = () => {
             {items.map((item) =>
               tipo === 'LIVRO' ? (
                 <BookCard key={item.id} item={item} />
-              ) : (
+              ) : tipo === 'VIDEO' ? (
                 <VideoCard key={item.id} item={item} />
+              ) : (
+                <CourseCard key={item.id} item={item} />
               )
             )}
           </div>

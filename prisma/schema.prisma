@@ -332,6 +332,7 @@ model EditorialReadingDay {
 enum CuradoriaTipoItem {
   VIDEO
   LIVRO
+  CURSO
 }
 
 enum CuradoriaNivel {
@@ -450,6 +451,7 @@ model CuradoriaItem {
 
   livro           CuradoriaLivro?
   video           CuradoriaVideo?
+  curso           CuradoriaCurso?
   categorias      CuradoriaItemCategoria[]
 
   @@index([status, publicadoEm])
@@ -497,6 +499,35 @@ model CuradoriaVideo {
 
   participantes       CuradoriaVideoPessoa[]
 
+  @@index([youtubeId])
+}
+
+model CuradoriaCurso {
+  id            Int                    @id @default(autoincrement())
+  itemId        Int                    @unique
+  item          CuradoriaItem          @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  playlistId    String                 @unique
+  urlOriginal   String
+  canal         String?
+  thumbnailUrl  String?
+  aulas         CuradoriaCursoAula[]
+
+  @@index([itemId])
+}
+
+model CuradoriaCursoAula {
+  id           Int             @id @default(autoincrement())
+  cursoId      Int
+  curso        CuradoriaCurso  @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  ordem        Int
+  titulo       String
+  youtubeId    String
+  urlOriginal  String
+  thumbnailUrl String?
+
+  @@unique([cursoId, ordem])
+  @@unique([cursoId, youtubeId])
+  @@index([cursoId, ordem])
   @@index([youtubeId])
 }
 

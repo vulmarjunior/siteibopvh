@@ -7,6 +7,15 @@ export interface YoutubeParseResult {
   error?: string;
 }
 
+export interface YoutubePlaylistParseResult {
+  playlistId: string | null;
+  firstVideoId: string | null;
+  canonicalUrl: string | null;
+  embedUrl: string | null;
+  isValid: boolean;
+  error?: string;
+}
+
 /**
  * Extracts YouTube video ID, canonical thumbnail and embed URLs from any standard YouTube link format.
  */
@@ -54,4 +63,37 @@ export function parseYoutubeUrl(url: string): YoutubeParseResult {
     isValid: false,
     error: 'Não foi possível extrair um ID de vídeo válido do YouTube',
   };
+}
+
+export function parseYoutubePlaylistUrl(url: string): YoutubePlaylistParseResult {
+  if (!url || typeof url !== 'string') {
+    return { playlistId: null, firstVideoId: null, canonicalUrl: null, embedUrl: null, isValid: false, error: 'URL inválida' };
+  }
+
+  try {
+    const parsedUrl = new URL(url.trim());
+    const hostname = parsedUrl.hostname.toLowerCase().replace(/^www\./, '').replace(/^m\./, '');
+    if (hostname !== 'youtube.com' && hostname !== 'youtube-nocookie.com' && hostname !== 'youtu.be') {
+      throw new Error('domain');
+    }
+    const playlistId = parsedUrl.searchParams.get('list');
+    if (!playlistId || !/^[a-zA-Z0-9_-]{10,80}$/.test(playlistId)) throw new Error('playlist');
+    const firstVideoId = parseYoutubeUrl(url).youtubeId;
+    return {
+      playlistId,
+      firstVideoId,
+      canonicalUrl: `https://www.youtube.com/playlist?list=${playlistId}`,
+      embedUrl: `https://www.youtube.com/embed/videoseries?list=${playlistId}`,
+      isValid: true,
+    };
+  } catch {
+    return {
+      playlistId: null,
+      firstVideoId: null,
+      canonicalUrl: url.trim(),
+      embedUrl: null,
+      isValid: false,
+      error: 'Informe uma URL de playlist válida do YouTube contendo o parâmetro list',
+    };
+  }
 }

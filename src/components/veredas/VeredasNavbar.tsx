@@ -61,6 +61,7 @@ export const VeredasNavbar: React.FC = () => {
               <Film className="w-4 h-4 text-amber-500" />
               Vídeos
             </Link>
+            <Link to="/veredas/cursos" className="flex items-center gap-1.5 text-stone-300 hover:text-amber-400 transition-colors">Cursos</Link>
             <Link to="/veredas/biblioteca-gratuita" className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 transition-colors font-semibold">
               <Sparkles className="w-4 h-4" />
               Biblioteca Gratuita

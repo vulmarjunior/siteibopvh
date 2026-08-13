@@ -244,6 +244,7 @@ export const VeredasDashboardPage: React.FC = () => {
                   <option value="TODOS">Todos os Tipos</option>
                   <option value="LIVRO">Livros</option>
                   <option value="VIDEO">Vídeos</option>
+                  <option value="CURSO">Cursos/Playlists</option>
                 </select>
               </div>
 
@@ -291,7 +292,7 @@ export const VeredasDashboardPage: React.FC = () => {
                 <tbody className="divide-y divide-stone-800/60">
                   {filteredItems.map((item) => {
                     const isLoadingThis = actionLoadingId === item.id;
-                    const publicUrl = item.tipo === 'LIVRO' ? `/veredas/livro/${item.slug}` : `/veredas/video/${item.slug}`;
+                    const publicUrl = item.tipo === 'LIVRO' ? `/veredas/livro/${item.slug}` : item.tipo === 'VIDEO' ? `/veredas/video/${item.slug}` : `/veredas/curso/${item.slug}`;
 
                     return (
                       <tr key={item.id} className="hover:bg-stone-800/30 transition-colors">
