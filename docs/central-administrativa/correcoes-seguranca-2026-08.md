@@ -69,3 +69,4 @@ Antes de implantar a aplicação, aplicar as migrations `expand_admin_roles` e `
 - A migração de sessão é compatível com o `Bearer` legado durante a janela de atualização, mas novos logins usam somente cookie.
 - Recomenda-se manter a expiração do JWT do Supabase curta (por exemplo, uma hora). Revogar a sessão impede renovação, mas um access token já emitido continua válido até expirar.
 - Após a implantação e uma janela suficiente para expirar sessões antigas, a compatibilidade com `Bearer` pode ser removida em uma segunda versão.
+- O runtime Vercel está fixado em Node.js 22 LTS para evitar variações automáticas de versão principal nas funções serverless.
