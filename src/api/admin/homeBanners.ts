@@ -1,9 +1,10 @@
 import crypto from 'crypto';
 import express from 'express';
+import { createClient } from '@supabase/supabase-js';
 import type { PrismaClient } from '@prisma/client';
 import { createAdminAuthMiddleware, type AdminAuthenticatedRequest } from './auth.js';
 import { hasAdminPermission } from '../../lib/admin/permissions.js';
-import { getSupabaseServer } from '../../lib/veredas/supabaseServer.js';
+import { getAdminAuthToken } from '../../lib/admin/authCookie.js';
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const IMAGE_TYPES: Record<string, string> = {
@@ -55,14 +56,21 @@ export function createAdminHomeBannersRouter(prisma: PrismaClient) {
   });
 
   router.post('/upload', express.raw({ type: Object.keys(IMAGE_TYPES), limit: MAX_IMAGE_BYTES }), async (req: AdminAuthenticatedRequest, res) => {
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return res.status(503).json({ error: 'O envio de imagens não está configurado no servidor.' });
     const contentType = req.headers['content-type']?.split(';')[0] || '';
     const extension = IMAGE_TYPES[contentType];
     if (!extension || !Buffer.isBuffer(req.body) || req.body.length === 0) return res.status(400).json({ error: 'Selecione uma imagem JPG, PNG ou WebP.' });
     if (req.body.length > MAX_IMAGE_BYTES) return res.status(413).json({ error: 'A imagem deve ter no máximo 4 MB.' });
 
+    const auth = getAdminAuthToken(req);
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+    if (!auth || !supabaseUrl || !supabaseAnonKey) return res.status(503).json({ error: 'Não foi possível validar o envio da imagem.' });
+
     const path = `home-banners/${Date.now()}-${crypto.randomUUID()}.${extension}`;
-    const supabase = getSupabaseServer();
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: `Bearer ${auth.token}` } },
+    });
     const { error } = await supabase.storage.from('site-assets').upload(path, req.body, { contentType, cacheControl: '31536000', upsert: false });
     if (error) {
       console.error('Home banner upload error:', error);
