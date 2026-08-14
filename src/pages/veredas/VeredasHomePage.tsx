@@ -53,49 +53,57 @@ export const VeredasHomePage: React.FC = () => {
 
       <main className="flex-1">
         {/* HERO EDITORIAL */}
-        <section className="relative bg-gradient-to-b from-stone-900 via-stone-900/90 to-stone-950 border-b border-stone-800/80 py-16 sm:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-900/20 via-transparent to-transparent pointer-events-none" />
+        <section className="relative isolate min-h-[34rem] sm:min-h-[38rem] lg:min-h-[42rem] border-b border-amber-900/30 overflow-hidden flex items-center">
+          <img
+            src="/images/veredas/caminho-dourado-fe-sabedoria.png"
+            alt="Caminho de pedras em direção a uma cruz, com Bíblia e livros à luz dourada"
+            className="absolute inset-0 -z-20 h-full w-full object-cover object-[67%_center] sm:object-center"
+          />
+          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#fff4dc] via-[#fff0d2]/95 to-[#f6d99d]/20 sm:via-[#fff0d2]/85 sm:to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 -z-10 h-28 bg-gradient-to-t from-stone-950/45 to-transparent" />
           
-          <div className="max-w-5xl mx-auto text-center space-y-6 relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-800/60 text-amber-300 text-xs font-semibold uppercase tracking-widest shadow-inner">
-              <Compass className="w-4 h-4 text-amber-400" />
+          <div className="w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 py-14 sm:py-20">
+            <div className="max-w-xl text-left space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/55 border border-amber-800/25 text-amber-950 text-xs font-semibold uppercase tracking-widest shadow-sm backdrop-blur-sm">
+              <Compass className="w-4 h-4 text-amber-700" />
               Igreja Batista Olaria • Porto Velho
             </div>
 
-            <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-amber-100 leading-tight">
-              Veredas <span className="text-amber-500 font-light">IBO</span>
+            <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-stone-900 leading-[0.95] drop-shadow-sm">
+              Veredas <span className="text-amber-700 font-light">IBO</span>
             </h1>
 
-            <p className="font-serif text-lg sm:text-2xl text-stone-300 max-w-3xl mx-auto font-light leading-relaxed">
+            <p className="font-serif text-xl sm:text-2xl text-stone-800 max-w-lg font-medium leading-relaxed">
               Livros, vídeos e caminhos seguros para o amadurecimento e a formação cristã bíblica.
             </p>
 
-            <p className="text-sm sm:text-base text-stone-400 max-w-2xl mx-auto leading-relaxed">
-              Não agregamos apenas links: explicamos <span className="text-amber-400 font-semibold">por que cada obra é recomendada</span>, para quem é indicada e quais as ressalvas pastorais.
+            <p className="text-sm sm:text-base text-stone-700 max-w-lg leading-relaxed">
+              Não agregamos apenas links: explicamos <span className="text-amber-900 font-bold">por que cada obra é recomendada</span>, para quem é indicada e quais as ressalvas pastorais.
             </p>
 
-            <div className="pt-4 flex flex-wrap items-center justify-center gap-4 text-sm font-semibold">
+            <div className="pt-3 flex flex-wrap items-center justify-start gap-3 text-sm font-semibold">
               <Link
                 to="/veredas/livros"
-                className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-stone-950 rounded-full font-bold transition-all shadow-lg hover:scale-105 flex items-center gap-2"
+                className="px-6 py-3 bg-amber-700 hover:bg-amber-600 text-white rounded-full font-bold transition-all shadow-lg hover:-translate-y-0.5 flex items-center gap-2"
               >
                 <BookOpen className="w-4 h-4" />
                 Explorar Livros
               </Link>
               <Link
                 to="/veredas/videos"
-                className="px-6 py-3 bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 rounded-full transition-all flex items-center gap-2"
+                className="px-6 py-3 bg-white/65 hover:bg-white/85 text-stone-900 border border-amber-900/25 rounded-full transition-all shadow-sm backdrop-blur-sm flex items-center gap-2"
               >
-                <Film className="w-4 h-4 text-amber-500" />
+                <Film className="w-4 h-4 text-amber-700" />
                 Explorar Vídeos
               </Link>
               <Link
                 to="/veredas/biblioteca-gratuita"
-                className="px-6 py-3 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800/80 text-emerald-300 rounded-full transition-all flex items-center gap-2"
+                className="px-6 py-3 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800/80 text-emerald-100 rounded-full transition-all shadow-sm flex items-center gap-2"
               >
                 <Sparkles className="w-4 h-4 text-emerald-400" />
                 Biblioteca Gratuita
               </Link>
+            </div>
             </div>
           </div>
         </section>

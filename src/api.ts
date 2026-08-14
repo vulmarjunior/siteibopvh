@@ -16,6 +16,7 @@ import { createAdminSeriesEmailRouter } from "./api/admin/seriesEmail.js";
 import { createAdminPrayerRouter } from "./api/admin/prayer.js";
 import { createAdminEbfRouter } from "./api/admin/ebf.js";
 import { createAdminUsersRouter } from "./api/admin/users.js";
+import { createAdminHomeBannersRouter, createPublicHomeBannersRouter } from "./api/admin/homeBanners.js";
 import { createPublicEbfRouter } from "./api/public/ebf.js";
 import { createPublicParousiaRouter } from "./api/public/parousia.js";
 import { consumeRateLimit } from "./lib/server/rateLimit.js";
@@ -66,9 +67,11 @@ apiRouter.use("/admin/series-email", createAdminSeriesEmailRouter(prisma));
 apiRouter.use("/admin/prayer", createAdminPrayerRouter(prisma));
 apiRouter.use("/admin/ebf", createAdminEbfRouter(prisma));
 apiRouter.use("/admin/users", createAdminUsersRouter(prisma));
+apiRouter.use("/admin/home-banners", createAdminHomeBannersRouter(prisma));
 apiRouter.use("/ebf", createPublicEbfRouter(prisma, getResend));
 apiRouter.use("/parousia", createPublicParousiaRouter(prisma, getResend));
 apiRouter.use("/modules", createPublicModulesRouter(prisma));
+apiRouter.use("/home-banners", createPublicHomeBannersRouter(prisma));
 apiRouter.use("/series", createEditorialSeriesRouter(prisma));
 
 export async function seed() {

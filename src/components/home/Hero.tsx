@@ -2,7 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { useSiteModules } from '../../lib/modules/siteModulesClient';
-const SLIDES = [
+type HeroSlide = {
+  id: string | number;
+  image: string;
+  imageAlt: string;
+  subtitle: string;
+  title: string;
+  description: string;
+  cta: string;
+  link: string;
+};
+
+const STATIC_SLIDES: HeroSlide[] = [
   /*
   {
     id: 0,
@@ -17,6 +28,7 @@ const SLIDES = [
   {
     id: 1,
     image: '/images/serie-da-ascensao-a-parousia/arte-principal.png',
+    imageAlt: 'Arte da série Da Ascensão à Parousia',
     subtitle: 'Nova Série de Mensagens',
     title: 'Da Ascensão à Parousia',
     description: 'Acompanhe a caminhada da Igreja desde a ascensão de Cristo até a esperança final da Nova Jerusalém.',
@@ -26,6 +38,7 @@ const SLIDES = [
   {
     id: 2,
     image: '/images/slide2.jpg',
+    imageAlt: 'Comunidade reunida em adoração e serviço',
     subtitle: 'Vida em Comunidade',
     title: 'Adoração e Serviço',
     description: 'Uma igreja comprometida com a sã doutrina e o amor fraternal.',
@@ -35,6 +48,7 @@ const SLIDES = [
   {
     id: 3,
     image: '/images/ebd.jpg',
+    imageAlt: 'Escola Bíblica Dominical da Igreja Batista Olaria',
     subtitle: 'Escola Bíblica Dominical',
     title: 'Crescimento na Graça',
     description: 'Estudos aprofundados todos os domingos às 09:30.',
@@ -45,13 +59,35 @@ const SLIDES = [
 
 const Hero: React.FC = () => {
   const modules = useSiteModules();
-  const visibleSlides = SLIDES.filter(slide => {
+  const [slides, setSlides] = useState<HeroSlide[]>(STATIC_SLIDES);
+  const visibleSlides = slides.filter(slide => {
     const module = modules.find(item => item.path === slide.link);
     return !module || module.visibleOnHome;
   });
   const [currentSlide, setCurrentSlide] = useState(0);
   // Refs para manipulação direta do DOM (Parallax de Alta Performance 60fps)
   const parallaxRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/api/home-banners', { signal: controller.signal })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error('Banners indisponíveis')))
+      .then((payload) => {
+        if (!Array.isArray(payload?.slides)) return;
+        setSlides(payload.slides.map((slide: any) => ({
+          id: slide.id,
+          image: slide.imageUrl,
+          imageAlt: slide.altText,
+          subtitle: slide.subtitle,
+          title: slide.title,
+          description: slide.description,
+          cta: slide.ctaLabel,
+          link: slide.ctaLink,
+        })));
+      })
+      .catch((error) => { if (error.name !== 'AbortError') console.warn('Mantendo banners locais:', error.message); });
+    return () => controller.abort();
+  }, []);
 
   // Lógica do Efeito Parallax
   useEffect(() => {
@@ -104,6 +140,8 @@ const Hero: React.FC = () => {
           <div
             ref={(el) => { parallaxRefs.current[index] = el; }}
             className="absolute inset-0 bg-cover bg-center will-change-transform"
+            role="img"
+            aria-label={slide.imageAlt}
             style={{
               backgroundImage: `url(${slide.image})`,
               transform: 'translate3d(0, 0, 0) scale(1.2)'

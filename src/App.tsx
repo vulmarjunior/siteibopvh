@@ -20,6 +20,7 @@ const AdminSeriesPreviewPage = lazy(() => import('./pages/admin/AdminSeriesPrevi
 const AdminSeriesEmailPage = lazy(() => import('./pages/admin/AdminSeriesEmailPage'));
 const AdminProtectedRoute = lazy(() => import('./components/admin/AdminProtectedRoute'));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
+const AdminHomeBannersPage = lazy(() => import('./pages/admin/AdminHomeBannersPage'));
 
 // Veredas IBO (Curadoria) Lazy Components
 const VeredasHomePage = lazy(() => import('./pages/veredas/VeredasHomePage').then(m => ({ default: m.VeredasHomePage })));
@@ -62,6 +63,7 @@ const App: React.FC = () => (
           <Route path="/admin/relogio" element={<AdminPrayerPage />} />
           <Route path="/admin/ebf" element={<AdminEbfPage />} />
           <Route path="/admin/usuarios" element={<AdminUsersPage />} />
+          <Route path="/admin/banners" element={<AdminHomeBannersPage />} />
           <Route path="/admin/veredas" element={<VeredasDashboardPage />} />
           <Route path="/admin/veredas/conteudos/novo" element={<VeredasItemFormPage />} />
           <Route path="/admin/veredas/conteudos/:id" element={<VeredasItemFormPage />} />

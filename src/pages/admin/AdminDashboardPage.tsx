@@ -1,10 +1,11 @@
-import { BookOpen, CalendarClock, LayoutDashboard, LogOut, Mail, Settings, Shield, Users } from 'lucide-react';
+import { BookOpen, CalendarClock, Image, LayoutDashboard, LogOut, Mail, Settings, Shield, Users } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import { clearAdminSession, getAdminAccessToken, getStoredAdminUser } from '../../lib/admin/session';
 import { hasAdminPermission, type AdminPermission } from '../../lib/admin/permissions';
 
 const modules = [
+  { title: 'Banner da página inicial', description: 'Imagens, textos, links, ordem e visibilidade do carrossel.', href: '/admin/banners', icon: Image, permission: 'banners:manage' },
   { title: 'Veredas IBO', description: 'Curadoria de livros, vídeos e relatos.', href: '/admin/veredas', icon: BookOpen, permission: 'veredas:manage' },
   { title: 'Séries e mensagens', description: 'Conteúdo editorial e programação semanal.', href: '/admin/series', icon: CalendarClock, permission: 'series:edit' },
   { title: 'E-mails das séries', description: 'Preview, testes, assinantes e histórico de envios.', href: '/admin/emails', icon: Mail, permission: 'email:manage' },

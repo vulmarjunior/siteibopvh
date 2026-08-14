@@ -33,6 +33,23 @@ model Config {
   value String
 }
 
+model HomeBannerSlide {
+  id          String   @id @default(cuid())
+  subtitle    String
+  title       String
+  description String
+  ctaLabel    String
+  ctaLink     String
+  imageUrl    String
+  altText     String
+  position    Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active, position])
+}
+
 model PrayerTheme {
   id     Int     @id @default(autoincrement())
   label  String
