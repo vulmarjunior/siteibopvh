@@ -441,13 +441,13 @@ export class ItemsService {
    * Updates an existing item and replaces editable relationships atomically.
    */
   async updateAdminItem(id: number, data: any) {
-    return this.prisma.$transaction(async (tx) => {
+    const updated = await this.prisma.$transaction(async (tx) => {
       const existing = await tx.curadoriaItem.findUnique({
         where: { id },
         include: { livro: true, video: true, curso: true },
       });
 
-      if (!existing) return null;
+      if (!existing) return false;
 
       const publicadoEm =
         data.status === CuradoriaStatus.PUBLICADO
@@ -523,38 +523,45 @@ export class ItemsService {
             urlOriginal: data.curso.urlOriginal,
             canal: data.curso.canal || null,
             thumbnailUrl: data.curso.thumbnailUrl || data.curso.aulas[0]?.thumbnailUrl || null,
-            aulas: {
-              deleteMany: {},
-              create: data.curso.aulas.map((aula: any, index: number) => ({
-                ordem: index + 1,
-                titulo: aula.titulo.trim(),
-                youtubeId: aula.youtubeId,
-                urlOriginal: aula.urlOriginal || `https://www.youtube.com/watch?v=${aula.youtubeId}&list=${data.curso.playlistId}`,
-                thumbnailUrl: aula.thumbnailUrl || `https://img.youtube.com/vi/${aula.youtubeId}/hqdefault.jpg`,
-              })),
-            },
-            materiais: {
-              deleteMany: {},
-              create: (data.curso.materiais || []).map((material: any, index: number) => ({
-                ordem: index + 1,
-                titulo: material.titulo.trim(),
-                url: material.url.trim(),
-              })),
-            },
           },
         });
+        await tx.curadoriaCursoAula.deleteMany({ where: { cursoId: existing.curso.id } });
+        await tx.curadoriaCursoMaterial.deleteMany({ where: { cursoId: existing.curso.id } });
+        await tx.curadoriaCursoAula.createMany({
+          data: data.curso.aulas.map((aula: any, index: number) => ({
+            cursoId: existing.curso!.id,
+            ordem: index + 1,
+            titulo: aula.titulo.trim(),
+            youtubeId: aula.youtubeId,
+            urlOriginal: aula.urlOriginal || `https://www.youtube.com/watch?v=${aula.youtubeId}&list=${data.curso.playlistId}`,
+            thumbnailUrl: aula.thumbnailUrl || `https://img.youtube.com/vi/${aula.youtubeId}/hqdefault.jpg`,
+          })),
+        });
+        const materiais = data.curso.materiais || [];
+        if (materiais.length) {
+          await tx.curadoriaCursoMaterial.createMany({
+            data: materiais.map((material: any, index: number) => ({
+              cursoId: existing.curso!.id,
+              ordem: index + 1,
+              titulo: material.titulo.trim(),
+              url: material.url.trim(),
+            })),
+          });
+        }
       }
 
-      return tx.curadoriaItem.findUnique({
-        where: { id },
-        include: {
-          categorias: { include: { categoria: true } },
-          livro: { include: { acessos: { orderBy: { ordem: 'asc' } } } },
-          video: true,
-          curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
-        },
-      });
+      return true;
     }, { maxWait: 5_000, timeout: 15_000 });
+    if (!updated) return null;
+    return this.prisma.curadoriaItem.findUnique({
+      where: { id },
+      include: {
+        categorias: { include: { categoria: true } },
+        livro: { include: { acessos: { orderBy: { ordem: 'asc' } } } },
+        video: true,
+        curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
+      },
+    });
   }
 
 }
