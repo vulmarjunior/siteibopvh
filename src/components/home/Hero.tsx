@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
-import { useSiteModules } from '../../lib/modules/siteModulesClient';
 type HeroSlide = {
   id: string | number;
   image: string;
@@ -58,12 +57,11 @@ const STATIC_SLIDES: HeroSlide[] = [
 ];
 
 const Hero: React.FC = () => {
-  const modules = useSiteModules();
   const [slides, setSlides] = useState<HeroSlide[]>(STATIC_SLIDES);
-  const visibleSlides = slides.filter(slide => {
-    const module = modules.find(item => item.path === slide.link);
-    return !module || module.visibleOnHome;
-  });
+  // The public banners endpoint already returns only slides marked as active.
+  // Do not apply the module visibility setting here: the banner manager is the
+  // source of truth for this carousel, including banners that link to modules.
+  const visibleSlides = slides;
   const [currentSlide, setCurrentSlide] = useState(0);
   // Refs para manipulação direta do DOM (Parallax de Alta Performance 60fps)
   const parallaxRefs = useRef<(HTMLDivElement | null)[]>([]);
