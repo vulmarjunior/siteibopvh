@@ -118,7 +118,6 @@ export class ItemsService {
               },
             },
           },
-          curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
         },
       ];
     }
@@ -166,6 +165,12 @@ export class ItemsService {
                 orderBy: { ordem: 'asc' },
                 include: { pessoa: true },
               },
+            },
+          },
+          curso: {
+            include: {
+              aulas: { orderBy: { ordem: 'asc' } },
+              materiais: { orderBy: { ordem: 'asc' } },
             },
           },
         },
