@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
-import { BookOpen, Film, GraduationCap, Plus, Trash2, ArrowLeft, Save, AlertCircle } from 'lucide-react';
+import { BookOpen, Film, GraduationCap, Plus, Trash2, ArrowLeft, ArrowUp, ArrowDown, Save, AlertCircle } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { BookAccessFields, BookAccessFormData, createEmptyBookAccess } from '../../../components/veredas/BookAccessFields';
 import { parseYoutubePlaylistUrl, parseYoutubeUrl } from '../../../lib/veredas/youtube';
@@ -876,6 +876,17 @@ function CourseFormInternal({ data, onChange, setTitle }: {
     onChange((current) => ({ ...current, aulas: current.aulas.map((aula, i) => i === index ? { ...aula, ...patch } : aula) }));
   };
 
+  const moveItem = (collection: 'aulas' | 'materiais', from: number, to: number) => {
+    if (to < 0) return;
+    onChange((current) => {
+      const items = [...current[collection]];
+      if (to >= items.length) return current;
+      const [moved] = items.splice(from, 1);
+      items.splice(to, 0, moved);
+      return { ...current, [collection]: items };
+    });
+  };
+
   const readLesson = async (index: number) => {
     const lesson = data.aulas[index];
     if (!lesson?.urlOriginal) return;
@@ -916,7 +927,14 @@ function CourseFormInternal({ data, onChange, setTitle }: {
       <div className="space-y-3">
         {data.aulas.map((aula, index) => (
           <div key={aula.key} className="rounded-xl border border-stone-800 bg-stone-950 p-4 space-y-3">
-            <div className="flex items-center justify-between"><strong className="text-xs text-amber-300">Aula {index + 1}</strong><button type="button" aria-label={`Remover aula ${index + 1}`} onClick={() => onChange((current) => ({ ...current, aulas: current.aulas.filter((_, i) => i !== index) }))} className="text-stone-500 hover:text-red-400"><Trash2 className="w-4 h-4" /></button></div>
+            <div className="flex items-center justify-between">
+              <strong className="text-xs text-amber-300">Aula {index + 1}</strong>
+              <div className="flex items-center gap-1">
+                <button type="button" disabled={index === 0} aria-label={`Mover aula ${index + 1} para cima`} onClick={() => moveItem('aulas', index, index - 1)} className="rounded p-1.5 text-stone-400 hover:bg-stone-800 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-25"><ArrowUp className="w-4 h-4" /></button>
+                <button type="button" disabled={index === data.aulas.length - 1} aria-label={`Mover aula ${index + 1} para baixo`} onClick={() => moveItem('aulas', index, index + 1)} className="rounded p-1.5 text-stone-400 hover:bg-stone-800 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-25"><ArrowDown className="w-4 h-4" /></button>
+                <button type="button" aria-label={`Remover aula ${index + 1}`} onClick={() => onChange((current) => ({ ...current, aulas: current.aulas.filter((_, i) => i !== index) }))} className="rounded p-1.5 text-stone-500 hover:bg-red-950 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
+              </div>
+            </div>
             <input type="url" required value={aula.urlOriginal} onChange={(event) => { const parsed = parseYoutubeUrl(event.target.value); updateLesson(index, { urlOriginal: event.target.value, youtubeId: parsed.youtubeId || '', thumbnailUrl: parsed.thumbnailUrl || '' }); }} onBlur={() => void readLesson(index)} placeholder="Link do vídeo desta aula" className="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs" />
             <input required value={aula.titulo} onChange={(event) => updateLesson(index, { titulo: event.target.value })} placeholder="Título da aula" className="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs" />
           </div>
@@ -928,10 +946,15 @@ function CourseFormInternal({ data, onChange, setTitle }: {
       </div>
       <div className="space-y-3">
         {data.materiais.map((material, index) => (
-          <div key={material.key} className="grid sm:grid-cols-[1fr_1.5fr_auto] gap-2 rounded-xl border border-stone-800 bg-stone-950 p-4">
+          <div key={material.key} className="grid sm:grid-cols-[auto_1fr_1.5fr_auto] gap-2 rounded-xl border border-stone-800 bg-stone-950 p-4 sm:items-center">
+            <strong className="text-xs text-amber-300 sm:pr-2">Link {index + 1}</strong>
             <input required value={material.titulo} onChange={(event) => onChange((current) => ({ ...current, materiais: current.materiais.map((item, i) => i === index ? { ...item, titulo: event.target.value } : item) }))} placeholder="Nome do material" className="bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs" />
             <input type="url" required value={material.url} onChange={(event) => onChange((current) => ({ ...current, materiais: current.materiais.map((item, i) => i === index ? { ...item, url: event.target.value } : item) }))} placeholder="https://..." className="bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs" />
-            <button type="button" aria-label={`Remover material ${index + 1}`} onClick={() => onChange((current) => ({ ...current, materiais: current.materiais.filter((_, i) => i !== index) }))} className="p-2 text-stone-500 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
+            <div className="flex items-center justify-end gap-1">
+              <button type="button" disabled={index === 0} aria-label={`Mover link ${index + 1} para cima`} onClick={() => moveItem('materiais', index, index - 1)} className="rounded p-2 text-stone-400 hover:bg-stone-800 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-25"><ArrowUp className="w-4 h-4" /></button>
+              <button type="button" disabled={index === data.materiais.length - 1} aria-label={`Mover link ${index + 1} para baixo`} onClick={() => moveItem('materiais', index, index + 1)} className="rounded p-2 text-stone-400 hover:bg-stone-800 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-25"><ArrowDown className="w-4 h-4" /></button>
+              <button type="button" aria-label={`Remover material ${index + 1}`} onClick={() => onChange((current) => ({ ...current, materiais: current.materiais.filter((_, i) => i !== index) }))} className="rounded p-2 text-stone-500 hover:bg-red-950 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
+            </div>
           </div>
         ))}
       </div>
