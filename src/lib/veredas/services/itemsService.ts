@@ -554,7 +554,7 @@ export class ItemsService {
           curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
         },
       });
-    });
+    }, { maxWait: 5_000, timeout: 15_000 });
   }
 
 }
