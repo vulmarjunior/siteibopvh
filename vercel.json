@@ -14,6 +14,7 @@
     { "source": "/api/admin/prayer/:path*", "destination": "/api/admin-prayer-entry?path=:path*" },
     { "source": "/api/admin/ebf/:path*", "destination": "/api/admin-ebf-entry?path=:path*" },
     { "source": "/api/admin/users/:path*", "destination": "/api/admin-users-entry?path=:path*" },
+    { "source": "/api/admin/home-banners/:path*", "destination": "/api/admin-home-banners-entry?path=:path*" },
     {
       "source": "/api/:path((?!cron/weekly-reading$|health$|veredas(?:/.*)?$|admin(?:/.*)?$).*)",
       "destination": "/api/index"
