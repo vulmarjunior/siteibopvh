@@ -22,7 +22,7 @@ function toPortalImageUrl(imageUrl: string) {
   const markerIndex = imageUrl.indexOf(STORAGE_PUBLIC_MARKER);
   if (markerIndex < 0) return imageUrl;
   const storagePath = imageUrl.slice(markerIndex + STORAGE_PUBLIC_MARKER.length);
-  return `/api/home-banners/image?path=${encodeURIComponent(storagePath)}`;
+  return `/api/home-banners/image?object=${encodeURIComponent(storagePath)}`;
 }
 
 function slideData(body: any) {
@@ -85,7 +85,7 @@ export function createAdminHomeBannersRouter(prisma: PrismaClient) {
       console.error('Home banner upload error:', error);
       return res.status(502).json({ error: 'Não foi possível enviar a imagem.' });
     }
-    return res.status(201).json({ imageUrl: `/api/home-banners/image?path=${encodeURIComponent(path)}` });
+    return res.status(201).json({ imageUrl: `/api/home-banners/image?object=${encodeURIComponent(path)}` });
   });
 
   router.post('/', async (req: AdminAuthenticatedRequest, res) => {
@@ -124,7 +124,9 @@ export function createAdminHomeBannersRouter(prisma: PrismaClient) {
 export function createPublicHomeBannersRouter(prisma: PrismaClient) {
   const router = express.Router();
   router.get('/image', async (req, res) => {
-    const path = text(req.query.path);
+    // `path` is reserved by the Vercel catch-all rewrite and is replaced with
+    // the API route itself. Keep the storage object in a distinct parameter.
+    const path = text(req.query.object);
     if (!/^home-banners\/[a-zA-Z0-9._/-]+$/.test(path) || path.includes('..')) return res.status(400).json({ error: 'Imagem inválida.' });
     const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
     if (!supabaseUrl) return res.status(503).json({ error: 'Imagens temporariamente indisponíveis.' });
