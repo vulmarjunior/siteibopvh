@@ -10,13 +10,30 @@ Atualizado em 13 de agosto de 2026.
 - O usuário navega pela lista de aulas ou pelos botões “Aula anterior” e “Próxima aula”.
 - As aulas são incluídas manualmente e ordenadas no formulário, sem dependência da API autenticada do YouTube.
 - Migração de produção aplicada: `20260813230605_add_veredas_courses.sql`.
+- Cursos aceitam materiais complementares como título e URL externa; nenhum arquivo é armazenado pelo portal.
+- Migração de produção aplicada para esses links: `20260813233000_add_veredas_course_material_links.sql`.
+- O card do curso usa a capa cadastrada ou, como fallback, a miniatura da primeira aula.
+- A API pública do catálogo inclui `curso`, aulas e materiais; um teste protege essa seleção contra regressões.
+- O salvamento de aulas e materiais foi convertido para operações em lote, mantendo transação atômica e consulta final fora da transação.
+- O prazo da transação de edição foi ajustado para 15 segundos como proteção adicional.
+
+## Veredas — administração e Biblioteca Gratuita
+
+- A sessão administrativa agora mantém um refresh token em cookie HttpOnly separado e renova o acesso automaticamente.
+- Usuários que já estavam autenticados antes da mudança precisam entrar novamente uma vez para receber o cookie de renovação.
+- O menu público de Cursos recebeu ícone nos modos desktop e móvel.
+- O painel administrativo recebeu o atalho **Adicionar à Biblioteca Gratuita**.
+- Esse atalho abre um cadastro de livro com um acesso gratuito já preparado; ao publicar, o livro entra automaticamente na Biblioteca Gratuita.
+- A Biblioteca Gratuita não possui cadastro duplicado: ela lista livros publicados que tenham ao menos um link ativo marcado como gratuito.
+- O campo **Nível de profundidade** agora permanece visível no formulário; novos conteúdos usam `INTRODUTORIO` como padrão e podem ser alterados para `INTERMEDIARIO` ou `APROFUNDAMENTO`.
+- As opções avançadas continuam reservadas a ressalvas pastorais e destaque na página inicial.
 
 ## Estado oficial
 
 - Repositório: `https://github.com/vulmarjunior/siteibopvh`
 - Branch oficial: `main`
 - Produção: `https://ibopvh.com.br`
-- Commit oficial ao encerrar a sessão: `527bd8c7b4225aa1ef579fd1e8f8d8ce6d2520ea`
+- Commit funcional mais recente antes deste registro: `e39f88809f34d4c725ec53fbe2ce87231eb932d6`
 - PRs integradas:
   - #16 — reforço da Central Administrativa e correção da lógica dos vídeos do Veredas;
   - #17 — correção do erro HTML/JSON no login administrativo.
