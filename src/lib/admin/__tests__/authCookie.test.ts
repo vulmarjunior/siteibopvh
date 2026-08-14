@@ -1,6 +1,6 @@
 import type { Request } from 'express';
 import { describe, expect, it } from 'vitest';
-import { ADMIN_SESSION_COOKIE, getAdminAuthToken, isUnsafeCrossOriginRequest, parseCookieHeader } from '../authCookie';
+import { ADMIN_REFRESH_COOKIE, ADMIN_SESSION_COOKIE, getAdminAuthToken, getAdminRefreshToken, isUnsafeCrossOriginRequest, parseCookieHeader } from '../authCookie';
 
 function request(overrides: Partial<Request> = {}): Request {
   return {
@@ -25,6 +25,12 @@ describe('admin auth cookie', () => {
   it('ignores Bearer null and falls back to the HttpOnly cookie', () => {
     const req = request({ headers: { authorization: 'Bearer null', cookie: `${ADMIN_SESSION_COOKIE}=cookie.jwt` } });
     expect(getAdminAuthToken(req)).toEqual({ token: 'cookie.jwt', source: 'cookie' });
+  });
+
+  it('reads a refresh token after the access cookie expires', () => {
+    const req = request({ headers: { cookie: `${ADMIN_REFRESH_COOKIE}=refresh.token` } });
+    expect(getAdminAuthToken(req)).toBeNull();
+    expect(getAdminRefreshToken(req)).toBe('refresh.token');
   });
 
   it('blocks cross-site cookie mutations but permits same-origin requests', () => {

@@ -3,7 +3,7 @@ import type { CuradoriaUsuario, PrismaClient } from '@prisma/client';
 import { getSupabaseServer } from '../../lib/veredas/supabaseServer.js';
 import { mapLegacyCuradoriaRole, type AdminRole } from '../../lib/admin/permissions.js';
 import { consumeRateLimit } from '../../lib/server/rateLimit.js';
-import { clearAdminSessionCookie, getAdminAuthToken, isUnsafeCrossOriginRequest, setAdminSessionCookie } from '../../lib/admin/authCookie.js';
+import { clearAdminSessionCookie, getAdminAuthToken, getAdminRefreshToken, isUnsafeCrossOriginRequest, setAdminRefreshCookie, setAdminSessionCookie } from '../../lib/admin/authCookie.js';
 
 export interface AdminUser {
   id: string;
@@ -22,14 +22,24 @@ function toAdminUser(user: CuradoriaUsuario): AdminUser {
 
 export function createAdminAuthMiddleware(prisma: PrismaClient) {
   return async (req: AdminAuthenticatedRequest, res: Response, next: NextFunction) => {
-    const auth = getAdminAuthToken(req);
-    if (!auth) {
-      return res.status(401).json({ error: 'Token de autenticação não fornecido' });
-    }
-    if (isUnsafeCrossOriginRequest(req, auth.source)) return res.status(403).json({ error: 'Origem da requisição não autorizada' });
+    let auth = getAdminAuthToken(req);
+    if (isUnsafeCrossOriginRequest(req, auth?.source || 'cookie')) return res.status(403).json({ error: 'Origem da requisição não autorizada' });
 
     try {
-      const { data: { user }, error } = await getSupabaseServer().auth.getUser(auth.token);
+      const supabase = getSupabaseServer();
+      if (!auth) {
+        const refreshToken = getAdminRefreshToken(req);
+        if (refreshToken) {
+          const refreshed = await supabase.auth.refreshSession({ refresh_token: refreshToken });
+          if (!refreshed.error && refreshed.data.session) {
+            setAdminSessionCookie(res, refreshed.data.session.access_token, refreshed.data.session.expires_at);
+            setAdminRefreshCookie(res, refreshed.data.session.refresh_token);
+            auth = { token: refreshed.data.session.access_token, source: 'cookie' };
+          }
+        }
+      }
+      if (!auth) return res.status(401).json({ error: 'Sessão expirada. Entre novamente.' });
+      const { data: { user }, error } = await supabase.auth.getUser(auth.token);
       if (error || !user) {
         if (auth.source === 'cookie') clearAdminSessionCookie(res);
         return res.status(401).json({ error: 'Sessão inválida ou expirada' });
@@ -69,6 +79,7 @@ export function createAdminAuthRouter(prisma: PrismaClient) {
       const user = toAdminUser(legacyUser);
       await prisma.curadoriaAuditoria.create({ data: { usuarioId: user.id, usuarioEmail: user.email, acao: 'LOGIN', entidade: 'AdminSession', entidadeId: user.id } }).catch((auditError) => console.error('Admin login audit error:', auditError));
       setAdminSessionCookie(res, data.session.access_token, data.session.expires_at);
+      setAdminRefreshCookie(res, data.session.refresh_token);
       return res.json({ user });
     } catch (error) {
       console.error('Admin login error:', error);

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { PrismaClient, CuradoriaPapelUsuario, CuradoriaUsuario } from '@prisma/client';
 import { getSupabaseServer } from '../../lib/veredas/supabaseServer.js';
-import { clearAdminSessionCookie, getAdminAuthToken, isUnsafeCrossOriginRequest, setAdminSessionCookie } from '../../lib/admin/authCookie.js';
+import { clearAdminSessionCookie, getAdminAuthToken, getAdminRefreshToken, isUnsafeCrossOriginRequest, setAdminRefreshCookie, setAdminSessionCookie } from '../../lib/admin/authCookie.js';
 
 export interface VeredasAuthenticatedRequest extends Request {
   veredasUser?: CuradoriaUsuario;
@@ -13,16 +13,24 @@ export interface VeredasAuthenticatedRequest extends Request {
  */
 export function createAuthMiddleware(prisma: PrismaClient) {
   return async (req: VeredasAuthenticatedRequest, res: Response, next: NextFunction) => {
-    const auth = getAdminAuthToken(req);
-
-    if (!auth) {
-      return res.status(401).json({ error: 'Token de autenticação não fornecido' });
-    }
-    if (isUnsafeCrossOriginRequest(req, auth.source)) return res.status(403).json({ error: 'Origem da requisição não autorizada' });
+    let auth = getAdminAuthToken(req);
+    if (isUnsafeCrossOriginRequest(req, auth?.source || 'cookie')) return res.status(403).json({ error: 'Origem da requisição não autorizada' });
 
     try {
       // Official SDK validation against Supabase Auth API
       const supabase = getSupabaseServer();
+      if (!auth) {
+        const refreshToken = getAdminRefreshToken(req);
+        if (refreshToken) {
+          const refreshed = await supabase.auth.refreshSession({ refresh_token: refreshToken });
+          if (!refreshed.error && refreshed.data.session) {
+            setAdminSessionCookie(res, refreshed.data.session.access_token, refreshed.data.session.expires_at);
+            setAdminRefreshCookie(res, refreshed.data.session.refresh_token);
+            auth = { token: refreshed.data.session.access_token, source: 'cookie' };
+          }
+        }
+      }
+      if (!auth) return res.status(401).json({ error: 'Sessão expirada. Entre novamente.' });
       const { data: { user }, error } = await supabase.auth.getUser(auth.token);
 
       if (error || !user) {

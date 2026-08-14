@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 
 export const ADMIN_SESSION_COOKIE = 'ibo_admin_session';
+export const ADMIN_REFRESH_COOKIE = 'ibo_admin_refresh';
 export type AdminAuthSource = 'bearer' | 'cookie';
 
 export interface AdminAuthToken { token: string; source: AdminAuthSource }
@@ -25,6 +26,10 @@ export function getAdminAuthToken(req: Request): AdminAuthToken | null {
   return token ? { token, source: 'cookie' } : null;
 }
 
+export function getAdminRefreshToken(req: Request): string | null {
+  return parseCookieHeader(req.headers.cookie)[ADMIN_REFRESH_COOKIE] || null;
+}
+
 export function setAdminSessionCookie(res: Response, token: string, expiresAt?: number): void {
   const remainingSeconds = expiresAt ? expiresAt - Math.floor(Date.now() / 1000) : 3600;
   const maxAge = Math.max(0, Math.min(remainingSeconds, 86400));
@@ -32,9 +37,15 @@ export function setAdminSessionCookie(res: Response, token: string, expiresAt?: 
   res.append('Set-Cookie', `${ADMIN_SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${secure}`);
 }
 
+export function setAdminRefreshCookie(res: Response, token: string): void {
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+  res.append('Set-Cookie', `${ADMIN_REFRESH_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=2592000${secure}`);
+}
+
 export function clearAdminSessionCookie(res: Response): void {
   const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
   res.append('Set-Cookie', `${ADMIN_SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure}`);
+  res.append('Set-Cookie', `${ADMIN_REFRESH_COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure}`);
 }
 
 export function isUnsafeCrossOriginRequest(req: Request, source: AdminAuthSource): boolean {
