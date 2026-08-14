@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { PrismaClient, CuradoriaPapelUsuario, CuradoriaUsuario } from '@prisma/client';
-import { getSupabaseServer } from '../../lib/veredas/supabaseServer.js';
-import { clearAdminSessionCookie, getAdminAuthToken, getAdminRefreshToken, isUnsafeCrossOriginRequest, setAdminRefreshCookie, setAdminSessionCookie } from '../../lib/admin/authCookie.js';
+import { getAdminAuthToken, isUnsafeCrossOriginRequest } from '../../lib/admin/authCookie.js';
+import { resolveAdminSession } from '../../lib/admin/resolveAdminSession.js';
 
 export interface VeredasAuthenticatedRequest extends Request {
   veredasUser?: CuradoriaUsuario;
@@ -13,30 +13,13 @@ export interface VeredasAuthenticatedRequest extends Request {
  */
 export function createAuthMiddleware(prisma: PrismaClient) {
   return async (req: VeredasAuthenticatedRequest, res: Response, next: NextFunction) => {
-    let auth = getAdminAuthToken(req);
+    const auth = getAdminAuthToken(req);
     if (isUnsafeCrossOriginRequest(req, auth?.source || 'cookie')) return res.status(403).json({ error: 'Origem da requisição não autorizada' });
 
     try {
-      // Official SDK validation against Supabase Auth API
-      const supabase = getSupabaseServer();
-      if (!auth) {
-        const refreshToken = getAdminRefreshToken(req);
-        if (refreshToken) {
-          const refreshed = await supabase.auth.refreshSession({ refresh_token: refreshToken });
-          if (!refreshed.error && refreshed.data.session) {
-            setAdminSessionCookie(res, refreshed.data.session.access_token, refreshed.data.session.expires_at);
-            setAdminRefreshCookie(res, refreshed.data.session.refresh_token);
-            auth = { token: refreshed.data.session.access_token, source: 'cookie' };
-          }
-        }
-      }
-      if (!auth) return res.status(401).json({ error: 'Sessão expirada. Entre novamente.' });
-      const { data: { user }, error } = await supabase.auth.getUser(auth.token);
-
-      if (error || !user) {
-        if (auth.source === 'cookie') clearAdminSessionCookie(res);
-        return res.status(401).json({ error: 'Sessão inválida ou expirada. Efetue login novamente.' });
-      }
+      const session = await resolveAdminSession(req, res);
+      if ('error' in session) return res.status(401).json({ error: session.error });
+      const user = session.user;
 
       // Check user authorization record in Prisma
       const usuario = await prisma.curadoriaUsuario.findUnique({
@@ -58,7 +41,6 @@ export function createAuthMiddleware(prisma: PrismaClient) {
       }).catch((err) => console.error('Error updating last access:', err));
 
       req.veredasUser = usuario;
-      if (auth.source === 'bearer') setAdminSessionCookie(res, auth.token);
       next();
     } catch (err) {
       console.error('Veredas Auth Middleware error:', err);

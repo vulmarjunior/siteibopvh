@@ -4,6 +4,7 @@ import { BookOpen, Film, GraduationCap, Plus, Trash2, ArrowLeft, Save, AlertCirc
 import { Helmet } from 'react-helmet-async';
 import { BookAccessFields, BookAccessFormData, createEmptyBookAccess } from '../../../components/veredas/BookAccessFields';
 import { parseYoutubePlaylistUrl, parseYoutubeUrl } from '../../../lib/veredas/youtube';
+import { getStoredAdminUser } from '../../../lib/admin/session';
 
 type CourseLessonFormData = {
   key: string;
@@ -14,6 +15,38 @@ type CourseLessonFormData = {
 };
 
 type CourseMaterialFormData = { key: string; titulo: string; url: string };
+
+type VeredasItemDraft = {
+  version: 1;
+  savedAt: string;
+  tipo: 'LIVRO' | 'VIDEO' | 'CURSO';
+  titulo: string;
+  porqueIndicamos: string;
+  ressalvas: string;
+  nivel: string;
+  status: string;
+  destaque: boolean;
+  categoriaIds: number[];
+  bookData: {
+    subtitulo: string; isbn10: string; isbn13: string; asin: string; editora: string;
+    anoPublicacao: string; numeroPaginas: string; capaUrl: string; disponibilidade: string;
+  };
+  bookAccesses: BookAccessFormData[];
+  videoData: {
+    urlOriginal: string; youtubeId: string; canal: string; duracaoSegundos: string;
+    thumbnailUrl: string; incorporavel: boolean;
+  };
+  courseData: {
+    urlOriginal: string; playlistId: string; canal: string; thumbnailUrl: string;
+    aulas: CourseLessonFormData[]; materiais: CourseMaterialFormData[];
+  };
+};
+
+function draftStorageKey(id: string | undefined, freeLibraryPreset: boolean): string {
+  const userId = getStoredAdminUser()?.id || 'admin';
+  const itemKey = id ? `edit-${id}` : freeLibraryPreset ? 'new-free-library' : 'new';
+  return `ibo:veredas:item-draft:v1:${userId}:${itemKey}`;
+}
 
 export const VeredasItemFormPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
@@ -69,11 +102,39 @@ export const VeredasItemFormPage: React.FC = () => {
   const [bookLookupLoading, setBookLookupLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [draftReady, setDraftReady] = useState(false);
+  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
+  const draftKey = draftStorageKey(id, isFreeLibraryPreset);
 
   useEffect(() => {
     fetch('/api/veredas/categorias')
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data)) setCategoriasList(data); });
+
+    const restoreDraft = () => {
+      try {
+        const stored = localStorage.getItem(draftKey);
+        if (!stored) return;
+        const draft = JSON.parse(stored) as VeredasItemDraft;
+        if (draft.version !== 1) return;
+        setTipo(draft.tipo);
+        setTitulo(draft.titulo);
+        setPorqueIndicamos(draft.porqueIndicamos);
+        setRessalvas(draft.ressalvas);
+        setNivel(draft.nivel);
+        setStatus(draft.status);
+        setDestaque(draft.destaque);
+        setCategoriaIds(draft.categoriaIds);
+        setBookData(draft.bookData);
+        setBookAccesses(draft.bookAccesses);
+        setVideoData(draft.videoData);
+        setCourseData(draft.courseData);
+        setDraftSavedAt(draft.savedAt);
+        setSuccessMsg('Seu rascunho anterior foi restaurado automaticamente.');
+      } catch {
+        localStorage.removeItem(draftKey);
+      }
+    };
 
     if (id) {
       fetch(`/api/veredas/admin/items/${id}`)
@@ -149,9 +210,46 @@ export const VeredasItemFormPage: React.FC = () => {
               });
             }
           }
+        })
+        .finally(() => {
+          restoreDraft();
+          setDraftReady(true);
         });
+    } else {
+      restoreDraft();
+      setDraftReady(true);
     }
-  }, [id]);
+  }, [draftKey, id]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    const timer = window.setTimeout(() => {
+      const savedAt = new Date().toISOString();
+      const draft: VeredasItemDraft = {
+        version: 1,
+        savedAt,
+        tipo,
+        titulo,
+        porqueIndicamos,
+        ressalvas,
+        nivel,
+        status,
+        destaque,
+        categoriaIds,
+        bookData,
+        bookAccesses,
+        videoData,
+        courseData,
+      };
+      try {
+        localStorage.setItem(draftKey, JSON.stringify(draft));
+        setDraftSavedAt(savedAt);
+      } catch {
+        // The form remains usable when storage is unavailable or full.
+      }
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [bookAccesses, bookData, categoriaIds, courseData, destaque, draftKey, draftReady, nivel, porqueIndicamos, ressalvas, status, tipo, titulo, videoData]);
 
   useEffect(() => {
     if (!isFreeLibraryPreset || bookAccesses.length > 0) return;
@@ -358,9 +456,11 @@ export const VeredasItemFormPage: React.FC = () => {
 
       const result = await res.json();
       if (!res.ok) {
-        throw new Error(result.error || (result.errors && result.errors[0]) || 'Erro ao salvar');
+        const validationErrors = Array.isArray(result.errors) ? result.errors.join('\n') : '';
+        throw new Error(result.error || validationErrors || 'Erro ao salvar');
       }
 
+      localStorage.removeItem(draftKey);
       navigate('/admin/veredas');
     } catch (err: any) {
       setErrorMsg(err.message || 'Falha ao salvar conteúdo');
@@ -421,9 +521,9 @@ export const VeredasItemFormPage: React.FC = () => {
         </div>
 
         {errorMsg && (
-          <div className="p-3 bg-red-950/80 border border-red-800 text-red-300 text-xs rounded-lg flex items-center gap-2">
+          <div className="p-3 bg-red-950/80 border border-red-800 text-red-300 text-xs rounded-lg flex items-start gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{errorMsg}</span>
+            <span className="whitespace-pre-line">{errorMsg}</span>
           </div>
         )}
         {successMsg && (
@@ -589,6 +689,11 @@ export const VeredasItemFormPage: React.FC = () => {
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-4">
+            {draftSavedAt && (
+              <span className="mr-auto text-[11px] text-stone-500">
+                Rascunho protegido às {new Date(draftSavedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
             <button
               type="submit"
               disabled={loading}
