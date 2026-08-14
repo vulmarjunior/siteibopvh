@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { clearAdminSession, getAdminAccessToken } from '../../../lib/admin/session';
-import { BookOpen, Film, AlertTriangle, FileText, PlusCircle, LogOut, Edit, Trash2, CheckCircle, Archive, ExternalLink, LayoutDashboard, Sparkles } from 'lucide-react';
+import { BookOpen, Film, GraduationCap, AlertTriangle, FileText, PlusCircle, LogOut, Edit, Trash2, CheckCircle, Archive, ExternalLink, LayoutDashboard, Sparkles } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
 export const VeredasDashboardPage: React.FC = () => {
@@ -235,7 +235,7 @@ export const VeredasDashboardPage: React.FC = () => {
                 Gerenciamento de Conteúdos
               </h2>
               <p className="text-xs text-stone-400">
-                Edite, publique ou altere rascunhos de livros e vídeos curados
+                Edite, publique ou altere rascunhos de livros, vídeos e cursos curados
               </p>
             </div>
 
@@ -300,20 +300,32 @@ export const VeredasDashboardPage: React.FC = () => {
                   {filteredItems.map((item) => {
                     const isLoadingThis = actionLoadingId === item.id;
                     const publicUrl = item.tipo === 'LIVRO' ? `/veredas/livro/${item.slug}` : item.tipo === 'VIDEO' ? `/veredas/video/${item.slug}` : `/veredas/curso/${item.slug}`;
+                    const isFreeContent = item.tipo === 'LIVRO' && item.livro?.acessos?.some((access: any) => access.gratuito && access.ativo);
 
                     return (
                       <tr key={item.id} className="hover:bg-stone-800/30 transition-colors">
                         {/* Tipo Badge */}
                         <td className="py-3.5 px-4 font-mono font-medium">
-                          {item.tipo === 'LIVRO' ? (
-                            <span className="px-2 py-0.5 rounded bg-amber-950 border border-amber-800 text-amber-300 flex items-center gap-1 w-max">
-                              <BookOpen className="w-3 h-3" /> Livro
-                            </span>
-                          ) : (
-                            <span className="px-2 py-0.5 rounded bg-blue-950 border border-blue-800 text-blue-300 flex items-center gap-1 w-max">
-                              <Film className="w-3 h-3" /> Vídeo
-                            </span>
-                          )}
+                          <div className="flex flex-wrap gap-1.5">
+                            {item.tipo === 'LIVRO' ? (
+                              <span className="px-2 py-0.5 rounded bg-amber-950 border border-amber-800 text-amber-300 flex items-center gap-1 w-max">
+                                <BookOpen className="w-3 h-3" /> Livro
+                              </span>
+                            ) : item.tipo === 'VIDEO' ? (
+                              <span className="px-2 py-0.5 rounded bg-blue-950 border border-blue-800 text-blue-300 flex items-center gap-1 w-max">
+                                <Film className="w-3 h-3" /> Vídeo
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded bg-violet-950 border border-violet-800 text-violet-300 flex items-center gap-1 w-max">
+                                <GraduationCap className="w-3 h-3" /> Curso
+                              </span>
+                            )}
+                            {isFreeContent ? (
+                              <span className="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800 text-emerald-300 flex items-center gap-1 w-max">
+                                <Sparkles className="w-3 h-3" /> Gratuito
+                              </span>
+                            ) : null}
+                          </div>
                         </td>
 
                         {/* Título & Detalhes */}
