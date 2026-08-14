@@ -5,7 +5,6 @@ import type { PrismaClient } from '@prisma/client';
 import { createAdminAuthMiddleware, type AdminAuthenticatedRequest } from './auth.js';
 import { hasAdminPermission } from '../../lib/admin/permissions.js';
 import { getAdminAuthToken } from '../../lib/admin/authCookie.js';
-import { getSupabaseServer } from '../../lib/veredas/supabaseServer.js';
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const IMAGE_TYPES: Record<string, string> = {
@@ -127,12 +126,18 @@ export function createPublicHomeBannersRouter(prisma: PrismaClient) {
   router.get('/image', async (req, res) => {
     const path = text(req.query.path);
     if (!/^home-banners\/[a-zA-Z0-9._/-]+$/.test(path) || path.includes('..')) return res.status(400).json({ error: 'Imagem inválida.' });
-    const { data, error } = await getSupabaseServer().storage.from('site-assets').download(path);
-    if (error || !data) return res.status(404).json({ error: 'Imagem não encontrada.' });
-    const contentType = data.type || (path.endsWith('.png') ? 'image/png' : path.endsWith('.webp') ? 'image/webp' : 'image/jpeg');
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+    if (!supabaseUrl) return res.status(503).json({ error: 'Imagens temporariamente indisponíveis.' });
+    const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+    const upstream = await fetch(`${supabaseUrl}/storage/v1/object/public/site-assets/${encodedPath}`);
+    if (!upstream.ok) {
+      console.error('Home banner proxy error:', { path, status: upstream.status });
+      return res.status(404).json({ error: 'Imagem não encontrada.' });
+    }
+    const contentType = upstream.headers.get('content-type') || (path.endsWith('.png') ? 'image/png' : path.endsWith('.webp') ? 'image/webp' : 'image/jpeg');
     res.set('Content-Type', contentType);
     res.set('Cache-Control', 'public, max-age=31536000, immutable');
-    return res.send(Buffer.from(await data.arrayBuffer()));
+    return res.send(Buffer.from(await upstream.arrayBuffer()));
   });
 
   router.get('/', async (_req, res) => {
