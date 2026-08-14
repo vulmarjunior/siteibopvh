@@ -5,6 +5,7 @@ import type { PrismaClient } from '@prisma/client';
 import { createAdminAuthMiddleware, type AdminAuthenticatedRequest } from './auth.js';
 import { hasAdminPermission } from '../../lib/admin/permissions.js';
 import { getAdminAuthToken } from '../../lib/admin/authCookie.js';
+import { getSupabaseServer } from '../../lib/veredas/supabaseServer.js';
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const IMAGE_TYPES: Record<string, string> = {
@@ -16,6 +17,14 @@ const IMAGE_TYPES: Record<string, string> = {
 const text = (value: unknown) => typeof value === 'string' ? value.trim() : '';
 const validLink = (value: string) => value.startsWith('/') || value.startsWith('#') || /^https:\/\//i.test(value);
 const validImageUrl = (value: string) => value.startsWith('/') || /^https:\/\//i.test(value);
+const STORAGE_PUBLIC_MARKER = '/storage/v1/object/public/site-assets/';
+
+function toPortalImageUrl(imageUrl: string) {
+  const markerIndex = imageUrl.indexOf(STORAGE_PUBLIC_MARKER);
+  if (markerIndex < 0) return imageUrl;
+  const storagePath = imageUrl.slice(markerIndex + STORAGE_PUBLIC_MARKER.length);
+  return `/api/home-banners/image?path=${encodeURIComponent(storagePath)}`;
+}
 
 function slideData(body: any) {
   return {
@@ -52,7 +61,8 @@ export function createAdminHomeBannersRouter(prisma: PrismaClient) {
     : res.status(403).json({ error: 'Sem permissão para gerenciar os banners.' }));
 
   router.get('/', async (_req, res) => {
-    res.json(await prisma.homeBannerSlide.findMany({ orderBy: [{ position: 'asc' }, { createdAt: 'asc' }] }));
+    const slides = await prisma.homeBannerSlide.findMany({ orderBy: [{ position: 'asc' }, { createdAt: 'asc' }] });
+    res.json(slides.map((slide) => ({ ...slide, imageUrl: toPortalImageUrl(slide.imageUrl) })));
   });
 
   router.post('/upload', express.raw({ type: Object.keys(IMAGE_TYPES), limit: MAX_IMAGE_BYTES }), async (req: AdminAuthenticatedRequest, res) => {
@@ -76,8 +86,7 @@ export function createAdminHomeBannersRouter(prisma: PrismaClient) {
       console.error('Home banner upload error:', error);
       return res.status(502).json({ error: 'Não foi possível enviar a imagem.' });
     }
-    const { data } = supabase.storage.from('site-assets').getPublicUrl(path);
-    return res.status(201).json({ imageUrl: data.publicUrl });
+    return res.status(201).json({ imageUrl: `/api/home-banners/image?path=${encodeURIComponent(path)}` });
   });
 
   router.post('/', async (req: AdminAuthenticatedRequest, res) => {
@@ -115,6 +124,17 @@ export function createAdminHomeBannersRouter(prisma: PrismaClient) {
 
 export function createPublicHomeBannersRouter(prisma: PrismaClient) {
   const router = express.Router();
+  router.get('/image', async (req, res) => {
+    const path = text(req.query.path);
+    if (!/^home-banners\/[a-zA-Z0-9._/-]+$/.test(path) || path.includes('..')) return res.status(400).json({ error: 'Imagem inválida.' });
+    const { data, error } = await getSupabaseServer().storage.from('site-assets').download(path);
+    if (error || !data) return res.status(404).json({ error: 'Imagem não encontrada.' });
+    const contentType = data.type || (path.endsWith('.png') ? 'image/png' : path.endsWith('.webp') ? 'image/webp' : 'image/jpeg');
+    res.set('Content-Type', contentType);
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    return res.send(Buffer.from(await data.arrayBuffer()));
+  });
+
   router.get('/', async (_req, res) => {
     try {
       const slides = await prisma.homeBannerSlide.findMany({
@@ -123,7 +143,7 @@ export function createPublicHomeBannersRouter(prisma: PrismaClient) {
         orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
       });
       res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=120');
-      return res.json({ slides });
+      return res.json({ slides: slides.map((slide) => ({ ...slide, imageUrl: toPortalImageUrl(slide.imageUrl) })) });
     } catch (error) {
       console.error('Public home banners error:', error);
       return res.status(503).json({ slides: [] });
