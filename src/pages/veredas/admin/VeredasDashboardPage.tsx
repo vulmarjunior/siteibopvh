@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { clearAdminSession, getAdminAccessToken } from '../../../lib/admin/session';
-import { BookOpen, Film, AlertTriangle, FileText, PlusCircle, LogOut, Edit, Trash2, CheckCircle, Archive, ExternalLink, LayoutDashboard } from 'lucide-react';
+import { BookOpen, Film, AlertTriangle, FileText, PlusCircle, LogOut, Edit, Trash2, CheckCircle, Archive, ExternalLink, LayoutDashboard, Sparkles } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
 export const VeredasDashboardPage: React.FC = () => {
@@ -148,6 +148,13 @@ export const VeredasDashboardPage: React.FC = () => {
             className="px-3.5 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 font-medium text-xs rounded-lg flex items-center gap-1.5 transition-colors border border-stone-700"
           >
             <ExternalLink className="w-3.5 h-3.5" /> Ver Site Público
+          </Link>
+
+          <Link
+            to="/admin/veredas/conteudos/novo?biblioteca=gratuita"
+            className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-emerald-50 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors shadow-md"
+          >
+            <Sparkles className="w-4 h-4" /> Adicionar à Biblioteca Gratuita
           </Link>
 
           <Link

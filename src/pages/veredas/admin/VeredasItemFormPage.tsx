@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
 import { BookOpen, Film, GraduationCap, Plus, Trash2, ArrowLeft, Save, AlertCircle } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
-import { BookAccessFields, BookAccessFormData } from '../../../components/veredas/BookAccessFields';
+import { BookAccessFields, BookAccessFormData, createEmptyBookAccess } from '../../../components/veredas/BookAccessFields';
 import { parseYoutubePlaylistUrl, parseYoutubeUrl } from '../../../lib/veredas/youtube';
 
 type CourseLessonFormData = {
@@ -19,6 +19,8 @@ export const VeredasItemFormPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const isEditing = Boolean(id);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isFreeLibraryPreset = !isEditing && searchParams.get('biblioteca') === 'gratuita';
 
   const [tipo, setTipo] = useState<'LIVRO' | 'VIDEO' | 'CURSO'>('LIVRO');
   const [titulo, setTitulo] = useState('');
@@ -150,6 +152,12 @@ export const VeredasItemFormPage: React.FC = () => {
         });
     }
   }, [id]);
+
+  useEffect(() => {
+    if (!isFreeLibraryPreset || bookAccesses.length > 0) return;
+    setTipo('LIVRO');
+    setBookAccesses([{ ...createEmptyBookAccess(0), tipo: 'LEITURA_ONLINE', formato: 'WEB', gratuito: true, textoBotao: 'Acessar gratuitamente' }]);
+  }, [isFreeLibraryPreset, bookAccesses.length]);
 
   const handleYoutubeParser = async () => {
     if (!videoData.urlOriginal) return;
@@ -423,6 +431,12 @@ export const VeredasItemFormPage: React.FC = () => {
             {successMsg}
           </div>
         )}
+        {isFreeLibraryPreset ? (
+          <div className="p-4 bg-emerald-950/70 border border-emerald-800 text-emerald-200 text-xs rounded-lg">
+            <strong className="block mb-1">Cadastro para a Biblioteca Gratuita</strong>
+            Cadastre o livro normalmente e informe abaixo o endereço legítimo de acesso gratuito. Ao publicar, ele aparecerá automaticamente na Biblioteca Gratuita.
+          </div>
+        ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           

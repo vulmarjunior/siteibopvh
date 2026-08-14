@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, Search, Menu, X, ShieldAlert, Sparkles, Film } from 'lucide-react';
+import { BookOpen, Search, Menu, X, ShieldAlert, Sparkles, Film, GraduationCap } from 'lucide-react';
 
 export const VeredasNavbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -61,7 +61,7 @@ export const VeredasNavbar: React.FC = () => {
               <Film className="w-4 h-4 text-amber-500" />
               Vídeos
             </Link>
-            <Link to="/veredas/cursos" className="flex items-center gap-1.5 text-stone-300 hover:text-amber-400 transition-colors">Cursos</Link>
+            <Link to="/veredas/cursos" className="flex items-center gap-1.5 text-stone-300 hover:text-amber-400 transition-colors"><GraduationCap className="w-4 h-4 text-amber-500" /> Cursos</Link>
             <Link to="/veredas/biblioteca-gratuita" className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 transition-colors font-semibold">
               <Sparkles className="w-4 h-4" />
               Biblioteca Gratuita
@@ -123,6 +123,13 @@ export const VeredasNavbar: React.FC = () => {
             >
               <Film className="w-5 h-5 text-amber-500" />
               Vídeos
+            </Link>
+            <Link
+              to="/veredas/cursos"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-md hover:bg-stone-800 text-stone-200 flex items-center gap-2"
+            >
+              <GraduationCap className="w-5 h-5 text-amber-500" /> Cursos
             </Link>
             <Link
               to="/veredas/biblioteca-gratuita"
