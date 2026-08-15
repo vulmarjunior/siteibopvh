@@ -89,7 +89,7 @@ export const VeredasVideoDetailPage: React.FC = () => {
           <Link to="/veredas/videos" className="inline-flex items-center gap-1.5 text-xs text-stone-400 hover:text-amber-400 font-medium">
             <ArrowLeft className="w-4 h-4" /> Voltar ao Catálogo de Vídeos
           </Link>
-          <SharePageButton title={item.titulo} />
+          <SharePageButton title={item.titulo} contentType="Vídeo" imageUrl={video.thumbnailUrl} />
         </div>
 
         {/* Video Player or Fallback Container */}
