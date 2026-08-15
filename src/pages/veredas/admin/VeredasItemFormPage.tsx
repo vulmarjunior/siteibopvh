@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
-import { BookOpen, Film, GraduationCap, Plus, Trash2, ArrowLeft, ArrowUp, ArrowDown, Save, AlertCircle } from 'lucide-react';
+import { BookOpen, Film, GraduationCap, Plus, Trash2, ArrowLeft, ArrowUp, ArrowDown, Save, AlertCircle, AlertTriangle } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { BookAccessFields, BookAccessFormData, createEmptyBookAccess } from '../../../components/veredas/BookAccessFields';
 import { parseYoutubePlaylistUrl, parseYoutubeUrl } from '../../../lib/veredas/youtube';
@@ -15,6 +15,13 @@ type CourseLessonFormData = {
 };
 
 type CourseMaterialFormData = { key: string; titulo: string; url: string };
+
+const isMostlyUppercase = (value: string) => {
+  const letters = value.match(/\p{L}/gu) || [];
+  if (letters.length < 30) return false;
+  const uppercaseLetters = letters.filter((letter) => letter === letter.toLocaleUpperCase('pt-BR')).length;
+  return uppercaseLetters / letters.length > 0.85;
+};
 
 type VeredasItemDraft = {
   version: 1;
@@ -568,6 +575,15 @@ export const VeredasItemFormPage: React.FC = () => {
                 placeholder="Explique de forma pastoral por que este conteúdo é recomendado..."
                 className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg p-3 text-xs text-stone-200 focus:outline-none focus:border-amber-500 resize-y"
               />
+              <span className="mt-1 block text-[11px] font-normal leading-4 text-stone-500">
+                Use maiúsculas apenas no início das frases, em nomes próprios e siglas. Separe ideias longas em parágrafos.
+              </span>
+              {isMostlyUppercase(porqueIndicamos) ? (
+                <span role="alert" className="mt-2 flex items-start gap-1.5 rounded-lg border border-amber-800/60 bg-amber-950/40 p-2 text-[11px] font-normal leading-4 text-amber-300">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  Este texto está quase todo em caixa alta. Revise a capitalização para facilitar a leitura antes de publicar.
+                </span>
+              ) : null}
             </label>
 
             <div>

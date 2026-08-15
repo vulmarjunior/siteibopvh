@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Film, Sparkles, AlertCircle, ShieldCheck, ArrowLeft, ExternalLink, Play } from 'lucide-react';
+import { Film, AlertCircle, ShieldCheck, ArrowLeft, ExternalLink, Play } from 'lucide-react';
 import { VeredasNavbar } from '../../components/veredas/VeredasNavbar';
 import { VeredasFooter } from '../../components/veredas/VeredasFooter';
 import { SharePageButton } from '../../components/veredas/SharePageButton';
+import { RecommendationBlock } from '../../components/veredas/RecommendationBlock';
 import { Helmet } from 'react-helmet-async';
 
 export const VeredasVideoDetailPage: React.FC = () => {
@@ -156,16 +157,7 @@ export const VeredasVideoDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* PASTORAL RECOMMENDATION BLOCK */}
-        <section className="bg-gradient-to-br from-amber-950/40 via-stone-900 to-stone-900 border border-amber-800/50 rounded-2xl p-6 sm:p-8 space-y-4 shadow-xl">
-          <div className="flex items-center gap-2 text-amber-400 font-serif font-bold text-lg">
-            <Sparkles className="w-5 h-5" />
-            Por que indicamos este vídeo?
-          </div>
-          <p className="text-sm sm:text-base text-amber-100/90 leading-relaxed font-serif whitespace-pre-line">
-            {item.porqueIndicamos}
-          </p>
-        </section>
+        <RecommendationBlock content={item.porqueIndicamos} contentLabel="este vídeo" />
 
         {/* PASTORAL CAVEATS (RESSALVAS) IF PRESENT */}
         {item.ressalvas && (

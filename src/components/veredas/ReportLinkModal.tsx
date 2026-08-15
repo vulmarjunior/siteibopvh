@@ -75,10 +75,11 @@ export const ReportLinkModal: React.FC<ReportLinkModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/80 backdrop-blur-sm">
-      <div className="bg-stone-900 border border-stone-800 rounded-xl shadow-2xl max-w-md w-full p-6 text-stone-200 relative">
+      <div role="dialog" aria-modal="true" aria-labelledby="link-problem-title" className="bg-stone-900 border border-stone-800 rounded-xl shadow-2xl max-w-md w-full p-6 text-stone-200 relative">
         
         {/* Close Button */}
         <button
+          type="button"
           onClick={onClose}
           className="absolute top-4 right-4 text-stone-400 hover:text-stone-100 p-1 rounded-md"
           aria-label="Fechar"
@@ -86,8 +87,8 @@ export const ReportLinkModal: React.FC<ReportLinkModalProps> = ({
           <X className="w-5 h-5" />
         </button>
 
-        <h3 className="font-serif text-lg font-bold text-stone-100 mb-1">
-          Reportar Link Quebrado
+        <h3 id="link-problem-title" className="font-serif text-lg font-bold text-stone-100 mb-1">
+          Informar problema no link
         </h3>
         <p className="text-xs text-stone-400 mb-4">
           Aviso para o link <span className="font-semibold text-amber-400">"{textoBotao}"</span> {fornecedor ? `(${fornecedor})` : ''}
@@ -167,7 +168,7 @@ export const ReportLinkModal: React.FC<ReportLinkModalProps> = ({
                 disabled={loading}
                 className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs rounded-lg transition-colors shadow disabled:opacity-50"
               >
-                {loading ? 'Enviando...' : 'Enviar Reporte'}
+                {loading ? 'Enviando...' : 'Enviar aviso'}
               </button>
             </div>
 

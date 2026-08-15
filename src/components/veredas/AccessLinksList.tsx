@@ -88,11 +88,11 @@ export const AccessLinksList: React.FC<AccessLinksListProps> = ({ acessos }) => 
                   </a>
 
                   <button
+                    type="button"
                     onClick={() => setReportingLink(acesso)}
-                    className="text-[10px] text-stone-500 hover:text-stone-300 underline font-sans"
-                    title="Reportar link incorreto ou quebrado"
+                    className="inline-flex items-center gap-1 text-[10px] text-stone-500 underline hover:text-stone-300"
                   >
-                    Reportar link
+                    <AlertTriangle className="h-3 w-3" /> Problema com este link?
                   </button>
                 </div>
               </div>
@@ -140,10 +140,11 @@ export const AccessLinksList: React.FC<AccessLinksListProps> = ({ acessos }) => 
                   </a>
 
                   <button
+                    type="button"
                     onClick={() => setReportingLink(acesso)}
-                    className="text-[10px] text-stone-500 hover:text-stone-300 underline font-sans"
+                    className="inline-flex items-center gap-1 text-[10px] text-stone-500 underline hover:text-stone-300"
                   >
-                    Reportar link
+                    <AlertTriangle className="h-3 w-3" /> Problema com este link?
                   </button>
                 </div>
               </div>
@@ -175,10 +176,11 @@ export const AccessLinksList: React.FC<AccessLinksListProps> = ({ acessos }) => 
                     Acessar <ExternalLink className="w-3 h-3" />
                   </a>
                   <button
+                    type="button"
                     onClick={() => setReportingLink(acesso)}
-                    className="text-[10px] text-stone-500 hover:text-stone-300 underline"
+                    className="inline-flex items-center gap-1 text-[10px] text-stone-500 underline hover:text-stone-300"
                   >
-                    Reportar
+                    <AlertTriangle className="h-3 w-3" /> Problema com este link?
                   </button>
                 </div>
               </div>
