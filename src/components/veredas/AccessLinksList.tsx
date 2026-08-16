@@ -15,6 +15,10 @@ export interface AccessLinkItem {
   producaoIbo: boolean;
   observacaoPublica?: string | null;
   fonte?: string | null;
+  precoAtual?: string | number | null;
+  precoMoeda?: string | null;
+  precoExibicao?: string | null;
+  precoConsultadoEm?: string | null;
 }
 
 export interface AccessLinksListProps {
@@ -119,11 +123,20 @@ export const AccessLinksList: React.FC<AccessLinksListProps> = ({ acessos }) => 
                     <span className="text-[11px] font-medium text-stone-300">
                       {acesso.fornecedor || acesso.provedor || 'Livraria'}
                     </span>
-
+                    {acesso.precoExibicao && (
+                      <span className="text-sm font-bold tabular-nums text-amber-400" aria-label={`Preço consultado: ${acesso.precoExibicao}`}>
+                        {acesso.precoExibicao}
+                      </span>
+                    )}
                   </div>
                   {acesso.observacaoPublica && (
                     <p className="text-xs text-stone-400 mt-1">
                       {acesso.observacaoPublica}
+                    </p>
+                  )}
+                  {acesso.precoExibicao && (
+                    <p className="mt-1.5 text-[10px] leading-relaxed text-stone-500">
+                      Preço consultado na Amazon; pode variar conforme edição, vendedor, endereço e data da compra.
                     </p>
                   )}
                 </div>
