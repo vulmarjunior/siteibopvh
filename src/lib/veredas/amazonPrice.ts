@@ -91,7 +91,10 @@ async function fetchAmazonPrices(asins: string[], config: AmazonPriceConfig) {
       resources: ['offersV2.listings.price'],
     }),
   });
-  if (!response.ok) throw new Error(`Amazon Creators getItems request failed (${response.status})`);
+  if (!response.ok) {
+    const errorBody = (await response.text()).slice(0, 600).replace(/[\r\n]+/g, ' ');
+    throw new Error(`Amazon Creators getItems request failed (${response.status}): ${errorBody || 'sem detalhes'}`);
+  }
   return extractPrices(await response.json());
 }
 

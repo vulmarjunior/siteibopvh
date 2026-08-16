@@ -13,7 +13,7 @@ export const RecommendationBlock: React.FC<RecommendationBlockProps> = ({ conten
 
   return (
     <section className="rounded-2xl border border-amber-800/50 bg-gradient-to-br from-amber-950/40 via-stone-900 to-stone-900 p-6 shadow-xl sm:p-8">
-      <div className="mx-auto max-w-[85ch]">
+      <div className="w-full">
         <h2 className="flex items-center gap-2 font-serif text-xl font-bold text-amber-300">
           <Sparkles className="h-5 w-5 shrink-0 text-amber-400" />
           {heading}
