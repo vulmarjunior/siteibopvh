@@ -8,6 +8,7 @@ import { parseYoutubeUrl } from '../../lib/veredas/youtube.js';
 import { parseAmazonUrl } from '../../lib/veredas/amazon.js';
 import { lookupBookByIsbn } from '../../lib/veredas/books.js';
 import { generateSlug } from '../../lib/veredas/slug.js';
+import { refreshAmazonAccessPrices } from '../../lib/veredas/amazonPrice.js';
 
 export function createVeredasRouter(prisma: PrismaClient) {
   const router = express.Router();
@@ -72,9 +73,17 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // GET /api/veredas/items/:slug
   router.get('/items/:slug', async (req, res) => {
     try {
-      const item = await itemsService.getPublicItemBySlug(req.params.slug);
+      let item = await itemsService.getPublicItemBySlug(req.params.slug);
       if (!item) {
         return res.status(404).json({ error: 'Conteúdo não encontrado ou não publicado' });
+      }
+      if (item.livro?.acessos?.length) {
+        try {
+          const refreshed = await refreshAmazonAccessPrices(prisma, item.livro.acessos);
+          if (refreshed) item = await itemsService.getPublicItemBySlug(req.params.slug);
+        } catch (priceError) {
+          console.warn('Could not refresh Amazon prices:', priceError);
+        }
       }
       res.json(item);
     } catch (err) {

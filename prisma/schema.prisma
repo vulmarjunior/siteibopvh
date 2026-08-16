@@ -647,6 +647,10 @@ model CuradoriaAcesso {
   observacaoPublica   String?
   fonte               String?
   ultimaVerificacaoEm DateTime?
+  precoAtual          Decimal?                 @db.Decimal(12, 2)
+  precoMoeda          String?
+  precoExibicao       String?
+  precoConsultadoEm   DateTime?
   criadoEm            DateTime                 @default(now())
   atualizadoEm        DateTime                 @updatedAt
 
