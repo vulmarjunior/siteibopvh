@@ -38,14 +38,3 @@ Toda a arquitetura e detalhes técnicos deste repositório estão documentados n
 ## Deploy
 
 O projeto está configurado para publicação automática na plataforma **Netlify**, conectando-se via API (Serverless Functions) na pasta `/netlify` para acessar o banco de dados PostgreSQL real em produção.
-## Preços automáticos de livros no Veredas
-
-Os preços dos links de compra da Amazon podem ser atualizados automaticamente pela Creators API. Configure no ambiente do servidor:
-
-```env
-AMAZON_CREATORS_CLIENT_ID=
-AMAZON_CREATORS_CLIENT_SECRET=
-AMAZON_CREATORS_PARTNER_TAG=
-```
-
-O Veredas usa o ASIN presente no link Amazon, mantém o resultado em cache por 12 horas e oculta o preço quando não há credenciais ou oferta válida. Nunca exponha essas variáveis com o prefixo `VITE_`.
