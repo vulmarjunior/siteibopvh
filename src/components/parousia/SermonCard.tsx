@@ -25,7 +25,8 @@ export const SermonCard: React.FC<SermonCardProps> = ({ sermon }) => {
   });
 
   const watchUrl = getYoutubeWatchUrl(sermon.youtubeId, sermon.youtubeUrl);
-  const thumbUrl = sermon.artes?.thumb || '/images/serie-da-ascensao-a-parousia/thumb-padrao.jpg';
+  const ytThumb = sermon.youtubeId ? `https://img.youtube.com/vi/${sermon.youtubeId}/hqdefault.jpg` : null;
+  const thumbUrl = sermon.artes?.thumb || ytThumb || '/images/serie-da-ascensao-a-parousia/thumb-padrao.jpg';
 
   // Load saved state
   useEffect(() => {

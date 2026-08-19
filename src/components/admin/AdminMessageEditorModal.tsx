@@ -6,7 +6,7 @@ export type ReadingDayForm = { dayLabel: string; biblicalText: string; descripti
 export type EditorialMessageForm = {
   id?: string; order: number; title: string; slug: string; scheduledFor: string;
   biblicalText: string; speaker: string; summary: string; contentHtml: string; status: string;
-  videoUrl: string; audioUrl: string; materialTitle: string; materialUrl: string;
+  videoUrl: string; audioUrl: string; materialTitle: string; materialUrl: string; thumbnailUrl?: string;
   readingTheme: string; readingDays: ReadingDayForm[]; sourceSystem: string; externalId: string;
 };
 
@@ -49,12 +49,45 @@ export function AdminMessageEditorModal({ value, saving, onChange, onClose, onSu
           <label className="text-sm md:col-span-2">Resumo<textarea className={input} rows={2} value={value.summary} onChange={event => onChange({ ...value, summary: event.target.value })} /></label>
         </div></section>
         <section><div className="mb-3"><h3 className="text-sm font-bold text-amber-400">Conteúdo completo</h3><p className="mt-1 text-xs text-stone-500">Cole aqui o conteúdo produzido no TinyMCE do gestor de sermões.</p></div><RichTextEditor value={value.contentHtml} onChange={contentHtml => onChange({ ...value, contentHtml })} /></section>
-        <section><h3 className="mb-3 text-sm font-bold text-amber-400">Mídias e material externo</h3><div className="grid gap-4 md:grid-cols-2">
-          <label className="text-sm">Vídeo por URL<input type="url" className={input} value={value.videoUrl} onChange={event => onChange({ ...value, videoUrl: event.target.value })} /></label>
-          <label className="text-sm">Áudio por URL<input type="url" className={input} value={value.audioUrl} onChange={event => onChange({ ...value, audioUrl: event.target.value })} /></label>
-          <label className="text-sm">Título do material<input className={input} value={value.materialTitle} onChange={event => onChange({ ...value, materialTitle: event.target.value })} /></label>
-          <label className="text-sm">Material por URL<input type="url" className={input} value={value.materialUrl} onChange={event => onChange({ ...value, materialUrl: event.target.value })} /></label>
-        </div></section>
+        <section>
+          <h3 className="mb-3 text-sm font-bold text-amber-400">Mídias e material externo</h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="text-sm">Vídeo por URL (YouTube/Vimeo)<input type="url" className={input} value={value.videoUrl} onChange={event => onChange({ ...value, videoUrl: event.target.value })} /></label>
+            <label className="text-sm">Áudio por URL<input type="url" className={input} value={value.audioUrl} onChange={event => onChange({ ...value, audioUrl: event.target.value })} /></label>
+            <label className="text-sm">Título do material<input className={input} value={value.materialTitle} onChange={event => onChange({ ...value, materialTitle: event.target.value })} /></label>
+            <label className="text-sm">Material por URL<input type="url" className={input} value={value.materialUrl} onChange={event => onChange({ ...value, materialUrl: event.target.value })} /></label>
+            <label className="text-sm md:col-span-2">Thumbnail personalizada (opcional — por padrão puxa a foto do YouTube)<input type="url" placeholder="https://..." className={input} value={value.thumbnailUrl || ''} onChange={event => onChange({ ...value, thumbnailUrl: event.target.value })} /></label>
+          </div>
+          {/* Prévia da Thumbnail */}
+          <div className="mt-4 flex items-center gap-4 rounded-xl border border-stone-800 bg-stone-950 p-3">
+            {(() => {
+              const ytMatch = value.videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]{11})/);
+              const ytId = ytMatch ? ytMatch[1] : null;
+              const previewUrl = value.thumbnailUrl || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null);
+              return (
+                <>
+                  <div className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-lg bg-stone-900 border border-stone-800">
+                    {previewUrl ? (
+                      <img src={previewUrl} alt="Prévia" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-xs text-stone-600">Sem capa</div>
+                    )}
+                  </div>
+                  <div className="text-xs text-stone-400">
+                    <p className="font-bold text-stone-300">Prévia da miniatura (card do site):</p>
+                    <p className="mt-0.5">
+                      {value.thumbnailUrl
+                        ? 'Usando URL personalizada.'
+                        : ytId
+                        ? 'Extraída automaticamente do YouTube (zero armazenamento necessário).'
+                        : 'Cole um link do YouTube ou thumbnail para pré-visualizar.'}
+                    </p>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        </section>
         <section><h3 className="mb-3 text-sm font-bold text-amber-400">Plano de leitura</h3><label className="block text-sm">Tema<input className={input} value={value.readingTheme} onChange={event => onChange({ ...value, readingTheme: event.target.value })} /></label>{value.readingTheme && <div className="mt-4 space-y-3">{value.readingDays.map((day, index) => <div key={index} className="grid gap-3 rounded-xl border border-stone-800 bg-stone-950 p-3 md:grid-cols-3"><input aria-label="Dia" className={input} value={day.dayLabel} onChange={event => updateDay(index, { dayLabel: event.target.value })} /><input aria-label="Texto bíblico da leitura" className={input} value={day.biblicalText} onChange={event => updateDay(index, { biblicalText: event.target.value })} /><input aria-label="Descrição da leitura" className={input} value={day.description} onChange={event => updateDay(index, { description: event.target.value })} /></div>)}<button type="button" onClick={() => onChange({ ...value, readingDays: [...value.readingDays, { dayLabel: '', biblicalText: '', description: '' }] })} className="text-sm text-amber-400">+ Adicionar leitura</button></div>}</section>
         <section className="grid gap-4 md:grid-cols-2 md:items-end">
           <label className="block text-sm">Status administrativo<select className={input} value={value.status} onChange={event => onChange({ ...value, status: event.target.value })}><option value="DRAFT">Rascunho</option><option value="SCHEDULED">Agendada</option><option value="PUBLISHED">Publicada</option><option value="ARCHIVED">Arquivada</option></select></label>

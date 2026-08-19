@@ -4,7 +4,8 @@ import type { Sermon } from '../types/parousia';
 interface EditorialMessageDto {
   order: number; slug: string; title: string; scheduledFor: string; biblicalText: string;
   speaker?: string | null; summary: string; description: string | null; contentHtml?: string | null; status: string; customFields?: Record<string, any>;
-  media: { type: string; url: string; title?: string; youtubeId?: string | null }[];
+  thumbnailUrl?: string | null;
+  media: { type: string; url: string; title?: string; youtubeId?: string | null; thumbnailUrl?: string | null }[];
   materials: { title: string; type: string; url: string }[];
   readingPlan: { theme: string; days: { dayLabel: string; biblicalText: string; description: string | null }[] } | null;
 }
@@ -14,6 +15,7 @@ export function toParousiaSermon(message: EditorialMessageDto): Sermon {
   const audio = message.media.find(item => item.type === 'AUDIO');
   const images = Object.fromEntries(message.media.filter(item => item.type === 'IMAGE').map(item => [item.title || 'thumb', item.url]));
   const pdf = message.materials.find(item => item.type.toUpperCase() === 'PDF');
+  const thumbFromApi = message.thumbnailUrl || video?.thumbnailUrl || undefined;
   return {
     numero: String(message.order).padStart(2, '0'), slug: message.slug, data: message.scheduledFor.slice(0, 10),
     titulo: message.title, pregador: message.speaker || undefined, textoBiblico: message.biblicalText,
@@ -22,7 +24,7 @@ export function toParousiaSermon(message: EditorialMessageDto): Sermon {
     youtubeId: video?.youtubeId || undefined,
     youtubeUrl: video?.url || undefined, audioUrl: audio?.url || undefined, pdfUrl: pdf?.url || undefined,
     statusManual: message.customFields?.statusManual ? String(message.customFields.statusManual) : undefined,
-    artes: { ...(message.customFields?.artes || {}), ...images },
+    artes: { thumb: thumbFromApi, ...(message.customFields?.artes || {}), ...images },
     materiais: message.materials.filter(item => item !== pdf).map(item => ({ titulo: item.title, tipo: item.type, url: item.url })),
     leituras: message.readingPlan ? { tema: message.readingPlan.theme, dias: message.readingPlan.days.map(day => ({ dia: day.dayLabel, texto: day.biblicalText, descricao: day.description || '' })) } : undefined,
   };

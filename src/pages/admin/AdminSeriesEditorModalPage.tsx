@@ -50,8 +50,21 @@ export default function AdminSeriesEditorModalPage() {
     }
   }
   function editMessage(item: any): EditorialMessageForm {
-    const video = item.media?.find((media: any) => media.type === 'VIDEO'); const audio = item.media?.find((media: any) => media.type === 'AUDIO'); const material = item.materials?.[0];
-    return { id: item.id, order: item.order, title: item.title, slug: item.slug, scheduledFor: toLocalDate(item.scheduledFor), biblicalText: item.biblicalText, speaker: item.speaker || '', summary: item.summary || '', contentHtml: item.contentHtml || '', status: item.status, videoUrl: video?.url || '', audioUrl: audio?.url || '', materialTitle: material?.title || '', materialUrl: material?.url || '', readingTheme: item.readingPlan?.theme || '', readingDays: item.readingPlan?.days?.map((day: any) => ({ dayLabel: day.dayLabel, biblicalText: day.biblicalText, description: day.description || '' })) || [firstReading], sourceSystem: item.sourceSystem || '', externalId: item.externalId || '' };
+    const video = item.media?.find((media: any) => media.type === 'VIDEO');
+    const audio = item.media?.find((media: any) => media.type === 'AUDIO');
+    const image = item.media?.find((media: any) => media.type === 'IMAGE');
+    const material = item.materials?.[0];
+    return {
+      id: item.id, order: item.order, title: item.title, slug: item.slug,
+      scheduledFor: toLocalDate(item.scheduledFor), biblicalText: item.biblicalText,
+      speaker: item.speaker || '', summary: item.summary || '', contentHtml: item.contentHtml || '',
+      status: item.status, videoUrl: video?.url || '', audioUrl: audio?.url || '',
+      materialTitle: material?.title || '', materialUrl: material?.url || '',
+      thumbnailUrl: item.thumbnailUrl || image?.url || '',
+      readingTheme: item.readingPlan?.theme || '',
+      readingDays: item.readingPlan?.days?.map((day: any) => ({ dayLabel: day.dayLabel, biblicalText: day.biblicalText, description: day.description || '' })) || [firstReading],
+      sourceSystem: item.sourceSystem || '', externalId: item.externalId || ''
+    };
   }
   async function saveMessage(event: React.FormEvent, contentHtml: string) {
     event.preventDefault();
