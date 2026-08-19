@@ -2,6 +2,12 @@
 
 ## [Em Desenvolvimento]
 
+### 2026-08-19 - Parousia & Central: miniaturas do YouTube e pré-visualização
+
+- **Hotsite Parousia:** Miniatura do YouTube (`https://img.youtube.com/vi/...`) integrada dinamicamente nos cards da seção *Programação da Série*, eliminando o fallback fixo genérico e evitando o salvamento de imagens no banco/servidor.
+- **Central Editorial / Admin:** Adicionada caixa de pré-visualização em tempo real da thumbnail no formulário da mensagem (`AdminMessageEditorModal.tsx`).
+- **Thumbnail Opcional:** Adicionado o campo opcional de Thumbnail personalizada no formulário da mensagem para links de imagem externos.
+
 ### 2026-08-11 - Central Administrativa IBO
 
 - Central unificada com autenticação Supabase e permissões administrativas.
