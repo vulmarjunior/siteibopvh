@@ -77,6 +77,24 @@ export function createVeredasRouter(prisma: PrismaClient) {
       if (!item) {
         return res.status(404).json({ error: 'Conteúdo não encontrado ou não publicado' });
       }
+      if (item.livro && !item.descricao) {
+        const isbn = item.livro.isbn13 || item.livro.isbn10;
+        if (isbn) {
+          try {
+            const lookup = await lookupBookByIsbn(isbn);
+            const description = lookup.metadata?.description?.trim();
+            if (description) {
+              await prisma.curadoriaItem.update({
+                where: { id: item.id },
+                data: { descricao: description },
+              });
+              item = await itemsService.getPublicItemBySlug(req.params.slug);
+            }
+          } catch (metadataError) {
+            console.warn('Could not backfill book synopsis:', metadataError);
+          }
+        }
+      }
       if (item.livro?.acessos?.length) {
         try {
           const refreshed = await refreshAmazonAccessPrices(prisma, item.livro.acessos);
