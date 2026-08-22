@@ -26,7 +26,7 @@ describe('lookupBookByIsbn', () => {
     expect(result.metadata?.source).toBe('BRASIL_API');
     expect(result.metadata?.coverUrl).toBe('https://example.com/cover.jpg');
     expect(result.metadata?.publishedYear).toBe(2024);
-    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(fetcher).toHaveBeenCalledTimes(3);
   });
 
   it('combines BrasilAPI metadata with an Open Library cover', async () => {
@@ -72,6 +72,8 @@ describe('lookupBookByIsbn', () => {
         json: async () => ({
           items: [{ volumeInfo: {
             title: 'International Book',
+            authors: ['Author One'],
+            description: '<p>A useful <b>synopsis</b>.</p>',
             imageLinks: { large: 'http://books.google.com/cover.jpg' },
           } }],
         }),
@@ -82,6 +84,8 @@ describe('lookupBookByIsbn', () => {
     expect(result.isValid).toBe(true);
     expect(result.metadata?.source).toBe('GOOGLE_BOOKS');
     expect(result.metadata?.coverUrl).toBe('https://books.google.com/cover.jpg');
+    expect(result.metadata?.authors).toEqual(['Author One']);
+    expect(result.metadata?.description).toBe('A useful synopsis.');
     expect(fetcher).toHaveBeenCalledTimes(2);
   });
 

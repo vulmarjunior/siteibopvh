@@ -320,6 +320,28 @@ export class ItemsService {
     }));
   }
 
+  private buildBookAuthors(livro: any = {}) {
+    const authorNames: string[] = Array.isArray(livro.authorNames)
+      ? [...new Set<string>(livro.authorNames.map((name: unknown) => String(name || '').trim()).filter(Boolean))]
+      : [];
+    const importedAuthors = authorNames.map((name, index) => ({
+      papel: 'AUTOR' as const,
+      ordem: index,
+      pessoa: {
+        connectOrCreate: {
+          where: { slug: generateSlug(name) },
+          create: { nome: name, slug: generateSlug(name) },
+        },
+      },
+    }));
+    const selectedAuthors = (livro.pessoaIds || []).map((pessoaId: number, index: number) => ({
+      pessoaId: Number(pessoaId),
+      papel: livro.papel || 'AUTOR',
+      ordem: importedAuthors.length + index,
+    }));
+    return [...importedAuthors, ...selectedAuthors];
+  }
+
   /**
    * Administrative item creation (Book or Video).
    */
@@ -376,11 +398,7 @@ export class ItemsService {
           capaUrl: data.livro?.capaUrl || null,
           disponibilidade: data.livro?.disponibilidade || 'DISPONIVEL',
           autores: {
-            create: (data.livro?.pessoaIds || []).map((pessoaId: number, idx: number) => ({
-              pessoaId: Number(pessoaId),
-              papel: data.livro?.papel || 'AUTOR',
-              ordem: idx,
-            })),
+            create: this.buildBookAuthors(data.livro),
           },
           acessos: {
             create: this.buildAccessData(data.livro?.acessos),
@@ -502,6 +520,10 @@ export class ItemsService {
             formatoPrincipal: data.livro?.formatoPrincipal || null,
             capaUrl: data.livro?.capaUrl || null,
             disponibilidade: data.livro?.disponibilidade || 'DISPONIVEL',
+            autores: {
+              deleteMany: {},
+              create: this.buildBookAuthors(data.livro),
+            },
             acessos: {
               deleteMany: {},
               create: this.buildAccessData(data.livro?.acessos),

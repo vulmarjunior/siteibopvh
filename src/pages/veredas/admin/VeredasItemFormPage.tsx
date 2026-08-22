@@ -28,6 +28,8 @@ type VeredasItemDraft = {
   savedAt: string;
   tipo: 'LIVRO' | 'VIDEO' | 'CURSO';
   titulo: string;
+  descricao?: string;
+  authorNames?: string[];
   porqueIndicamos: string;
   ressalvas: string;
   nivel: string;
@@ -64,6 +66,8 @@ export const VeredasItemFormPage: React.FC = () => {
 
   const [tipo, setTipo] = useState<'LIVRO' | 'VIDEO' | 'CURSO'>('LIVRO');
   const [titulo, setTitulo] = useState('');
+  const [descricao, setDescricao] = useState('');
+  const [authorNames, setAuthorNames] = useState<string[]>([]);
   const [porqueIndicamos, setPorqueIndicamos] = useState('');
   const [ressalvas, setRessalvas] = useState('');
   const [nivel, setNivel] = useState('INTRODUTORIO');
@@ -126,6 +130,8 @@ export const VeredasItemFormPage: React.FC = () => {
         if (draft.version !== 1) return;
         setTipo(draft.tipo);
         setTitulo(draft.titulo);
+        setDescricao(draft.descricao || '');
+        if (draft.authorNames) setAuthorNames(draft.authorNames);
         setPorqueIndicamos(draft.porqueIndicamos);
         setRessalvas(draft.ressalvas);
         setNivel(draft.nivel);
@@ -150,6 +156,7 @@ export const VeredasItemFormPage: React.FC = () => {
           if (item && !item.error) {
             setTipo(item.tipo);
             setTitulo(item.titulo);
+            setDescricao(item.descricao || '');
             setPorqueIndicamos(item.porqueIndicamos);
             setRessalvas(item.ressalvas || '');
             setNivel(item.nivel);
@@ -159,6 +166,7 @@ export const VeredasItemFormPage: React.FC = () => {
               setCategoriaIds(item.categorias.map((c: any) => c.categoriaId));
             }
             if (item.livro) {
+              setAuthorNames((item.livro.autores || []).map((author: any) => author.pessoa?.nome).filter(Boolean));
               setBookData({
                 subtitulo: item.livro.subtitulo || '',
                 isbn10: item.livro.isbn10 || '',
@@ -237,6 +245,8 @@ export const VeredasItemFormPage: React.FC = () => {
         savedAt,
         tipo,
         titulo,
+        descricao,
+        authorNames,
         porqueIndicamos,
         ressalvas,
         nivel,
@@ -256,7 +266,7 @@ export const VeredasItemFormPage: React.FC = () => {
       }
     }, 500);
     return () => window.clearTimeout(timer);
-  }, [bookAccesses, bookData, categoriaIds, courseData, destaque, draftKey, draftReady, nivel, porqueIndicamos, ressalvas, status, tipo, titulo, videoData]);
+  }, [authorNames, bookAccesses, bookData, categoriaIds, courseData, descricao, destaque, draftKey, draftReady, nivel, porqueIndicamos, ressalvas, status, tipo, titulo, videoData]);
 
   useEffect(() => {
     if (!isFreeLibraryPreset || bookAccesses.length > 0) return;
@@ -335,6 +345,8 @@ export const VeredasItemFormPage: React.FC = () => {
           if (metadataResponse.ok && metadataResult.metadata) {
             const metadata = metadataResult.metadata;
             setTitulo((current) => current || metadata.title || '');
+            setDescricao((current) => current || metadata.description || '');
+            setAuthorNames(metadata.authors || []);
             setBookData((current) => ({
               ...current,
               asin: parsed.asin,
@@ -382,6 +394,8 @@ export const VeredasItemFormPage: React.FC = () => {
 
       const metadata = result.metadata;
       setTitulo((current) => current || metadata.title || '');
+      setDescricao((current) => current || metadata.description || '');
+      setAuthorNames(metadata.authors || []);
       setBookData((current) => ({
         ...current,
         subtitulo: current.subtitulo || metadata.subtitle || '',
@@ -440,6 +454,7 @@ export const VeredasItemFormPage: React.FC = () => {
       const payload = {
         tipo,
         titulo,
+        descricao: descricao || undefined,
         resumo: porqueIndicamos,
         porqueIndicamos,
         ressalvas: ressalvas || undefined,
@@ -447,7 +462,7 @@ export const VeredasItemFormPage: React.FC = () => {
         status,
         destaque,
         categoriaIds,
-        livro: tipo === 'LIVRO' ? { ...bookData, acessos: bookAccesses } : undefined,
+        livro: tipo === 'LIVRO' ? { ...bookData, authorNames, acessos: bookAccesses } : undefined,
         video: tipo === 'VIDEO' ? videoData : undefined,
         curso: tipo === 'CURSO' ? courseData : undefined,
       };

@@ -168,6 +168,15 @@ export const VeredasBookDetailPage: React.FC = () => {
 
         </div>
 
+        {item.descricao && (
+          <section className="bg-stone-900/80 border border-stone-800 rounded-xl p-6 space-y-2">
+            <h3 className="font-serif font-bold text-stone-200 text-lg">Sobre o livro</h3>
+            <p className="text-sm text-stone-300 leading-relaxed whitespace-pre-line">
+              {item.descricao}
+            </p>
+          </section>
+        )}
+
         <RecommendationBlock content={item.porqueIndicamos} contentLabel="este livro" audience={item.publicoIndicado} />
 
         {/* PASTORAL CAVEATS (RESSALVAS) IF PRESENT */}
