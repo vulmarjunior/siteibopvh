@@ -702,6 +702,9 @@ export const VeredasItemFormPage: React.FC = () => {
               <BookFormInternal
                 data={bookData}
                 onChange={setBookData}
+                description={descricao}
+                onDescriptionChange={setDescricao}
+                authorNames={authorNames}
                 onLookupIsbn={handleIsbnLookup}
                 lookupLoading={bookLookupLoading}
                 showAdvanced={showAdvanced}
@@ -746,12 +749,18 @@ export const VeredasItemFormPage: React.FC = () => {
 function BookFormInternal({
   data,
   onChange,
+  description,
+  onDescriptionChange,
+  authorNames,
   onLookupIsbn,
   lookupLoading,
   showAdvanced,
 }: {
   data: any;
   onChange: (data: any) => void;
+  description: string;
+  onDescriptionChange: (value: string) => void;
+  authorNames: string[];
   onLookupIsbn: () => void;
   lookupLoading: boolean;
   showAdvanced: boolean;
@@ -786,6 +795,24 @@ function BookFormInternal({
           {lookupLoading ? 'Buscando...' : 'Buscar dados e capa'}
         </button>
       </div>
+
+      <label className="block text-xs font-semibold text-stone-300">
+        Sinopse <span className="font-normal text-stone-500">(preenchida automaticamente pela busca)</span>
+        <textarea
+          rows={6}
+          value={description}
+          onChange={(event) => onDescriptionChange(event.target.value)}
+          placeholder="A sinopse aparecerá aqui quando uma das APIs fornecer esse conteúdo."
+          className="mt-1 w-full resize-y rounded-lg border border-stone-700/80 bg-stone-950 p-3 text-xs leading-relaxed text-stone-200 focus:border-amber-500 focus:outline-none"
+        />
+      </label>
+
+      {authorNames.length > 0 && (
+        <div className="rounded-lg border border-stone-800 bg-stone-950 p-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">Autores encontrados</p>
+          <p className="mt-1 text-xs text-stone-300">{authorNames.join(', ')}</p>
+        </div>
+      )}
 
       <label className="block text-xs font-semibold text-stone-300">
         Link da capa <span className="font-normal text-stone-500">(opcional)</span>
