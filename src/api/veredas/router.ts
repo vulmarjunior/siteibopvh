@@ -305,14 +305,14 @@ export function createVeredasRouter(prisma: PrismaClient) {
         livrosGratuitos,
         relatosPendentes,
       ] = await Promise.all([
-        prisma.curadoriaItem.count({ where: { tipo: 'VIDEO', status: 'PUBLICADO' } }),
-        prisma.curadoriaItem.count({ where: { tipo: 'LIVRO', status: 'PUBLICADO' } }),
-        prisma.curadoriaItem.count({ where: { tipo: 'CURSO', status: 'PUBLICADO' } }),
-        prisma.curadoriaItem.count({ where: { tipo: 'CONFERENCIA', status: 'PUBLICADO' } }),
-        prisma.curadoriaItem.count({ where: { status: 'RASCUNHO' } }),
-        prisma.curadoriaItem.count({ where: { status: 'ARQUIVADO' } }),
-        prisma.curadoriaAcesso.count({ where: { gratuito: true, ativo: true } }),
-        prisma.curadoriaLinkRelato.count({ where: { status: 'PENDENTE' } }),
+        prisma.curadoriaItem.count({ where: { tipo: 'VIDEO', status: 'PUBLICADO' } }).catch(() => 0),
+        prisma.curadoriaItem.count({ where: { tipo: 'LIVRO', status: 'PUBLICADO' } }).catch(() => 0),
+        prisma.curadoriaItem.count({ where: { tipo: 'CURSO', status: 'PUBLICADO' } }).catch(() => 0),
+        prisma.curadoriaItem.count({ where: { tipo: 'CONFERENCIA', status: 'PUBLICADO' } }).catch(() => 0),
+        prisma.curadoriaItem.count({ where: { status: 'RASCUNHO' } }).catch(() => 0),
+        prisma.curadoriaItem.count({ where: { status: 'ARQUIVADO' } }).catch(() => 0),
+        prisma.curadoriaAcesso.count({ where: { gratuito: true, ativo: true } }).catch(() => 0),
+        prisma.curadoriaLinkRelato.count({ where: { status: 'PENDENTE' } }).catch(() => 0),
       ]);
 
       res.json({

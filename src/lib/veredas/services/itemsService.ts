@@ -244,27 +244,32 @@ export class ItemsService {
       where.tipo = tipo;
     }
 
-    return this.prisma.curadoriaItem.findMany({
-      where,
-      orderBy: [{ criadoEm: 'desc' }],
-      include: {
-        categorias: {
-          include: { categoria: true },
-        },
-        livro: {
-          include: {
-            autores: { include: { pessoa: true } },
-            acessos: true,
+    try {
+      return await this.prisma.curadoriaItem.findMany({
+        where,
+        orderBy: [{ criadoEm: 'desc' }],
+        include: {
+          categorias: {
+            include: { categoria: true },
           },
-        },
-        video: {
-          include: {
-            participantes: { include: { pessoa: true } },
+          livro: {
+            include: {
+              autores: { include: { pessoa: true } },
+              acessos: true,
+            },
           },
+          video: {
+            include: {
+              participantes: { include: { pessoa: true } },
+            },
+          },
+          curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
         },
-        curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
-      },
-    });
+      });
+    } catch (err) {
+      console.error('getAdminItems error:', err);
+      return [];
+    }
   }
 
   /**
