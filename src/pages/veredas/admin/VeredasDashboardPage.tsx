@@ -8,6 +8,7 @@ export const VeredasDashboardPage: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('TODOS');
   const [filterTipo, setFilterTipo] = useState<string>('TODOS');
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
@@ -17,16 +18,18 @@ export const VeredasDashboardPage: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
+      setError(null);
       const token = await getAdminAccessToken();
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       const [resStats, resItems] = await Promise.all([
-        fetch('/api/veredas/admin/dashboard', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/veredas/admin/items', { headers: { Authorization: `Bearer ${token}` } }),
+        fetch('/api/veredas/admin/dashboard', { headers }),
+        fetch('/api/veredas/admin/items', { headers }),
       ]);
 
       if (!resStats.ok || !resItems.ok) {
-        await clearAdminSession();
-        navigate('/admin/login');
+        const errorData = await (resStats.ok ? resItems.json() : resStats.json()).catch(() => ({}));
+        setError(errorData.error || 'Não foi possível carregar os dados do painel Veredas.');
         return;
       }
 
@@ -37,8 +40,9 @@ export const VeredasDashboardPage: React.FC = () => {
       if (Array.isArray(itemsData)) {
         setItems(itemsData);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error loading admin dashboard:', err);
+      setError(err.message || 'Erro de conexão ao carregar painel.');
     } finally {
       setLoading(false);
     }
@@ -54,13 +58,17 @@ export const VeredasDashboardPage: React.FC = () => {
       const token = await getAdminAccessToken();
       const res = await fetch(`/api/veredas/admin/items/${id}/publicar`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) {
         await loadData();
+      } else {
+        const body = await res.json().catch(() => ({}));
+        alert(body.error || 'Erro ao publicar item.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(err.message || 'Erro ao publicar item.');
     } finally {
       setActionLoadingId(null);
     }
@@ -72,13 +80,17 @@ export const VeredasDashboardPage: React.FC = () => {
       const token = await getAdminAccessToken();
       const res = await fetch(`/api/veredas/admin/items/${id}/arquivar`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) {
         await loadData();
+      } else {
+        const body = await res.json().catch(() => ({}));
+        alert(body.error || 'Erro ao arquivar item.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(err.message || 'Erro ao arquivar item.');
     } finally {
       setActionLoadingId(null);
     }
@@ -92,13 +104,17 @@ export const VeredasDashboardPage: React.FC = () => {
       const token = await getAdminAccessToken();
       const res = await fetch(`/api/veredas/admin/items/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) {
         await loadData();
+      } else {
+        const body = await res.json().catch(() => ({}));
+        alert(body.error || 'Erro ao excluir item.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(err.message || 'Erro ao excluir item.');
     } finally {
       setActionLoadingId(null);
     }
@@ -176,6 +192,16 @@ export const VeredasDashboardPage: React.FC = () => {
       {/* Main Dashboard Body */}
       <main className="max-w-7xl mx-auto p-6 sm:p-8 space-y-8">
         
+        {error && (
+          <div className="p-4 bg-red-950/80 border border-red-800 text-red-300 text-xs rounded-xl flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 shrink-0 text-red-400" />
+            <div>
+              <strong className="block font-semibold text-red-200">Atenção ao acessar o módulo Veredas</strong>
+              <p className="mt-0.5">{error}</p>
+            </div>
+          </div>
+        )}
+
         {/* Metric Cards */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

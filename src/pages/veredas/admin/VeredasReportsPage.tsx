@@ -7,30 +7,30 @@ import { Helmet } from 'react-helmet-async';
 export const VeredasReportsPage: React.FC = () => {
   const [relatos, setRelatos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     async function loadReports() {
       try {
+        setLoading(true);
+        setError(null);
         const token = await getAdminAccessToken();
-        if (!token) {
-          navigate('/admin/login');
-          return;
-        }
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        const res = await fetch('/api/veredas/admin/relatos', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch('/api/veredas/admin/relatos', { headers });
 
         if (!res.ok) {
-          navigate('/admin/login');
+          const body = await res.json().catch(() => ({}));
+          setError(body.error || 'Erro ao carregar relatos de links.');
           return;
         }
 
         const data = await res.json();
         if (Array.isArray(data)) setRelatos(data);
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
+        setError(err.message || 'Erro de conexão ao carregar relatos.');
       } finally {
         setLoading(false);
       }
@@ -46,7 +46,7 @@ export const VeredasReportsPage: React.FC = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ notaAdministrativa: 'Verificado e corrigido pelo curador.' }),
       });
@@ -55,9 +55,13 @@ export const VeredasReportsPage: React.FC = () => {
         setRelatos((prev) =>
           prev.map((r) => (r.id === id ? { ...r, status: 'RESOLVIDO' } : r))
         );
+      } else {
+        const body = await res.json().catch(() => ({}));
+        alert(body.error || 'Erro ao resolver relato.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(err.message || 'Erro ao resolver relato.');
     }
   };
 
@@ -79,6 +83,16 @@ export const VeredasReportsPage: React.FC = () => {
             Relatos de Links Quebrados
           </h1>
         </div>
+
+        {error && (
+          <div className="p-4 bg-red-950/80 border border-red-800 text-red-300 text-xs rounded-xl flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 shrink-0 text-red-400" />
+            <div>
+              <strong className="block font-semibold text-red-200">Atenção</strong>
+              <p className="mt-0.5">{error}</p>
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div className="space-y-4">
