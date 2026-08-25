@@ -350,6 +350,7 @@ enum CuradoriaTipoItem {
   VIDEO
   LIVRO
   CURSO
+  CONFERENCIA
 }
 
 enum CuradoriaNivel {

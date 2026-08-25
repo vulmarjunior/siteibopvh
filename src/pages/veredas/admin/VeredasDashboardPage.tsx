@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { clearAdminSession, getAdminAccessToken } from '../../../lib/admin/session';
-import { BookOpen, Film, GraduationCap, AlertTriangle, FileText, PlusCircle, LogOut, Edit, Trash2, CheckCircle, Archive, ExternalLink, LayoutDashboard, Sparkles } from 'lucide-react';
+import { BookOpen, Film, GraduationCap, Flame, AlertTriangle, FileText, PlusCircle, LogOut, Edit, Trash2, CheckCircle, Archive, ExternalLink, LayoutDashboard, Sparkles } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
 export const VeredasDashboardPage: React.FC = () => {
@@ -252,6 +252,7 @@ export const VeredasDashboardPage: React.FC = () => {
                   <option value="LIVRO">Livros</option>
                   <option value="VIDEO">Vídeos</option>
                   <option value="CURSO">Cursos/Playlists</option>
+                  <option value="CONFERENCIA">Conferências</option>
                 </select>
               </div>
 
@@ -299,7 +300,7 @@ export const VeredasDashboardPage: React.FC = () => {
                 <tbody className="divide-y divide-stone-800/60">
                   {filteredItems.map((item) => {
                     const isLoadingThis = actionLoadingId === item.id;
-                    const publicUrl = item.tipo === 'LIVRO' ? `/veredas/livro/${item.slug}` : item.tipo === 'VIDEO' ? `/veredas/video/${item.slug}` : `/veredas/curso/${item.slug}`;
+                    const publicUrl = item.tipo === 'LIVRO' ? `/veredas/livro/${item.slug}` : item.tipo === 'VIDEO' ? `/veredas/video/${item.slug}` : item.tipo === 'CONFERENCIA' ? `/veredas/conferencia/${item.slug}` : `/veredas/curso/${item.slug}`;
                     const isFreeContent = item.tipo === 'LIVRO' && item.livro?.acessos?.some((access: any) => access.gratuito && access.ativo);
 
                     return (
@@ -314,6 +315,10 @@ export const VeredasDashboardPage: React.FC = () => {
                             ) : item.tipo === 'VIDEO' ? (
                               <span className="px-2 py-0.5 rounded bg-blue-950 border border-blue-800 text-blue-300 flex items-center gap-1 w-max">
                                 <Film className="w-3 h-3" /> Vídeo
+                              </span>
+                            ) : item.tipo === 'CONFERENCIA' ? (
+                              <span className="px-2 py-0.5 rounded bg-indigo-950 border border-indigo-800 text-indigo-300 flex items-center gap-1 w-max">
+                                <Flame className="w-3 h-3 text-indigo-400" /> Conferência
                               </span>
                             ) : (
                               <span className="px-2 py-0.5 rounded bg-violet-950 border border-violet-800 text-violet-300 flex items-center gap-1 w-max">

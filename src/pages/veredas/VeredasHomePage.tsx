@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Film, Sparkles, ArrowRight, ShieldCheck, Search, Compass } from 'lucide-react';
+import { BookOpen, Film, Flame, Sparkles, ArrowRight, ShieldCheck, Search, Compass } from 'lucide-react';
 import { VeredasNavbar } from '../../components/veredas/VeredasNavbar';
 import { VeredasFooter } from '../../components/veredas/VeredasFooter';
 import { BookCard } from '../../components/veredas/BookCard';
 import { VideoCard } from '../../components/veredas/VideoCard';
 import { CourseCard } from '../../components/veredas/CourseCard';
+import { ConferenceCard } from '../../components/veredas/ConferenceCard';
 import { Helmet } from 'react-helmet-async';
 
 export const VeredasHomePage: React.FC = () => {
@@ -39,13 +40,21 @@ export const VeredasHomePage: React.FC = () => {
   const destaquePrincipal = destaques.length > 0 ? destaques[0] : null;
   const outrosDestaques = destaques.length > 1 ? destaques.slice(1, 5) : [];
 
+  const getDestaqueLink = (item: any) => {
+    if (!item) return '/veredas';
+    if (item.tipo === 'LIVRO') return `/veredas/livro/${item.slug}`;
+    if (item.tipo === 'VIDEO') return `/veredas/video/${item.slug}`;
+    if (item.tipo === 'CONFERENCIA') return `/veredas/conferencia/${item.slug}`;
+    return `/veredas/curso/${item.slug}`;
+  };
+
   return (
     <div className="min-h-screen bg-stone-950 text-stone-100 font-sans flex flex-col">
       <Helmet>
         <title>Veredas IBO — Curadoria Teológica e Pastoral</title>
         <meta
           name="description"
-          content="Ambiente de curadoria pastoral com indicações de livros, vídeos e caminhos de formação cristã da Igreja Batista Olaria em Porto Velho."
+          content="Ambiente de curadoria pastoral com indicações de livros, vídeos, cursos e conferências da Igreja Batista Olaria em Porto Velho."
         />
       </Helmet>
 
@@ -74,7 +83,7 @@ export const VeredasHomePage: React.FC = () => {
             </h1>
 
             <p className="font-serif text-xl sm:text-2xl text-stone-800 max-w-lg font-medium leading-relaxed">
-              Livros, vídeos e caminhos seguros para o amadurecimento e a formação cristã bíblica.
+              Livros, vídeos, cursos e conferências para o amadurecimento e a formação cristã bíblica.
             </p>
 
             <p className="text-sm sm:text-base text-stone-700 max-w-lg leading-relaxed">
@@ -84,21 +93,28 @@ export const VeredasHomePage: React.FC = () => {
             <div className="pt-3 flex flex-wrap items-center justify-start gap-3 text-sm font-semibold">
               <Link
                 to="/veredas/livros"
-                className="px-6 py-3 bg-amber-700 hover:bg-amber-600 text-white rounded-full font-bold transition-all shadow-lg hover:-translate-y-0.5 flex items-center gap-2"
+                className="px-5 py-2.5 bg-amber-700 hover:bg-amber-600 text-white rounded-full font-bold transition-all shadow-lg hover:-translate-y-0.5 flex items-center gap-2 text-xs sm:text-sm"
               >
                 <BookOpen className="w-4 h-4" />
-                Explorar Livros
+                Livros
               </Link>
               <Link
                 to="/veredas/videos"
-                className="px-6 py-3 bg-white/65 hover:bg-white/85 text-stone-900 border border-amber-900/25 rounded-full transition-all shadow-sm backdrop-blur-sm flex items-center gap-2"
+                className="px-5 py-2.5 bg-white/65 hover:bg-white/85 text-stone-900 border border-amber-900/25 rounded-full transition-all shadow-sm backdrop-blur-sm flex items-center gap-2 text-xs sm:text-sm"
               >
                 <Film className="w-4 h-4 text-amber-700" />
-                Explorar Vídeos
+                Vídeos
+              </Link>
+              <Link
+                to="/veredas/conferencias"
+                className="px-5 py-2.5 bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/80 text-indigo-100 rounded-full transition-all shadow-sm flex items-center gap-2 text-xs sm:text-sm"
+              >
+                <Flame className="w-4 h-4 text-indigo-400" />
+                Conferências
               </Link>
               <Link
                 to="/veredas/biblioteca-gratuita"
-                className="px-6 py-3 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800/80 text-emerald-100 rounded-full transition-all shadow-sm flex items-center gap-2"
+                className="px-5 py-2.5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800/80 text-emerald-100 rounded-full transition-all shadow-sm flex items-center gap-2 text-xs sm:text-sm"
               >
                 <Sparkles className="w-4 h-4 text-emerald-400" />
                 Biblioteca Gratuita
@@ -126,7 +142,11 @@ export const VeredasHomePage: React.FC = () => {
                   />
                 ) : (
                   <img
-                    src={(destaquePrincipal.tipo === 'CURSO' ? destaquePrincipal.curso?.thumbnailUrl : destaquePrincipal.video?.thumbnailUrl) || '/placeholder-video.png'}
+                    src={
+                      (destaquePrincipal.tipo === 'CURSO' || destaquePrincipal.tipo === 'CONFERENCIA'
+                        ? destaquePrincipal.curso?.thumbnailUrl
+                        : destaquePrincipal.video?.thumbnailUrl) || '/placeholder-video.png'
+                    }
                     alt={destaquePrincipal.titulo}
                     className="w-full aspect-video object-cover rounded-lg shadow-2xl border border-stone-800"
                   />
@@ -135,7 +155,13 @@ export const VeredasHomePage: React.FC = () => {
 
               <div className="lg:col-span-8 space-y-4">
                 <div className="flex items-center gap-2 text-xs font-semibold">
-                  <span className="px-2.5 py-0.5 rounded bg-amber-950 border border-amber-800 text-amber-300 uppercase">
+                  <span
+                    className={`px-2.5 py-0.5 rounded uppercase border ${
+                      destaquePrincipal.tipo === 'CONFERENCIA'
+                        ? 'bg-indigo-950 border-indigo-800 text-indigo-300'
+                        : 'bg-amber-950 border-amber-800 text-amber-300'
+                    }`}
+                  >
                     {destaquePrincipal.tipo}
                   </span>
                   <span className="text-stone-400 font-mono">
@@ -157,7 +183,7 @@ export const VeredasHomePage: React.FC = () => {
 
                 <div className="pt-2">
                   <Link
-                    to={destaquePrincipal.tipo === 'LIVRO' ? `/veredas/livro/${destaquePrincipal.slug}` : destaquePrincipal.tipo === 'VIDEO' ? `/veredas/video/${destaquePrincipal.slug}` : `/veredas/curso/${destaquePrincipal.slug}`}
+                    to={getDestaqueLink(destaquePrincipal)}
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs sm:text-sm rounded-lg transition-colors shadow"
                   >
                     Acessar indicação completa <ArrowRight className="w-4 h-4" />
@@ -223,6 +249,8 @@ export const VeredasHomePage: React.FC = () => {
                   <BookCard key={item.id} item={item} />
                 ) : item.tipo === 'VIDEO' ? (
                   <VideoCard key={item.id} item={item} />
+                ) : item.tipo === 'CONFERENCIA' ? (
+                  <ConferenceCard key={item.id} item={item} />
                 ) : (
                   <CourseCard key={item.id} item={item} />
                 )
@@ -241,3 +269,4 @@ export const VeredasHomePage: React.FC = () => {
     </div>
   );
 };
+

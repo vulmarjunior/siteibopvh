@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
-import { BookOpen, Film, GraduationCap, Plus, Trash2, ArrowLeft, ArrowUp, ArrowDown, Save, AlertCircle, AlertTriangle } from 'lucide-react';
+import { BookOpen, Film, GraduationCap, Flame, Plus, Trash2, ArrowLeft, ArrowUp, ArrowDown, Save, AlertCircle, AlertTriangle } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { BookAccessFields, BookAccessFormData, createEmptyBookAccess } from '../../../components/veredas/BookAccessFields';
 import { parseYoutubePlaylistUrl, parseYoutubeUrl } from '../../../lib/veredas/youtube';
@@ -26,7 +26,7 @@ const isMostlyUppercase = (value: string) => {
 type VeredasItemDraft = {
   version: 1;
   savedAt: string;
-  tipo: 'LIVRO' | 'VIDEO' | 'CURSO';
+  tipo: 'LIVRO' | 'VIDEO' | 'CURSO' | 'CONFERENCIA';
   titulo: string;
   descricao?: string;
   authorNames?: string[];
@@ -64,7 +64,7 @@ export const VeredasItemFormPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const isFreeLibraryPreset = !isEditing && searchParams.get('biblioteca') === 'gratuita';
 
-  const [tipo, setTipo] = useState<'LIVRO' | 'VIDEO' | 'CURSO'>('LIVRO');
+  const [tipo, setTipo] = useState<'LIVRO' | 'VIDEO' | 'CURSO' | 'CONFERENCIA'>('LIVRO');
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [authorNames, setAuthorNames] = useState<string[]>([]);
@@ -464,7 +464,7 @@ export const VeredasItemFormPage: React.FC = () => {
         categoriaIds,
         livro: tipo === 'LIVRO' ? { ...bookData, authorNames, acessos: bookAccesses } : undefined,
         video: tipo === 'VIDEO' ? videoData : undefined,
-        curso: tipo === 'CURSO' ? courseData : undefined,
+        curso: (tipo === 'CURSO' || tipo === 'CONFERENCIA') ? courseData : undefined,
       };
 
       const endpoint = isEditing ? `/api/veredas/admin/items/${id}` : '/api/veredas/admin/items';
@@ -510,12 +510,12 @@ export const VeredasItemFormPage: React.FC = () => {
 
           {/* Type selector */}
           {!isEditing && (
-            <div className="flex gap-2 bg-stone-900 border border-stone-800 p-1 rounded-lg">
+            <div className="flex flex-wrap gap-2 bg-stone-900 border border-stone-800 p-1 rounded-lg">
               <button
                 type="button"
                 onClick={() => setTipo('LIVRO')}
-                className={`px-4 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 ${
-                  tipo === 'LIVRO' ? 'bg-amber-600 text-stone-950' : 'text-stone-400'
+                className={`px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 transition-all ${
+                  tipo === 'LIVRO' ? 'bg-amber-600 text-stone-950 shadow' : 'text-stone-400'
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5" /> Livro
@@ -523,8 +523,8 @@ export const VeredasItemFormPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setTipo('VIDEO')}
-                className={`px-4 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 ${
-                  tipo === 'VIDEO' ? 'bg-amber-600 text-stone-950' : 'text-stone-400'
+                className={`px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 transition-all ${
+                  tipo === 'VIDEO' ? 'bg-amber-600 text-stone-950 shadow' : 'text-stone-400'
                 }`}
               >
                 <Film className="w-3.5 h-3.5" /> Vídeo
@@ -532,11 +532,20 @@ export const VeredasItemFormPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setTipo('CURSO')}
-                className={`px-4 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 ${
-                  tipo === 'CURSO' ? 'bg-amber-600 text-stone-950' : 'text-stone-400'
+                className={`px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 transition-all ${
+                  tipo === 'CURSO' ? 'bg-amber-600 text-stone-950 shadow' : 'text-stone-400'
                 }`}
               >
                 <GraduationCap className="w-3.5 h-3.5" /> Curso/Playlist
+              </button>
+              <button
+                type="button"
+                onClick={() => setTipo('CONFERENCIA')}
+                className={`px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 transition-all ${
+                  tipo === 'CONFERENCIA' ? 'bg-indigo-600 text-white shadow' : 'text-stone-400'
+                }`}
+              >
+                <Flame className="w-3.5 h-3.5" /> Conferência
               </button>
             </div>
           )}
@@ -575,7 +584,15 @@ export const VeredasItemFormPage: React.FC = () => {
                 required
                 value={titulo}
                 onChange={(event) => setTitulo(event.target.value)}
-                placeholder={tipo === 'LIVRO' ? 'Título do livro' : tipo === 'VIDEO' ? 'Preenchido pelo link do YouTube' : 'Título do curso'}
+                placeholder={
+                  tipo === 'LIVRO'
+                    ? 'Título do livro'
+                    : tipo === 'VIDEO'
+                    ? 'Preenchido pelo link do YouTube'
+                    : tipo === 'CONFERENCIA'
+                    ? 'Título da conferência / simpósio / evento'
+                    : 'Título do curso'
+                }
                 className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-sm text-stone-200 focus:outline-none focus:border-amber-500"
               />
             </label>
@@ -718,7 +735,12 @@ export const VeredasItemFormPage: React.FC = () => {
           ) : tipo === 'VIDEO' ? (
             <VideoFormInternal data={videoData} onChange={setVideoData} onParseYoutube={handleYoutubeParser} />
           ) : (
-            <CourseFormInternal data={courseData} onChange={setCourseData} setTitle={setTitulo} />
+            <CourseFormInternal
+              data={courseData}
+              onChange={setCourseData}
+              setTitle={setTitulo}
+              isConference={tipo === 'CONFERENCIA'}
+            />
           )}
 
           {/* Actions */}
@@ -925,13 +947,29 @@ function VideoFormInternal({
   );
 }
 
-function CourseFormInternal({ data, onChange, setTitle }: {
-  data: { urlOriginal: string; playlistId: string; canal: string; thumbnailUrl: string; aulas: CourseLessonFormData[]; materiais: CourseMaterialFormData[] };
+function CourseFormInternal({
+  data,
+  onChange,
+  setTitle,
+  isConference = false,
+}: {
+  data: {
+    urlOriginal: string;
+    playlistId: string;
+    canal: string;
+    thumbnailUrl: string;
+    aulas: CourseLessonFormData[];
+    materiais: CourseMaterialFormData[];
+  };
   onChange: React.Dispatch<React.SetStateAction<typeof data>>;
   setTitle: React.Dispatch<React.SetStateAction<string>>;
+  isConference?: boolean;
 }) {
   const updateLesson = (index: number, patch: Partial<CourseLessonFormData>) => {
-    onChange((current) => ({ ...current, aulas: current.aulas.map((aula, i) => i === index ? { ...aula, ...patch } : aula) }));
+    onChange((current) => ({
+      ...current,
+      aulas: current.aulas.map((aula, i) => (i === index ? { ...aula, ...patch } : aula)),
+    }));
   };
 
   const moveItem = (collection: 'aulas' | 'materiais', from: number, to: number) => {
@@ -950,68 +988,270 @@ function CourseFormInternal({ data, onChange, setTitle }: {
     if (!lesson?.urlOriginal) return;
     try {
       const response = await fetch('/api/veredas/admin/importar/youtube', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: lesson.urlOriginal }),
       });
       const result = await response.json();
       if (!response.ok) return;
-      updateLesson(index, { titulo: lesson.titulo || result.title || '', youtubeId: result.youtubeId || lesson.youtubeId, thumbnailUrl: result.thumbnailUrl || lesson.thumbnailUrl });
-      onChange((current) => ({ ...current, canal: current.canal || result.channel || '', thumbnailUrl: current.thumbnailUrl || result.thumbnailUrl || '' }));
+      updateLesson(index, {
+        titulo: lesson.titulo || result.title || '',
+        youtubeId: result.youtubeId || lesson.youtubeId,
+        thumbnailUrl: result.thumbnailUrl || lesson.thumbnailUrl,
+      });
+      onChange((current) => ({
+        ...current,
+        canal: current.canal || result.channel || '',
+        thumbnailUrl: current.thumbnailUrl || result.thumbnailUrl || '',
+      }));
       if (index === 0) setTitle((current) => current || result.title || '');
-    } catch { /* os campos permanecem editáveis */ }
+    } catch {
+      /* os campos permanecem editáveis */
+    }
   };
+
+  const itemLabel = isConference ? 'Plenária' : 'Aula';
+  const collectionLabel = isConference ? 'Plenárias & Sessões' : 'Aulas';
 
   return (
     <div className="bg-stone-900 border border-stone-800 rounded-xl p-6 space-y-5">
       <div>
-        <h2 className="font-serif font-bold text-sm text-amber-400 uppercase tracking-wider flex items-center gap-2"><GraduationCap className="w-4 h-4" /> Curso/Playlist</h2>
-        <p className="mt-2 text-xs text-stone-400">Cadastre a playlist como curso e organize abaixo cada vídeo como uma aula.</p>
+        <h2
+          className={`font-serif font-bold text-sm uppercase tracking-wider flex items-center gap-2 ${
+            isConference ? 'text-indigo-400' : 'text-amber-400'
+          }`}
+        >
+          {isConference ? <Flame className="w-4 h-4" /> : <GraduationCap className="w-4 h-4" />}
+          {isConference ? 'Conferência / Evento' : 'Curso / Playlist'}
+        </h2>
+        <p className="mt-2 text-xs text-stone-400">
+          {isConference
+            ? 'Cadastre a playlist da conferência e organize abaixo cada vídeo como uma plenária ou sessão.'
+            : 'Cadastre a playlist como curso e organize abaixo cada vídeo como uma aula.'}
+        </p>
       </div>
-      <label className="block text-xs font-semibold text-stone-300">Link da playlist <span className="text-amber-500">*</span>
-        <input type="url" required value={data.urlOriginal} onChange={(event) => {
-          const parsed = parseYoutubePlaylistUrl(event.target.value);
-          onChange((current) => ({ ...current, urlOriginal: event.target.value, playlistId: parsed?.playlistId || '' }));
-        }} placeholder="https://www.youtube.com/playlist?list=..." className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs" />
-        {data.playlistId ? <span className="mt-1 block text-[11px] text-emerald-400">Playlist identificada: {data.playlistId}</span> : null}
+
+      <label className="block text-xs font-semibold text-stone-300">
+        Link da playlist {isConference ? 'da conferência' : 'do curso'} <span className="text-amber-500">*</span>
+        <input
+          type="url"
+          required
+          value={data.urlOriginal}
+          onChange={(event) => {
+            const parsed = parseYoutubePlaylistUrl(event.target.value);
+            onChange((current) => ({
+              ...current,
+              urlOriginal: event.target.value,
+              playlistId: parsed?.playlistId || '',
+            }));
+          }}
+          placeholder="https://www.youtube.com/playlist?list=..."
+          className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs"
+        />
+        {data.playlistId ? (
+          <span className="mt-1 block text-[11px] text-emerald-400">Playlist identificada: {data.playlistId}</span>
+        ) : null}
       </label>
-      <label className="block text-xs font-semibold text-stone-300">Canal <span className="font-normal text-stone-500">(opcional)</span>
-        <input value={data.canal} onChange={(event) => onChange((current) => ({ ...current, canal: event.target.value }))} className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs" />
+
+      <label className="block text-xs font-semibold text-stone-300">
+        Canal / Organizador <span className="font-normal text-stone-500">(opcional)</span>
+        <input
+          value={data.canal}
+          onChange={(event) => onChange((current) => ({ ...current, canal: event.target.value }))}
+          className="mt-1 w-full bg-stone-950 border border-stone-700/80 rounded-lg px-3 py-2 text-xs"
+        />
       </label>
+
       <div className="flex items-center justify-between border-t border-stone-800 pt-5">
-        <div><h3 className="text-sm font-bold text-stone-200">Aulas</h3><p className="text-[11px] text-stone-500">A ordem abaixo será a ordem de navegação do aluno.</p></div>
-        <button type="button" onClick={() => onChange((current) => ({ ...current, aulas: [...current.aulas, { key: crypto.randomUUID(), titulo: '', urlOriginal: '', youtubeId: '', thumbnailUrl: '' }] }))} className="px-3 py-2 bg-amber-600 text-stone-950 rounded-lg text-xs font-bold flex items-center gap-1"><Plus className="w-4 h-4" /> Adicionar aula</button>
+        <div>
+          <h3 className="text-sm font-bold text-stone-200">{collectionLabel}</h3>
+          <p className="text-[11px] text-stone-500">
+            {isConference
+              ? 'A ordem abaixo será a ordem de exibição das plenárias do evento.'
+              : 'A ordem abaixo será a ordem de navegação do aluno.'}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() =>
+            onChange((current) => ({
+              ...current,
+              aulas: [
+                ...current.aulas,
+                { key: crypto.randomUUID(), titulo: '', urlOriginal: '', youtubeId: '', thumbnailUrl: '' },
+              ],
+            }))
+          }
+          className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 ${
+            isConference
+              ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+              : 'bg-amber-600 hover:bg-amber-500 text-stone-950'
+          }`}
+        >
+          <Plus className="w-4 h-4" /> Adicionar {itemLabel.toLowerCase()}
+        </button>
       </div>
-      {data.aulas.length === 0 ? <p className="rounded-lg border border-dashed border-stone-700 p-5 text-center text-xs text-stone-500">Adicione ao menos uma aula.</p> : null}
+
+      {data.aulas.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-stone-700 p-5 text-center text-xs text-stone-500">
+          Adicione ao menos uma {itemLabel.toLowerCase()}.
+        </p>
+      ) : null}
+
       <div className="space-y-3">
         {data.aulas.map((aula, index) => (
           <div key={aula.key} className="rounded-xl border border-stone-800 bg-stone-950 p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <strong className="text-xs text-amber-300">Aula {index + 1}</strong>
+              <strong className={`text-xs ${isConference ? 'text-indigo-300' : 'text-amber-300'}`}>
+                {itemLabel} {index + 1}
+              </strong>
               <div className="flex items-center gap-1">
-                <button type="button" disabled={index === 0} aria-label={`Mover aula ${index + 1} para cima`} onClick={() => moveItem('aulas', index, index - 1)} className="rounded p-1.5 text-stone-400 hover:bg-stone-800 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-25"><ArrowUp className="w-4 h-4" /></button>
-                <button type="button" disabled={index === data.aulas.length - 1} aria-label={`Mover aula ${index + 1} para baixo`} onClick={() => moveItem('aulas', index, index + 1)} className="rounded p-1.5 text-stone-400 hover:bg-stone-800 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-25"><ArrowDown className="w-4 h-4" /></button>
-                <button type="button" aria-label={`Remover aula ${index + 1}`} onClick={() => onChange((current) => ({ ...current, aulas: current.aulas.filter((_, i) => i !== index) }))} className="rounded p-1.5 text-stone-500 hover:bg-red-950 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
+                <button
+                  type="button"
+                  disabled={index === 0}
+                  aria-label={`Mover ${itemLabel.toLowerCase()} ${index + 1} para cima`}
+                  onClick={() => moveItem('aulas', index, index - 1)}
+                  className="rounded p-1.5 text-stone-400 hover:bg-stone-800 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-25"
+                >
+                  <ArrowUp className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  disabled={index === data.aulas.length - 1}
+                  aria-label={`Mover ${itemLabel.toLowerCase()} ${index + 1} para baixo`}
+                  onClick={() => moveItem('aulas', index, index + 1)}
+                  className="rounded p-1.5 text-stone-400 hover:bg-stone-800 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-25"
+                >
+                  <ArrowDown className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Remover ${itemLabel.toLowerCase()} ${index + 1}`}
+                  onClick={() =>
+                    onChange((current) => ({ ...current, aulas: current.aulas.filter((_, i) => i !== index) }))
+                  }
+                  className="rounded p-1.5 text-stone-500 hover:bg-red-950 hover:text-red-400"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
-            <input type="url" required value={aula.urlOriginal} onChange={(event) => { const parsed = parseYoutubeUrl(event.target.value); updateLesson(index, { urlOriginal: event.target.value, youtubeId: parsed.youtubeId || '', thumbnailUrl: parsed.thumbnailUrl || '' }); }} onBlur={() => void readLesson(index)} placeholder="Link do vídeo desta aula" className="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs" />
-            <input required value={aula.titulo} onChange={(event) => updateLesson(index, { titulo: event.target.value })} placeholder="Título da aula" className="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs" />
+            <input
+              type="url"
+              required
+              value={aula.urlOriginal}
+              onChange={(event) => {
+                const parsed = parseYoutubeUrl(event.target.value);
+                updateLesson(index, {
+                  urlOriginal: event.target.value,
+                  youtubeId: parsed.youtubeId || '',
+                  thumbnailUrl: parsed.thumbnailUrl || '',
+                });
+              }}
+              onBlur={() => void readLesson(index)}
+              placeholder={`Link do vídeo desta ${itemLabel.toLowerCase()}`}
+              className="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs"
+            />
+            <input
+              required
+              value={aula.titulo}
+              onChange={(event) => updateLesson(index, { titulo: event.target.value })}
+              placeholder={`Título da ${itemLabel.toLowerCase()}`}
+              className="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs"
+            />
           </div>
         ))}
       </div>
+
       <div className="flex items-center justify-between border-t border-stone-800 pt-5">
-        <div><h3 className="text-sm font-bold text-stone-200">Materiais complementares</h3><p className="text-[11px] text-stone-500">Somente links externos; nenhum arquivo será armazenado.</p></div>
-        <button type="button" onClick={() => onChange((current) => ({ ...current, materiais: [...current.materiais, { key: crypto.randomUUID(), titulo: '', url: '' }] }))} className="px-3 py-2 bg-stone-800 text-amber-300 rounded-lg text-xs font-bold flex items-center gap-1"><Plus className="w-4 h-4" /> Adicionar link</button>
+        <div>
+          <h3 className="text-sm font-bold text-stone-200">
+            {isConference ? 'Materiais da conferência' : 'Materiais complementares'}
+          </h3>
+          <p className="text-[11px] text-stone-500">Somente links externos; nenhum arquivo será armazenado.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() =>
+            onChange((current) => ({
+              ...current,
+              materiais: [...current.materiais, { key: crypto.randomUUID(), titulo: '', url: '' }],
+            }))
+          }
+          className="px-3 py-2 bg-stone-800 text-amber-300 rounded-lg text-xs font-bold flex items-center gap-1"
+        >
+          <Plus className="w-4 h-4" /> Adicionar link
+        </button>
       </div>
+
       <div className="space-y-3">
         {data.materiais.map((material, index) => (
-          <div key={material.key} className="grid sm:grid-cols-[auto_1fr_1.5fr_auto] gap-2 rounded-xl border border-stone-800 bg-stone-950 p-4 sm:items-center">
+          <div
+            key={material.key}
+            className="grid sm:grid-cols-[auto_1fr_1.5fr_auto] gap-2 rounded-xl border border-stone-800 bg-stone-950 p-4 sm:items-center"
+          >
             <strong className="text-xs text-amber-300 sm:pr-2">Link {index + 1}</strong>
-            <input required value={material.titulo} onChange={(event) => onChange((current) => ({ ...current, materiais: current.materiais.map((item, i) => i === index ? { ...item, titulo: event.target.value } : item) }))} placeholder="Nome do material" className="bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs" />
-            <input type="url" required value={material.url} onChange={(event) => onChange((current) => ({ ...current, materiais: current.materiais.map((item, i) => i === index ? { ...item, url: event.target.value } : item) }))} placeholder="https://..." className="bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs" />
+            <input
+              required
+              value={material.titulo}
+              onChange={(event) =>
+                onChange((current) => ({
+                  ...current,
+                  materiais: current.materiais.map((item, i) =>
+                    i === index ? { ...item, titulo: event.target.value } : item
+                  ),
+                }))
+              }
+              placeholder="Nome do material"
+              className="bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs"
+            />
+            <input
+              type="url"
+              required
+              value={material.url}
+              onChange={(event) =>
+                onChange((current) => ({
+                  ...current,
+                  materiais: current.materiais.map((item, i) =>
+                    i === index ? { ...item, url: event.target.value } : item
+                  ),
+                }))
+              }
+              placeholder="https://..."
+              className="bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs"
+            />
             <div className="flex items-center justify-end gap-1">
-              <button type="button" disabled={index === 0} aria-label={`Mover link ${index + 1} para cima`} onClick={() => moveItem('materiais', index, index - 1)} className="rounded p-2 text-stone-400 hover:bg-stone-800 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-25"><ArrowUp className="w-4 h-4" /></button>
-              <button type="button" disabled={index === data.materiais.length - 1} aria-label={`Mover link ${index + 1} para baixo`} onClick={() => moveItem('materiais', index, index + 1)} className="rounded p-2 text-stone-400 hover:bg-stone-800 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-25"><ArrowDown className="w-4 h-4" /></button>
-              <button type="button" aria-label={`Remover material ${index + 1}`} onClick={() => onChange((current) => ({ ...current, materiais: current.materiais.filter((_, i) => i !== index) }))} className="rounded p-2 text-stone-500 hover:bg-red-950 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
+              <button
+                type="button"
+                disabled={index === 0}
+                aria-label={`Mover link ${index + 1} para cima`}
+                onClick={() => moveItem('materiais', index, index - 1)}
+                className="rounded p-2 text-stone-400 hover:bg-stone-800 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-25"
+              >
+                <ArrowUp className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                disabled={index === data.materiais.length - 1}
+                aria-label={`Mover link ${index + 1} para baixo`}
+                onClick={() => moveItem('materiais', index, index + 1)}
+                className="rounded p-2 text-stone-400 hover:bg-stone-800 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-25"
+              >
+                <ArrowDown className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                aria-label={`Remover material ${index + 1}`}
+                onClick={() =>
+                  onChange((current) => ({
+                    ...current,
+                    materiais: current.materiais.filter((_, i) => i !== index),
+                  }))
+                }
+                className="rounded p-2 text-stone-500 hover:bg-red-950 hover:text-red-400"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
           </div>
         ))}

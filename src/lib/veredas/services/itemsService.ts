@@ -423,7 +423,7 @@ export class ItemsService {
           },
         },
       };
-    } else if (data.tipo === CuradoriaTipoItem.CURSO) {
+    } else if (data.tipo === CuradoriaTipoItem.CURSO || data.tipo === CuradoriaTipoItem.CONFERENCIA) {
       itemData.curso = {
         create: {
           playlistId: data.curso.playlistId,
@@ -542,7 +542,7 @@ export class ItemsService {
             incorporavel: data.video?.incorporavel !== false,
           },
         });
-      } else if (existing.tipo === CuradoriaTipoItem.CURSO && existing.curso) {
+      } else if ((existing.tipo === CuradoriaTipoItem.CURSO || existing.tipo === CuradoriaTipoItem.CONFERENCIA) && existing.curso) {
         await tx.curadoriaCurso.update({
           where: { id: existing.curso.id },
           data: {

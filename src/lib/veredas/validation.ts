@@ -78,7 +78,7 @@ export function validateItemPayload(payload: any): ValidationResult<any> {
 
   const tiposValidos = Object.values(CuradoriaTipoItem);
   if (!payload.tipo || !tiposValidos.includes(payload.tipo)) {
-    errors.push('Tipo de item (VÍDEO, LIVRO ou CURSO) é inválido');
+    errors.push('Tipo de item (VÍDEO, LIVRO, CURSO ou CONFERÊNCIA) é inválido');
   }
 
   const statusValidos = Object.values(CuradoriaStatus);
@@ -102,7 +102,7 @@ export function validateItemPayload(payload: any): ValidationResult<any> {
     errors.push(...videoValidation.errors);
   }
 
-  if (payload.tipo === CuradoriaTipoItem.CURSO) {
+  if (payload.tipo === CuradoriaTipoItem.CURSO || payload.tipo === CuradoriaTipoItem.CONFERENCIA) {
     const courseValidation = validateCoursePayload(payload.curso || {});
     errors.push(...courseValidation.errors);
   }
@@ -131,17 +131,17 @@ export function validateCoursePayload(payload: any): ValidationResult<any> {
     errors.push('ID da playlist é obrigatório');
   }
   if (!Array.isArray(payload.aulas) || payload.aulas.length === 0) {
-    errors.push('O curso deve possuir ao menos uma aula');
+    errors.push('O conteúdo deve possuir ao menos uma sessão/aula');
   } else {
     const ids = new Set<string>();
     payload.aulas.forEach((aula: any, index: number) => {
       if (!aula.titulo || typeof aula.titulo !== 'string' || aula.titulo.trim().length < 2) {
-        errors.push(`Aula ${index + 1}: informe o título`);
+        errors.push(`Sessão ${index + 1}: informe o título`);
       }
       if (!aula.youtubeId || !/^[a-zA-Z0-9_-]{11}$/.test(aula.youtubeId)) {
-        errors.push(`Aula ${index + 1}: vídeo do YouTube inválido`);
+        errors.push(`Sessão ${index + 1}: vídeo do YouTube inválido`);
       }
-      if (ids.has(aula.youtubeId)) errors.push(`Aula ${index + 1}: vídeo duplicado`);
+      if (ids.has(aula.youtubeId)) errors.push(`Sessão ${index + 1}: vídeo duplicado`);
       ids.add(aula.youtubeId);
     });
   }

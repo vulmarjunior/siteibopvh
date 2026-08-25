@@ -298,6 +298,8 @@ export function createVeredasRouter(prisma: PrismaClient) {
       const [
         totalVideos,
         totalLivros,
+        totalCursos,
+        totalConferencias,
         rascunhos,
         arquivados,
         livrosGratuitos,
@@ -305,6 +307,8 @@ export function createVeredasRouter(prisma: PrismaClient) {
       ] = await Promise.all([
         prisma.curadoriaItem.count({ where: { tipo: 'VIDEO', status: 'PUBLICADO' } }),
         prisma.curadoriaItem.count({ where: { tipo: 'LIVRO', status: 'PUBLICADO' } }),
+        prisma.curadoriaItem.count({ where: { tipo: 'CURSO', status: 'PUBLICADO' } }),
+        prisma.curadoriaItem.count({ where: { tipo: 'CONFERENCIA', status: 'PUBLICADO' } }),
         prisma.curadoriaItem.count({ where: { status: 'RASCUNHO' } }),
         prisma.curadoriaItem.count({ where: { status: 'ARQUIVADO' } }),
         prisma.curadoriaAcesso.count({ where: { gratuito: true, ativo: true } }),
@@ -314,6 +318,8 @@ export function createVeredasRouter(prisma: PrismaClient) {
       res.json({
         totalVideos,
         totalLivros,
+        totalCursos,
+        totalConferencias,
         rascunhos,
         arquivados,
         livrosGratuitos,
@@ -377,7 +383,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
     }
   });
 
-  // POST /api/veredas/admin/items (Criação de Vídeo ou Livro)
+  // POST /api/veredas/admin/items (Criação de Vídeo, Livro, Curso ou Conferência)
   router.post('/admin/items', async (req: VeredasAuthenticatedRequest, res: Response) => {
     try {
       const validation = validateItemPayload(req.body);
@@ -405,7 +411,8 @@ export function createVeredasRouter(prisma: PrismaClient) {
       res.status(500).json({ error: 'Erro ao cadastrar novo conteúdo' });
     }
   });
-  // PUT /api/veredas/admin/items/:id (Atualizacao de Video ou Livro)
+
+  // PUT /api/veredas/admin/items/:id (Atualização de Vídeo, Livro, Curso ou Conferência)
   router.put('/admin/items/:id', async (req: VeredasAuthenticatedRequest, res: Response) => {
     try {
       const validation = validateItemPayload(req.body);
@@ -436,7 +443,6 @@ export function createVeredasRouter(prisma: PrismaClient) {
       res.status(500).json({ error: 'Erro ao atualizar conteudo' });
     }
   });
-
 
   // POST /api/veredas/admin/items/:id/publicar
   router.post('/admin/items/:id/publicar', async (req: VeredasAuthenticatedRequest, res: Response) => {

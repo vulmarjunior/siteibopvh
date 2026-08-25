@@ -85,3 +85,38 @@ describe('validateItemPayload with book accesses', () => {
     expect(result.errors).toHaveLength(0);
   });
 });
+
+describe('validateItemPayload with conference and course', () => {
+  it('validates a valid conference item with playlist and sessions', () => {
+    const result = validateItemPayload({
+      tipo: CuradoriaTipoItem.CONFERENCIA,
+      titulo: 'Conferência Teológica 2026',
+      resumo: 'Plenárias completas sobre a soberania de Deus.',
+      porqueIndicamos: 'Excelente série de plenárias e palestras com preletores bíblicos.',
+      nivel: CuradoriaNivel.INTERMEDIARIO,
+      status: CuradoriaStatus.PUBLICADO,
+      categoriaIds: [1],
+      curso: {
+        urlOriginal: 'https://www.youtube.com/playlist?list=PL1234567890',
+        playlistId: 'PL1234567890',
+        canal: 'IBO Porto Velho',
+        aulas: [
+          {
+            titulo: 'Plenária 1 - Abertura',
+            youtubeId: 'abcde12345_',
+            urlOriginal: 'https://www.youtube.com/watch?v=abcde12345_',
+          },
+        ],
+        materiais: [
+          {
+            titulo: 'Caderno da Conferência PDF',
+            url: 'https://ibopvh.com.br/docs/conferencia.pdf',
+          },
+        ],
+      },
+    });
+    expect(result.isValid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+});
+

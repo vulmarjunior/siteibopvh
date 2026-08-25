@@ -28,6 +28,7 @@ const VeredasCatalogPage = lazy(() => import('./pages/veredas/VeredasCatalogPage
 const VeredasBookDetailPage = lazy(() => import('./pages/veredas/VeredasBookDetailPage').then(m => ({ default: m.VeredasBookDetailPage })));
 const VeredasVideoDetailPage = lazy(() => import('./pages/veredas/VeredasVideoDetailPage').then(m => ({ default: m.VeredasVideoDetailPage })));
 const VeredasCourseDetailPage = lazy(() => import('./pages/veredas/VeredasCourseDetailPage').then(m => ({ default: m.VeredasCourseDetailPage })));
+const VeredasConferenceDetailPage = lazy(() => import('./pages/veredas/VeredasConferenceDetailPage').then(m => ({ default: m.VeredasConferenceDetailPage })));
 const VeredasFreeLibraryPage = lazy(() => import('./pages/veredas/VeredasFreeLibraryPage').then(m => ({ default: m.VeredasFreeLibraryPage })));
 const VeredasAboutPage = lazy(() => import('./pages/veredas/VeredasAboutPage').then(m => ({ default: m.VeredasAboutPage })));
 
@@ -75,9 +76,11 @@ const App: React.FC = () => (
         <Route path="/veredas/livros" element={<ModuleRoute moduleId="veredas"><VeredasCatalogPage /></ModuleRoute>} />
         <Route path="/veredas/videos" element={<ModuleRoute moduleId="veredas"><VeredasCatalogPage /></ModuleRoute>} />
         <Route path="/veredas/cursos" element={<ModuleRoute moduleId="veredas"><VeredasCatalogPage /></ModuleRoute>} />
+        <Route path="/veredas/conferencias" element={<ModuleRoute moduleId="veredas"><VeredasCatalogPage /></ModuleRoute>} />
         <Route path="/veredas/livro/:slug" element={<ModuleRoute moduleId="veredas"><VeredasBookDetailPage /></ModuleRoute>} />
         <Route path="/veredas/video/:slug" element={<ModuleRoute moduleId="veredas"><VeredasVideoDetailPage /></ModuleRoute>} />
         <Route path="/veredas/curso/:slug" element={<ModuleRoute moduleId="veredas"><VeredasCourseDetailPage /></ModuleRoute>} />
+        <Route path="/veredas/conferencia/:slug" element={<ModuleRoute moduleId="veredas"><VeredasConferenceDetailPage /></ModuleRoute>} />
         <Route path="/veredas/biblioteca-gratuita" element={<ModuleRoute moduleId="veredas"><VeredasFreeLibraryPage /></ModuleRoute>} />
         <Route path="/veredas/sobre" element={<ModuleRoute moduleId="veredas"><VeredasAboutPage /></ModuleRoute>} />
 
