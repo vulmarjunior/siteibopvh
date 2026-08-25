@@ -1,14 +1,20 @@
 # 🤖 Contexto do Projeto — Guia para Agentes de IA
 
-> **Última atualização:** 2026-08-19
+> **Última atualização:** 2026-08-25
 > **Propósito:** Fornecer contexto completo para qualquer agente de codificação que trabalhe neste projeto, eliminando a necessidade de re-análise.
 
 ---
-## Atualização operacional — 2026-08-06
+## Atualização operacional — 2026-08-25
 
-> Esta seção substitui informações antigas sobre hospedagem existentes abaixo. O portal está em produção na **Vercel**, projeto `ibopvh`, conectado ao GitHub `vulmarjunior/siteibopvh`. O deploy é automático pela branch `main`. URLs: `https://ibopvh.com.br` e `https://ibopvh.vercel.app`. O DNS autoritativo está na Vercel, com registros de e-mail preservados. Consulte `docs/CONTINUIDADE.md` e `docs/planos/migracao-vercel.md` antes de trabalhar.
+> O portal está em produção na **Vercel**, projeto `ibopvh`, conectado ao GitHub `vulmarjunior/siteibopvh`. O deploy é automático pela branch `main`. URLs: `https://ibopvh.com.br` e `https://ibopvh.vercel.app`. O DNS autoritativo está na Vercel, com registros de e-mail preservados. Consulte `docs/CONTINUIDADE.md` e `docs/planos/migracao-vercel.md` antes de trabalhar.
 >
-> O módulo **Veredas IBO** está ativo em `/veredas` e o painel em `/admin/veredas/login`. Ao reduzir formulários, preserve comportamentos homologados, especialmente o player incorporado quando permitido pelo YouTube.
+> A **Central Administrativa** foi totalmente modernizada com:
+> 1. Shell com **Sidebar vertical categorizada em 4 pilares** (`AdminSidebar.tsx`): *Visão Geral*, *Editorial & Conteúdo*, *Pastoral & Eventos*, e *Governança & Sistema*.
+> 2. **Header inteligente com Breadcrumbs e Command Palette** (`AdminHeader.tsx` e `AdminCommandPalette.tsx`) com acionamento por `Ctrl + K` / `Cmd + K`.
+> 3. **Dashboard 2.0 Executivo** (`AdminDashboardPage.tsx`) com KPIs em tempo real (Relógio de Oração, intercessores, módulos ativos e séries) e barra de Ações Rápidas.
+> 4. **Cabeçalho padronizado** (`AdminPageHeader.tsx`) para telas internas.
+>
+> O módulo **Veredas IBO** está ativo em `/veredas` e integrado ao painel administrativo.
 
 ## 📋 Visão Geral
 

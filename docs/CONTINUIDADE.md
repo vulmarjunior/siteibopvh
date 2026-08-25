@@ -1,6 +1,6 @@
 # Continuidade do projeto
 
-Atualizado em 2026-08-11.
+Atualizado em 2026-08-25.
 
 ## Estado atual
 
@@ -28,15 +28,14 @@ Crie `.env.local` a partir de `.env.example`. Os valores secretos não ficam no 
 Validação local:
 
 ```bash
-npx vitest run
-npm run lint
+npm test
 npm run build
 ```
 
 ## Veredas IBO
 
 - Rotas públicas: `/veredas`, `/veredas/livros`, `/veredas/videos` e páginas individuais.
-- Administração: `/admin/veredas/login`.
+- Administração: Integrado à Central Administrativa em `/admin/veredas`.
 - Cadastro de livros: ISBN com busca automática; quando não houver capa, o campo `Link da capa` permanece visível para preenchimento manual.
 - Um único texto, `Por que indicamos?`, alimenta também o resumo usado nos cards.
 - Temas podem ser selecionados ou criados durante o cadastro.
@@ -47,14 +46,10 @@ npm run build
 
 ## Última validação
 
-- 96 testes aprovados em 15 arquivos.
-- ESLint aprovado sem avisos.
-- Build TypeScript/Vite aprovado.
-- Central Administrativa concluída na branch `codex/central-etapa-0`, homologada na Preview da Vercel e reunida na PR #12.
-- Salvamento e preview editorial das séries homologados; a série em rascunho pode ser visualizada sem publicação pública.
-- PR #12 está tecnicamente apta para revisão e merge, mas produção ainda não recebeu as mudanças.
-- Produção permanece na `main`, sem receber ainda as mudanças da Central.
-- Teste controlado do Resend e procedimentos operacionais de banco continuam pendentes.
+- 117 testes aprovados em 19 arquivos (`npm test` / Vitest).
+- Build TypeScript/Vite aprovado com 100% de sucesso.
+- Central Administrativa com novo layout 2.0 ativo em produção na `main` (Sidebar em 4 pilares, Header com Breadcrumbs, Command Palette `Ctrl+K` e Dashboard Executivo de KPIs).
+
 
 ## Regras de continuidade
 

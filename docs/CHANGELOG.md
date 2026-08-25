@@ -2,7 +2,22 @@
 
 ## [Em Desenvolvimento]
 
-### 2026-08-19 - Parousia & Central: miniaturas do YouTube e pré-visualização
+### 2026-08-25 - Redesign da Central Administrativa: Sidebar, Command Palette e Dashboard 2.0
+
+- **Novo Shell Administrativo (`AdminSidebar.tsx` & `AdminHeader.tsx`):**
+  - Barra lateral retrátil organizada em **4 pilares temáticos**: *Visão Geral*, *Editorial & Conteúdo*, *Pastoral & Eventos*, e *Governança & Sistema*.
+  - Header superior com breadcrumbs dinâmicos, indicador de status de saúde dos serviços (`🟢 Operacional`) e atalho direto para o portal público.
+  - Perfil do administrador com identificador de papel (*role*), atalho de redefinição de senha e encerramento de sessão.
+- **Busca Global / Command Palette (`AdminCommandPalette.tsx`):**
+  - Acionamento por atalho de teclado `Ctrl + K` / `Cmd + K` (com navegação por setas e `ESC`).
+  - Busca instantânea de páginas, módulos, cadastros rápidos (novo sermão, novo livro no Veredas) e links públicos.
+- **Dashboard 2.0 Executivo (`AdminDashboardPage.tsx`):**
+  - Cards de KPIs vivos: cobertura diária do Relógio de Oração (ex: `22/24h` e % da meta), total de intercessores no mês, série pastoral ativa e módulos no ar.
+  - Barra de ações rápidas em 1 clique para agilizar operações frequentes.
+  - Grade de módulos agrupada por área ministerial com badges contextuais.
+- **Padronização de Telas (`AdminPageHeader.tsx`):**
+  - Cabeçalho padronizado reutilizável para páginas internas com categoria, título serifado, ícone de destaque e suporte a botões de ação.
+
 
 - **Hotsite Parousia:** Miniatura do YouTube (`https://img.youtube.com/vi/...`) integrada dinamicamente nos cards da seção *Programação da Série*, eliminando o fallback fixo genérico e evitando o salvamento de imagens no banco/servidor.
 - **Central Editorial / Admin:** Adicionada caixa de pré-visualização em tempo real da thumbnail no formulário da mensagem (`AdminMessageEditorModal.tsx`).
