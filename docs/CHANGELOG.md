@@ -2,25 +2,21 @@
 
 ## [Em Desenvolvimento]
 
-### 2026-08-27 - Relógio de Oração 2.0: Os Sentinelas da IBO & Passagem do Bastão
+### 2026-08-27 - Relógio de Oração: Escala Semanal Recorrente, Gráficos de Ocupação & Mesa de Escalação Pastoral
 
-- **Nova Mecânica de Intercessão (Dias 1 a 31 do Mês):**
-  - Superação do modelo rígido de horários individuais (24h) pelo modelo comunitário de **Sentinelas dos Muros** (baseado em Isaías 62:6).
-  - Vagas configuráveis por dia (ex: 4 sentinelas por dia), permitindo sustentação por membros, famílias e ministérios.
-  - Inscrição com validação de limite, token de cancelamento seguro e e-mail automático de confirmação via Resend.
-- **Dinâmica do "Passar o Bastão da Vigília" (Troca de Guarda):**
-  - Painel da **Torre de Vigília Hoje** com indicador da chama ininterrupta e registro dos sentinelas em posição.
-  - Botão de ação: `[ 🛡️ Cumpri Minha Oração & Passar o Bastão ]`, permitindo registrar a vigília e deixar uma palavra bíblica de ânimo para a próxima guarda.
-  - Disparo de notificação/e-mail para todos os sentinelas do dia seguinte com o relato da guarda anterior.
-- **Fator de Retorno (Mural de Motivos Vivos & Testemunhos):**
-  - **Motivos de Oração da Semana:** Pedidos atualizados pela congregação com micro-interação reativa `[ 🙏 Já orei por este pedido (X) ]`.
-  - **Mural de Gratidão & Respostas:** Registro público de orações respondidas e testemunhos.
-- **Central Administrativa Integrada (`AdminPrayerPage.tsx`):**
-  - Gestão de Sentinelas (filtragem por dia do mês e remoção segura).
-  - CRUD de Motivos de Oração da Semana com ordenação e categorias.
-  - CRUD e moderação de Testemunhos / Orações Respondidas.
-  - Histórico detalhado de passagens de bastão (`PrayerHandover`).
-  - Configuração de parâmetros (`sentinel_capacity`, `slot_capacity`).
+- **Transição para Escala Semanal Recorrente (Segunda a Domingo):**
+  - Superação do modelo mensal para a **Escala Semanal Recorrente** (7 dias), criando um hábito devocional natural para membros e famílias (ex: *Toda Terça-feira*).
+  - Suporte a navegação dinâmica de semanas: `[ ◀ Anterior | Semana Atual | Próxima ▶ ]` com datas reais.
+  - Alinhamento eclesiológico e teológico à tradição batista reformada com passagens neotestamentárias (Colossenses 4:2-3, Efésios 6:18, 1 Tessalonicenses 5:18, 1 Timóteo 2:1).
+- **Gráficos & Termômetro de Ocupação da Semana (`PrayerOccupancyChart.tsx`):**
+  - Barra de progresso animada com percentual de preenchimento da semana (ex: `82% preenchida`).
+  - Gráfico de colunas por dia da semana (Seg a Dom) com indicadores de vagas restantes, dias 100% cobertos e clique direto para assumir vagas abertas.
+  - Destaque comunitário do dia com maior necessidade de intercessores.
+- **Mesa de Escalação Pastoral na Central Administrativa (`/admin/relogio`):**
+  - Formulário de cadastro rápido em 1 clique para alocação direta de intercessores, famílias e ministérios durante o **Culto de Oração** ou reuniões de liderança, sem exigência de e-mail no ato.
+  - Painel executivo com métricas de cobertura geral da semana e acompanhamento em tempo real.
+- **E-mails Transacionais & Notificações de Escala:**
+  - Disparos automáticos via Resend com saudações e transmissão fraterna de oração para o próximo dia da semana.
 
 ### 2026-08-25 - Redesign da Central Administrativa: Sidebar, Command Palette e Dashboard 2.0
 

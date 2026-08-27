@@ -8,13 +8,12 @@
 
 > O portal está em produção na **Vercel**, projeto `ibopvh`, conectado ao GitHub `vulmarjunior/siteibopvh`. O deploy é automático pela branch `main`. URLs: `https://ibopvh.com.br` e `https://ibopvh.vercel.app`.
 >
-> O **Relógio de Oração 2.0** foi reformulado para o modelo comunitário de **Sentinelas Diários (Dias 1 a 31 do Mês)**:
-> 1. Vagas configuráveis por dia para intercessão contínua por membros, famílias e ministérios.
-> 2. Mecânica de **Passagem do Bastão da Vigília** (Isaías 62:6) com transmissão de palavras de bênção e e-mails automáticos para a guarda seguinte.
-> 3. **Mural de Motivos Vivos** da semana com botão reativo *"Já Orei por Este Pedido"* e **Mural de Gratidão / Testemunhos**.
-> 4. Painel administrativo completo integrado à Central Administrativa.
->
-> A **Central Administrativa** conta com Sidebar categorizada em 4 pilares, Command Palette (`Ctrl+K`), Dashboard 2.0 e o módulo **Veredas IBO** em `/veredas`.
+> O **Relógio de Oração (Ministério de Intercessão & Comunhão)** foi atualizado para a dinâmica de **Escala Semanal Recorrente (Segunda a Domingo)** com alinhamento teológico batista reformado:
+> 1. **Escala Semanal Recorrente:** Membros assumem um dia fixo da semana (ex: toda terça-feira) com navegação de semanas e visualização de datas reais.
+> 2. **Gráfico & Termômetro de Ocupação:** Barra de cobertura percentual e gráfico de colunas por dia da semana no portal público e no admin.
+> 3. **Mesa de Escalação Pastoral (`/admin/relogio`):** Painel para cadastro rápido de intercessores (membros, famílias ou ministérios) ao vivo durante o culto de oração ou reuniões de liderança, com e-mail opcional.
+> 4. **Guia Pastoral de Motivos da Semana** com contadores de intercessão e **Mural de Ações de Graças & Providência Divina**.
+> 5. **E-mails Transacionais:** Confirmações e saudações fraternas de oração transmitidas via Resend com textos neotestamentários (Cl 4:2-3, Ef 6:18, 1 Ts 5:18).
 
 ## 📋 Visão Geral
 
