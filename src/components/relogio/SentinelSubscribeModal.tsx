@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, HeartHandshake, CheckCircle2, Loader2, AlertCircle, Calendar } from 'lucide-react';
+import { X, HeartHandshake, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import MonthCalendarPicker from './MonthCalendarPicker';
 
 interface SentinelSubscribeModalProps {
   dayOfMonth: number | null;
@@ -11,7 +12,7 @@ interface SentinelSubscribeModalProps {
 
 export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
   dayOfMonth: initialDay,
-  daysData,
+  daysData = {},
   capacity = 4,
   onClose,
   onSuccess,
@@ -58,8 +59,8 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-stone-900 border border-amber-500/30 p-6 md:p-8 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="relative w-full max-w-lg my-8 overflow-hidden rounded-3xl bg-stone-900 border border-amber-500/30 p-6 md:p-8 shadow-2xl">
         {/* Botão Fechar */}
         <button
           onClick={onClose}
@@ -98,7 +99,7 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
             </div>
 
             <p className="text-stone-300 text-sm leading-relaxed">
-              Escolha o dia fixo do mês em que você se compromete a dedicar momentos de oração pela nossa congregação, liderança e famílias.
+              Selecione no calendário o dia do mês para o seu compromisso de oração pela nossa congregação:
             </p>
 
             {error && (
@@ -108,34 +109,15 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
               </div>
             )}
 
-            <div className="space-y-3.5">
-              {/* Seletor de Dia do Mês */}
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5">
-                  Dia Fixo do Mês para Orar *
-                </label>
-                <div className="relative">
-                  <select
-                    value={selectedDay}
-                    onChange={(e) => setSelectedDay(Number(e.target.value))}
-                    className="w-full px-4 py-3 rounded-xl bg-stone-800 border border-white/10 text-white focus:outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/40 text-sm"
-                  >
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => {
-                      const dayInfo = daysData ? daysData[d] : null;
-                      const count = dayInfo ? dayInfo.count : 0;
-                      const isFull = count >= capacity;
-                      const vagas = Math.max(0, capacity - count);
+            {/* Calendário Visual do Mês */}
+            <MonthCalendarPicker
+              selectedDay={selectedDay}
+              onSelectDay={(day) => setSelectedDay(day)}
+              daysData={daysData}
+              capacity={capacity}
+            />
 
-                      return (
-                        <option key={d} value={d} disabled={isFull}>
-                          Dia {d < 10 ? `0${d}` : d} {isFull ? '(Lotado)' : `(${vagas} ${vagas === 1 ? 'vaga' : 'vagas'})`}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
-              </div>
-
+            <div className="space-y-3.5 pt-1">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5">
                   Seu Nome Completo *

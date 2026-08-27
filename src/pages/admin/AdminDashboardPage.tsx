@@ -145,15 +145,15 @@ export default function AdminDashboardPage() {
         const token = await getAdminAccessToken();
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        // Fetch prayer stats
-        const prayerRes = await fetch('/api/relogio/stats').catch(() => null);
+        // Fetch prayer stats (Sentinelas do Mês)
+        const prayerRes = await fetch('/api/relogio/sentinelas/mes').catch(() => null);
         if (prayerRes && prayerRes.ok) {
           const prayerData = await prayerRes.json();
           setStats((prev) => ({
             ...prev,
-            prayerCoverage: prayerData.dailyCoverage || 0,
-            currentIntercessorsCount: prayerData.currentIntercessors?.length || 0,
-            monthlyIntercessors: prayerData.uniqueIntercessorsMonth || 0,
+            prayerCoverage: Math.round(((prayerData.coveredDaysCount || 0) / 31) * 100),
+            currentIntercessorsCount: prayerData.days?.[prayerData.currentDayOfMonth]?.count || 0,
+            monthlyIntercessors: prayerData.totalSentinels || 0,
           }));
         }
 
