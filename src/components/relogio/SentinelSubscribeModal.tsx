@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Shield, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { X, HeartHandshake, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 
 interface SentinelSubscribeModalProps {
   dayOfMonth: number;
@@ -46,7 +46,7 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
         onSuccess();
       }, 1800);
     } catch (err: any) {
-      setError(err.message || 'Ocorreu um erro ao assumir a vaga de sentinela.');
+      setError(err.message || 'Ocorreu um erro ao assumir a escala de intercessão.');
     } finally {
       setSubmitting(false);
     }
@@ -69,10 +69,10 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
               <CheckCircle2 className="w-10 h-10" />
             </div>
             <h3 className="text-2xl font-serif font-bold text-white">
-              Posto Assumido com Sucesso!
+              Compromisso Registrado
             </h3>
             <p className="text-stone-300 text-sm max-w-sm mx-auto leading-relaxed">
-              Você agora é um Sentinela do <strong>Dia {dayOfMonth}</strong> de cada mês. Enviamos a confirmação para o seu e-mail.
+              Você agora faz parte da escala de intercessão do <strong>Dia {dayOfMonth}</strong> de cada mês. Enviamos a confirmação para o seu e-mail.
             </p>
           </div>
         ) : (
@@ -80,20 +80,20 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
             {/* Topo */}
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <Shield className="w-6 h-6" />
+                <HeartHandshake className="w-6 h-6" />
               </div>
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-widest text-amber-400">
-                  Compromisso de Intercessão
+                  Ministério de Intercessão
                 </span>
                 <h3 className="text-2xl font-serif font-bold text-white">
-                  Assumir Vigília do Dia {dayOfMonth}
+                  Intercessão do Dia {dayOfMonth}
                 </h3>
               </div>
             </div>
 
-            <p className="text-stone-400 text-sm leading-relaxed">
-              Ao se cadastrar, você assume o compromisso de orar pela nossa igreja, ministérios e famílias todo <strong>Dia {dayOfMonth} de cada mês</strong>.
+            <p className="text-stone-300 text-sm leading-relaxed">
+              Ao se inscrever, você assume o compromisso de dedicar momentos devocionais para interceder pela nossa igreja, ministérios e famílias todo <strong>Dia {dayOfMonth} de cada mês</strong>.
             </p>
 
             {error && (
@@ -155,12 +155,12 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
                 {submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Registrando Sentinela...</span>
+                    <span>Registrando Compromisso...</span>
                   </>
                 ) : (
                   <>
-                    <Shield className="w-4 h-4" />
-                    <span>Confirmar Posto no Dia {dayOfMonth}</span>
+                    <HeartHandshake className="w-4 h-4" />
+                    <span>Confirmar Intercessão no Dia {dayOfMonth}</span>
                   </>
                 )}
               </button>

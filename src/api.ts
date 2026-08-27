@@ -110,10 +110,10 @@ export async function seed() {
     const topicsCount = await prisma.prayerTopic.count();
     if (topicsCount === 0) {
       const defaultTopics = [
-        { title: 'Liderança e Famílias Pastorais', description: 'Por sabedoria, proteção e graça sobre os pastores, líderes de ministérios e seus lares.', category: 'Igreja', order: 1, prayedCount: 24 },
-        { title: 'Missões & Evangelismo Local', description: 'Pelos missionários apoiados pela IBO e pela proclamação do Evangelho no bairro Olaria e Porto Velho.', category: 'Missões', order: 2, prayedCount: 31 },
-        { title: 'Enfermos, Idosos e Enlutados', description: 'Por consolo divino, alívio, restauração da saúde e assistência às famílias que enfrentam aflições.', category: 'Enfermos', order: 3, prayedCount: 19 },
-        { title: 'Jovens, Crianças e Próxima Geração', description: 'Para que permaneçam firmes na fé, cheios do Espírito Santo e guardados na verdade bíblica.', category: 'Famílias', order: 4, prayedCount: 28 },
+        { title: 'Ministério Pastoral & Pregação Fiel da Palavra', description: 'Pela fidelidade doutrinária, unção do Espírito na exposição bíblica e santidade dos nossos pastores e seus lares.', category: 'Igreja', order: 1, prayedCount: 24 },
+        { title: 'Missões & Proclamação do Evangelho', description: 'Pelos missionários apoiados pela IBO e pelo avanço do Reino de Deus em Porto Velho e nos confins da terra.', category: 'Missões', order: 2, prayedCount: 31 },
+        { title: 'Famílias & Ensino Bíblico da Próxima Geração', description: 'Pela edificação dos lares no temor do Senhor e perseverança dos nossos jovens e crianças na sã doutrina.', category: 'Famílias', order: 3, prayedCount: 28 },
+        { title: 'Enfermos, Idosos e Enlutados', description: 'Por consolo divino pela graça de Cristo, restauração da saúde e assistência diaconal aos necessitados.', category: 'Enfermos', order: 4, prayedCount: 19 },
       ];
       for (const t of defaultTopics) {
         await prisma.prayerTopic.create({ data: t });
@@ -123,8 +123,8 @@ export async function seed() {
     const praisesCount = await prisma.prayerPraise.count();
     if (praisesCount === 0) {
       const defaultPraises = [
-        { title: 'Gratidão pelas Vidas Alcançadas na EBF 2026', testimony: 'Louvamos a Deus por mais de 120 crianças acolhidas e sementes do Evangelho plantadas em seus corações.', authorName: 'Ministério Infantil', date: 'Julho de 2026', order: 1 },
-        { title: 'Provisão e Unidade na Reforma do Templo', testimony: 'Agradecemos ao Senhor pela fidelidade dos irmãos e pelos recursos concedidos para o avanço da nossa comunidade.', authorName: 'Conselho Administrativo', date: 'Agosto de 2026', order: 2 },
+        { title: 'Ação de Graças pelas Vidas Alcançadas na EBF 2026', testimony: 'Louvamos a Deus por mais de 120 crianças instruídas nas Escrituras e sementes do Evangelho plantadas em seus corações.', authorName: 'Ministério Infantil', date: 'Julho de 2026', order: 1 },
+        { title: 'Providência Divina e Fidelidade na Reforma do Templo', testimony: 'Agradecemos ao Senhor pela generosidade da igreja e pelos recursos providos para a manutenção do nosso espaço de culto.', authorName: 'Conselho Administrativo', date: 'Agosto de 2026', order: 2 },
       ];
       for (const p of defaultPraises) {
         await prisma.prayerPraise.create({ data: p });

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Shield, Send, CheckCircle2, Loader2, AlertCircle, Sparkles } from 'lucide-react';
+import { X, BookOpen, Send, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 
 interface SentinelHandoverModalProps {
   currentDayOfMonth: number;
@@ -8,11 +8,12 @@ interface SentinelHandoverModalProps {
 }
 
 const PRESET_VERSES = [
-  'Salmos 121:4 — "Eis que não tosquenejará nem dormirá o guarda de Israel."',
-  'Colossenses 4:2 — "Perseverai em oração, velando nela com ação de graças."',
-  'Isaías 62:6 — "Sobre os teus muros, ó Jerusalém, pus guardas..."',
-  '1 Tessalonicenses 5:17 — "Orai sem cessar."',
-  'Efésios 6:18 — "Orando em todo tempo com toda oração e súplica no Espírito."',
+  'Colossenses 4:2 — "Perseverai na oração, vigiando com ações de graças."',
+  'Efésios 6:18 — "Com toda oração e súplica, orando em todo tempo no Espírito."',
+  '1 Timóteo 2:1 — "Exorto que se use a prática de súplicas, orações, intercessões e ações de graças."',
+  'Filipenses 4:6 — "Sejam conhecidas diante de Deus as vossas petições, pela oração e pela súplica, com ações de graças."',
+  'Hebreus 4:16 — "Aproximemo-nos, portanto, confiantemente, junto ao trono da graça."',
+  '1 Tessalonicenses 5:17-18 — "Orai sem cessar. Em tudo, dai graças."',
 ];
 
 export const SentinelHandoverModal: React.FC<SentinelHandoverModalProps> = ({
@@ -46,7 +47,7 @@ export const SentinelHandoverModal: React.FC<SentinelHandoverModalProps> = ({
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Erro ao registrar a passagem do bastão.');
+        throw new Error(data.error || 'Erro ao registrar a conclusão da oração.');
       }
 
       setNotifiedCount(data.notifiedSentinelsCount || 0);
@@ -55,7 +56,7 @@ export const SentinelHandoverModal: React.FC<SentinelHandoverModalProps> = ({
         onSuccess();
       }, 2000);
     } catch (err: any) {
-      setError(err.message || 'Ocorreu um erro ao passar o bastão.');
+      setError(err.message || 'Ocorreu um erro ao registrar a oração.');
     } finally {
       setSubmitting(false);
     }
@@ -78,13 +79,13 @@ export const SentinelHandoverModal: React.FC<SentinelHandoverModalProps> = ({
               <CheckCircle2 className="w-10 h-10" />
             </div>
             <h3 className="text-2xl font-serif font-bold text-white">
-              Bastão Transmitido com Glória!
+              Intercessão Registrada com Gratidão
             </h3>
             <p className="text-stone-300 text-sm max-w-sm mx-auto leading-relaxed">
-              Sua vigília do Dia {currentDayOfMonth} foi registrada. 
+              Sua oração do Dia {currentDayOfMonth} foi confirmada. 
               {notifiedCount > 0
-                ? ` ${notifiedCount} sentinela(s) do próximo dia receberam a sua palavra de ânimo.`
-                : ' A chama no altar permanece acesa!'}
+                ? ` ${notifiedCount} irmão(s) da escala de amanhã receberam a sua saudação fraterna.`
+                : ' Que o Senhor continue edificando a nossa igreja.'}
             </p>
           </div>
         ) : (
@@ -92,20 +93,20 @@ export const SentinelHandoverModal: React.FC<SentinelHandoverModalProps> = ({
             {/* Topo */}
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <Send className="w-6 h-6" />
+                <BookOpen className="w-6 h-6" />
               </div>
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-widest text-amber-400">
-                  Troca de Sentinelas
+                  Comunhão dos Santos
                 </span>
                 <h3 className="text-2xl font-serif font-bold text-white">
-                  Passar o Bastão da Vigília
+                  Registrar Oração do Dia
                 </h3>
               </div>
             </div>
 
-            <p className="text-stone-400 text-sm leading-relaxed">
-              Registre a conclusão de sua oração de hoje e deixe uma palavra bíblica de encorajamento para os sentinelas da próxima guarda.
+            <p className="text-stone-300 text-sm leading-relaxed">
+              Confirme a realização do seu momento de oração de hoje e compartilhe uma saudação bíblica de encorajamento para os irmãos da escala seguinte.
             </p>
 
             {error && (
@@ -132,20 +133,20 @@ export const SentinelHandoverModal: React.FC<SentinelHandoverModalProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5">
-                  Palavra de Ânimo para a Próxima Guarda (Opcional)
+                  Saudação aos Irmãos da Próxima Escala (Opcional)
                 </label>
                 <textarea
                   rows={3}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Ex: Oramos hoje especialmente pelos jovens e famílias. Sejam fortalecidos na brecha!"
+                  placeholder="Ex: Intercedemos com gratidão pelas famílias e pelo ministério da igreja. Que o Senhor renove as forças dos irmãos de amanhã!"
                   className="w-full px-4 py-3 rounded-xl bg-stone-800 border border-white/10 text-white placeholder:text-stone-500 focus:outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/40 text-sm resize-none"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5">
-                  Versículo da Transmissão
+                  Texto Bíblico Neotestamentário
                 </label>
                 <select
                   value={verse}
@@ -170,12 +171,12 @@ export const SentinelHandoverModal: React.FC<SentinelHandoverModalProps> = ({
                 {submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Transmitindo o Bastão...</span>
+                    <span>Registrando Oração...</span>
                   </>
                 ) : (
                   <>
-                    <Shield className="w-4 h-4" />
-                    <span>Concluir Vigília & Transmitir Bastão</span>
+                    <Send className="w-4 h-4" />
+                    <span>Concluir Oração & Transmitir Escala</span>
                   </>
                 )}
               </button>

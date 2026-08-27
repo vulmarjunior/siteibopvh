@@ -248,7 +248,7 @@ export default function AdminPrayerPage() {
               <p className="text-xs font-bold uppercase tracking-[.2em] text-amber-500">
                 Pastoral & Eventos
               </p>
-              <h1 className="font-serif text-2xl font-bold">Relógio de Oração & Sentinelas</h1>
+              <h1 className="font-serif text-2xl font-bold">Relógio de Oração & Intercessão</h1>
             </div>
           </div>
         </div>
@@ -264,7 +264,7 @@ export default function AdminPrayerPage() {
             }`}
           >
             <Shield className="h-4 w-4" />
-            Sentinelas (Dias 1..31)
+            Intercessores (Dias 1..31)
           </button>
 
           <button
@@ -274,7 +274,7 @@ export default function AdminPrayerPage() {
             }`}
           >
             <Heart className="h-4 w-4" />
-            Motivos da Semana
+            Guia de Motivos
           </button>
 
           <button
@@ -284,7 +284,7 @@ export default function AdminPrayerPage() {
             }`}
           >
             <Sparkles className="h-4 w-4" />
-            Testemunhos & Gratidão
+            Ações de Graças
           </button>
 
           <button
@@ -294,7 +294,7 @@ export default function AdminPrayerPage() {
             }`}
           >
             <MessageSquareQuote className="h-4 w-4" />
-            Histórico da Guarda
+            Histórico de Intercessão
           </button>
 
           <button

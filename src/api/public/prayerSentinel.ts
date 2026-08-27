@@ -199,34 +199,34 @@ export function createPublicPrayerSentinelRouter(
           await resend.emails.send({
             from: 'Relógio de Oração IBO <contato@ibopvh.com.br>',
             to: [email],
-            subject: `🛡️ Você agora é Sentinela do Dia ${dayOfMonth} — Relógio de Oração IBO`,
+            subject: `Escala de Intercessão: Dia ${dayOfMonth} — Igreja Batista Olaria`,
             html: `
               <div style="font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #1c1917; color: #f5f5f4; border-radius: 16px; overflow: hidden; border: 1px solid rgba(245, 158, 11, 0.2);">
                 <div style="background: linear-gradient(135deg, #1c1917 0%, #292524 100%); padding: 36px 28px; text-align: center; border-bottom: 2px solid #f59e0b;">
                   <span style="color: #f59e0b; text-transform: uppercase; letter-spacing: 3px; font-size: 11px; font-weight: bold;">Igreja Batista Olaria</span>
-                  <h1 style="color: #ffffff; font-family: 'Cinzel', Georgia, serif; font-size: 26px; margin: 12px 0 6px 0;">Posto de Sentinela Confirmado</h1>
-                  <p style="color: #a8a29e; font-size: 15px; margin: 0;">"Sobre os teus muros, pus guardas..." — Isaías 62:6</p>
+                  <h1 style="color: #ffffff; font-family: 'Cinzel', Georgia, serif; font-size: 24px; margin: 12px 0 6px 0;">Ministério de Oração & Intercessão</h1>
+                  <p style="color: #a8a29e; font-size: 14px; margin: 0;">"Perseverai na oração, vigiando com ações de graças." — Cl 4:2</p>
                 </div>
                 <div style="padding: 28px; line-height: 1.6;">
-                  <p style="font-size: 16px; margin-top: 0;">Olá, <strong>${escapeHtml(name)}</strong>!</p>
-                  <p>Seu compromisso na vigília contínua da IBO foi registrado com sucesso.</p>
+                  <p style="font-size: 16px; margin-top: 0;">Graça e paz, <strong>${escapeHtml(name)}</strong>!</p>
+                  <p>Seu compromisso na escala mensal de intercessão da nossa igreja foi registrado com sucesso.</p>
                   <div style="background: rgba(245, 158, 11, 0.08); border-left: 4px solid #f59e0b; padding: 18px; border-radius: 8px; margin: 24px 0;">
-                    <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #f59e0b; font-weight: bold;">Seu Dia de Vigília</div>
-                    <div style="font-size: 24px; font-weight: bold; color: #ffffff; margin-top: 4px;">Todo Dia ${dayOfMonth} de cada mês</div>
-                    <p style="font-size: 13px; color: #a8a29e; margin: 6px 0 0 0;">Ao longo deste dia, em seus momentos devocionais, sustente a nossa igreja, nossos missionários e as famílias da congregação em oração.</p>
+                    <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #f59e0b; font-weight: bold;">Seu Dia de Oração</div>
+                    <div style="font-size: 22px; font-weight: bold; color: #ffffff; margin-top: 4px;">Todo Dia ${dayOfMonth} de cada mês</div>
+                    <p style="font-size: 13px; color: #a8a29e; margin: 6px 0 0 0;">Ao longo deste dia, em seus momentos devocionais, dedique-se a orar pela fidelidade doutrinária, pela pregação da Palavra, pelos nossos missionários e pelas famílias da congregação.</p>
                   </div>
-                  <p style="font-size: 14px; color: #d6d3d1;">No seu dia de oração, acesse a página do Relógio para ver os <strong>Motivos da Semana</strong> e registrar o cumprimento da sua guarda passando o bastão para os próximos sentinelas.</p>
+                  <p style="font-size: 14px; color: #d6d3d1;">No seu dia de intercessão, acesse o portal da igreja para consultar o <strong>Guia Pastoral de Oração da Semana</strong> e registrar a realização da sua oração.</p>
                   <div style="text-align: center; margin: 30px 0;">
                     <a href="${appUrl}/relogio" style="display: inline-block; background: #f59e0b; color: #1c1917; font-weight: bold; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-size: 15px; letter-spacing: 0.5px;">Acessar o Relógio de Oração</a>
                   </div>
                   <hr style="border: none; border-top: 1px solid #292524; margin: 24px 0;" />
-                  <p style="font-size: 12px; color: #78716c; text-align: center;">Caso precise cancelar seu compromisso no futuro, <a href="${cancelUrl}" style="color: #f59e0b; text-decoration: underline;">clique aqui para cancelar</a>.</p>
+                  <p style="font-size: 12px; color: #78716c; text-align: center;">Caso precise alterar ou cancelar seu compromisso, <a href="${cancelUrl}" style="color: #f59e0b; text-decoration: underline;">clique aqui para cancelar</a>.</p>
                 </div>
               </div>
             `,
           });
         } catch (emailErr) {
-          console.error('Erro ao enviar e-mail de confirmação de sentinela:', emailErr);
+          console.error('Erro ao enviar e-mail de confirmação de intercessor:', emailErr);
         }
       }
 
@@ -239,7 +239,7 @@ export function createPublicPrayerSentinelRouter(
         },
       });
     } catch (error: any) {
-      console.error('Erro na inscrição de sentinela:', error);
+      console.error('Erro na inscrição de intercessor:', error);
       const statusCode = error.statusCode || 500;
       res.status(statusCode).json({ error: error.message || 'Erro ao processar inscrição' });
     }
@@ -266,14 +266,14 @@ export function createPublicPrayerSentinelRouter(
         data: { active: false, cancelledAt: new Date() },
       });
 
-      res.json({ success: true, message: 'Seu compromisso de sentinela foi cancelado com sucesso.' });
+      res.json({ success: true, message: 'Seu compromisso na escala de oração foi cancelado com sucesso.' });
     } catch (error) {
-      console.error('Erro ao cancelar sentinela:', error);
+      console.error('Erro ao cancelar intercessor:', error);
       res.status(500).json({ error: 'Falha ao processar cancelamento' });
     }
   });
 
-  // 4. Passar o Bastão / Registrar cumprimento da vigília de hoje
+  // 4. Transmissão Fraterna / Registrar cumprimento da oração de hoje
   router.post('/passar-bastao', async (req, res) => {
     const rateLimit = await consumeRateLimit(prisma, req, {
       scope: 'sentinel-handover',
@@ -282,7 +282,7 @@ export function createPublicPrayerSentinelRouter(
     });
     if (!rateLimit.allowed) {
       res.setHeader('Retry-After', rateLimit.retryAfterSeconds);
-      return res.status(429).json({ error: 'Você acabou de registrar uma passagem de guarda. Aguarde um momento.' });
+      return res.status(429).json({ error: 'Você acabou de registrar uma oração. Aguarde um momento.' });
     }
 
     const churchNow = getChurchCurrentDay();
@@ -314,13 +314,13 @@ export function createPublicPrayerSentinelRouter(
       // Calcular o próximo dia (1 a 31)
       const nextDay = churchNow.dayOfMonth === 31 ? 1 : churchNow.dayOfMonth + 1;
 
-      // Buscar os sentinelas do próximo dia para notificação
+      // Buscar os intercessores do próximo dia para notificação
       const nextSentinels = await prisma.prayerSentinel.findMany({
         where: { dayOfMonth: nextDay, active: true, cancelledAt: null },
         select: { email: true, name: true },
       });
 
-      // Disparar e-mail de transmissão de guarda aos sentinelas do próximo dia
+      // Disparar e-mail fraterno aos intercessores do próximo dia
       const resend = getResend();
       const appUrl = process.env.APP_URL || 'https://ibopvh.com.br';
 
@@ -330,31 +330,31 @@ export function createPublicPrayerSentinelRouter(
           await resend.emails.send({
             from: 'Relógio de Oração IBO <contato@ibopvh.com.br>',
             to: nextEmails,
-            subject: `🛡️ O Bastão da Vigília Chegou a Você — Sentinelas do Dia ${nextDay}`,
+            subject: `Escala de Intercessão: Dia ${nextDay} — Igreja Batista Olaria`,
             html: `
               <div style="font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #1c1917; color: #f5f5f4; border-radius: 16px; overflow: hidden; border: 1px solid rgba(245, 158, 11, 0.2);">
                 <div style="background: linear-gradient(135deg, #1c1917 0%, #292524 100%); padding: 32px 24px; text-align: center; border-bottom: 2px solid #f59e0b;">
-                  <span style="color: #f59e0b; text-transform: uppercase; letter-spacing: 3px; font-size: 11px; font-weight: bold;">Troca de Sentinelas</span>
-                  <h1 style="color: #ffffff; font-family: 'Cinzel', Georgia, serif; font-size: 24px; margin: 10px 0 4px 0;">O Bastão da Vigília está com Você</h1>
-                  <p style="color: #a8a29e; font-size: 14px; margin: 0;">A guarda do Dia ${churchNow.dayOfMonth} foi sustentada com fé.</p>
+                  <span style="color: #f59e0b; text-transform: uppercase; letter-spacing: 3px; font-size: 11px; font-weight: bold;">Comunhão dos Intercessores</span>
+                  <h1 style="color: #ffffff; font-family: 'Cinzel', Georgia, serif; font-size: 22px; margin: 10px 0 4px 0;">Escala de Oração — Dia ${nextDay}</h1>
+                  <p style="color: #a8a29e; font-size: 14px; margin: 0;">"Com toda oração e súplica, orando em todo tempo..." — Ef 6:18</p>
                 </div>
                 <div style="padding: 28px; line-height: 1.6;">
-                  <p style="font-size: 15px; margin-top: 0;">Irmãos sentinelas do <strong>Dia ${nextDay}</strong>,</p>
-                  <p>O sentinela <strong>${escapeHtml(authorName)}</strong> cumpriu sua vigília no Dia ${churchNow.dayOfMonth} e transmitiu o bastão com a seguinte palavra para a sua guarda:</p>
+                  <p style="font-size: 15px; margin-top: 0;">Irmãos da escala do <strong>Dia ${nextDay}</strong>,</p>
+                  <p>O irmão <strong>${escapeHtml(authorName)}</strong> concluiu seus momentos de oração no Dia ${churchNow.dayOfMonth} e compartilhou a seguinte saudação fraterna:</p>
                   <div style="background: rgba(245, 158, 11, 0.08); border-left: 4px solid #f59e0b; padding: 18px; border-radius: 8px; margin: 20px 0;">
-                    <p style="font-style: italic; color: #f5f5f4; font-size: 15px; margin: 0;">"${escapeHtml(message || 'Oramos com gratidão pela nossa igreja e famílias. Sejam fortalecidos no Senhor!')}"</p>
+                    <p style="font-style: italic; color: #f5f5f4; font-size: 15px; margin: 0;">"${escapeHtml(message || 'Intercedemos com alegria e gratidão pelo rebanho e pela proclamação do Evangelho. Que o Senhor fortaleça a escala de hoje!')}"</p>
                     ${verse ? `<p style="color: #f59e0b; font-size: 13px; font-weight: bold; margin: 10px 0 0 0;">— ${escapeHtml(verse)}</p>` : ''}
                   </div>
-                  <p style="font-size: 14px; color: #d6d3d1;">Acesse o portal da igreja para consultar os <strong>Motivos de Oração da Semana</strong> e permanecer firme na brecha.</p>
+                  <p style="font-size: 14px; color: #d6d3d1;">Acesse o portal da igreja para consultar os <strong>Motivos de Oração da Semana</strong> e permanecer perseverante em súplicas e ações de graças.</p>
                   <div style="text-align: center; margin: 28px 0;">
-                    <a href="${appUrl}/relogio" style="display: inline-block; background: #f59e0b; color: #1c1917; font-weight: bold; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-size: 15px;">Acessar Motivos & Relatório</a>
+                    <a href="${appUrl}/relogio" style="display: inline-block; background: #f59e0b; color: #1c1917; font-weight: bold; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-size: 15px;">Acessar Guia de Oração</a>
                   </div>
                 </div>
               </div>
             `,
           });
         } catch (emailErr) {
-          console.error('Erro ao enviar e-mail de transmissão do bastão:', emailErr);
+          console.error('Erro ao enviar e-mail de transmissão fraterna:', emailErr);
         }
       }
 

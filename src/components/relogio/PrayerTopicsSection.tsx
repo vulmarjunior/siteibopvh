@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, Sparkles, Check, Flame, MessageCircle, Shield } from 'lucide-react';
+import { BookOpen, Check, Users, Sparkles } from 'lucide-react';
 
 export interface PrayerTopicItem {
   id: number;
@@ -30,7 +30,7 @@ export const PrayerTopicsSection: React.FC<PrayerTopicsSectionProps> = ({
       : topics.filter((t) => t.category === selectedCategory);
 
   const handlePray = async (id: number) => {
-    if (prayedIds[id]) return; // Evita duplo clique rápido local
+    if (prayedIds[id]) return;
 
     setPrayedIds((prev) => ({ ...prev, [id]: true }));
     setAnimatingId(id);
@@ -57,14 +57,14 @@ export const PrayerTopicsSection: React.FC<PrayerTopicsSectionProps> = ({
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
           <span className="text-xs font-bold uppercase tracking-widest text-amber-500 flex items-center gap-1.5 mb-2">
-            <Heart className="w-3.5 h-3.5" />
-            Motivos Vivos de Oração
+            <BookOpen className="w-3.5 h-3.5" />
+            Guia Pastoral de Oração
           </span>
           <h2 className="text-2xl md:text-3xl font-serif font-bold text-white">
             Motivos de Oração da Semana
           </h2>
-          <p className="text-stone-400 text-sm mt-1">
-            Sustente estes tópicos em sua oração e registre seu clamor para encorajar a congregação.
+          <p className="text-stone-300 text-sm mt-1">
+            "Com toda oração e súplica, orando em todo tempo no Espírito e para isto vigiando com toda perseverança." (Efésios 6:18)
           </p>
         </div>
 
@@ -106,9 +106,9 @@ export const PrayerTopicsSection: React.FC<PrayerTopicsSectionProps> = ({
                   <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400/90 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
                     {topic.category}
                   </span>
-                  <span className="text-xs text-stone-500 font-semibold flex items-center gap-1">
-                    <Flame className="w-3.5 h-3.5 text-amber-500/80" />
-                    {topic.prayedCount} orações registradas
+                  <span className="text-xs text-stone-400 font-semibold flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5 text-amber-400" />
+                    {topic.prayedCount} intercessões
                   </span>
                 </div>
 
@@ -123,10 +123,10 @@ export const PrayerTopicsSection: React.FC<PrayerTopicsSectionProps> = ({
                 )}
               </div>
 
-              {/* Botão Interativo "Já Orei" */}
+              {/* Botão Interativo "Intercedi por este motivo" */}
               <div className="pt-4 mt-4 border-t border-white/5 flex items-center justify-between">
-                <span className="text-xs text-stone-500 italic">
-                  {hasPrayed ? 'Seu clamor foi somado!' : 'Una-se a nós nesta causa'}
+                <span className="text-xs text-stone-400 italic">
+                  {hasPrayed ? 'Sua intercessão foi registrada' : 'Una-se em súplica por esta causa'}
                 </span>
 
                 <button
@@ -144,12 +144,12 @@ export const PrayerTopicsSection: React.FC<PrayerTopicsSectionProps> = ({
                   {hasPrayed ? (
                     <>
                       <Check className="w-3.5 h-3.5" />
-                      <span>Orei por isso</span>
+                      <span>Intercedi por este motivo</span>
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>🙏 Já orei por este pedido</span>
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>Intercedi por este pedido</span>
                     </>
                   )}
                 </button>

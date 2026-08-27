@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Flame, Plus, Users, CheckCircle, Sparkles } from 'lucide-react';
+import { Shield, Plus, Users, CheckCircle, CalendarDays } from 'lucide-react';
 
 interface DayData {
   sentinels: { id: number; name: string }[];
@@ -28,30 +28,30 @@ export const SentinelMonthGrid: React.FC<SentinelMonthGridProps> = ({
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-white/5">
         <div>
           <span className="text-xs font-bold uppercase tracking-widest text-amber-500 flex items-center gap-1.5 mb-2">
-            <Shield className="w-3.5 h-3.5" />
-            Escala Mensal Contínua
+            <CalendarDays className="w-3.5 h-3.5" />
+            Escala Mensal de Oração
           </span>
           <h2 className="text-2xl md:text-3xl font-serif font-bold text-white">
             Escala dos 31 Dias do Mês
           </h2>
-          <p className="text-stone-400 text-sm mt-1">
-            Escolha um dia fixo no mês para ser o seu posto de intercessão com sua família ou ministério.
+          <p className="text-stone-300 text-sm mt-1">
+            Escolha um dia fixo mensal para se dedicar, em seus momentos devocionais, à intercessão pela nossa congregação e ministérios.
           </p>
         </div>
 
         {/* Legenda de Status */}
         <div className="flex flex-wrap items-center gap-3 text-xs text-stone-400">
           <span className="inline-flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50" />
-            Vigília Hoje
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm" />
+            Escala de Hoje
           </span>
           <span className="inline-flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-            Vagas Preenchidas
+            Escala Preenchida
           </span>
           <span className="inline-flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-stone-600" />
-            Vagas Disponíveis
+            Vagas Abertas
           </span>
         </div>
       </div>
@@ -106,7 +106,7 @@ export const SentinelMonthGrid: React.FC<SentinelMonthGridProps> = ({
                   </div>
                 </div>
 
-                {/* Sentinelas deste dia */}
+                {/* Intercessores deste dia */}
                 <div className="min-h-[52px] mb-4">
                   {dayInfo.sentinels.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5">
@@ -121,15 +121,15 @@ export const SentinelMonthGrid: React.FC<SentinelMonthGridProps> = ({
                     </div>
                   ) : (
                     <span className="text-xs text-stone-500 italic block pt-1">
-                      Nenhum sentinela assumiu este dia ainda.
+                      Nenhum intercessor cadastrado neste dia.
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Rodapé do Card: Ação ou Barra de Cobertura */}
+              {/* Rodapé do Card: Ação ou Quantidade */}
               <div className="pt-3 border-t border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-stone-500 text-[11px]">
+                <div className="flex items-center gap-1.5 text-stone-400 text-[11px]">
                   <Users className="w-3 h-3" />
                   <span>
                     {dayInfo.count}/{capacity}
@@ -146,7 +146,7 @@ export const SentinelMonthGrid: React.FC<SentinelMonthGridProps> = ({
                   </button>
                 ) : (
                   <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500">
-                    Vigília Fechada
+                    Escala Completa
                   </span>
                 )}
               </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, HeartHandshake, Quote, Calendar } from 'lucide-react';
+import { HeartHandshake, Quote, Calendar } from 'lucide-react';
 
 export interface PrayerPraiseItem {
   id: number;
@@ -20,14 +20,14 @@ export const PrayerPraisesSection: React.FC<PrayerPraisesSectionProps> = ({ prai
     <section className="py-12 border-t border-white/5">
       <div className="mb-8">
         <span className="text-xs font-bold uppercase tracking-widest text-amber-500 flex items-center gap-1.5 mb-2">
-          <Sparkles className="w-3.5 h-3.5" />
-          Mural de Gratidão
+          <HeartHandshake className="w-3.5 h-3.5" />
+          Ações de Graças
         </span>
         <h2 className="text-2xl md:text-3xl font-serif font-bold text-white">
-          Orações Respondidas & Testemunhos
+          Ações de Graças & Providência Divina
         </h2>
-        <p className="text-stone-400 text-sm mt-1">
-          "Celebrai com júbilo ao Senhor... porque o Senhor é bom, a sua misericórdia dura para sempre."
+        <p className="text-stone-300 text-sm mt-1">
+          "Em tudo dai graças, porque esta é a vontade de Deus em Cristo Jesus para convosco." (1 Tessalonicenses 5:18)
         </p>
       </div>
 

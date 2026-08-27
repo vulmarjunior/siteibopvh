@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Shield, Flame, Users, Calendar, Sparkles, Loader2, HeartHandshake } from 'lucide-react';
+import { Shield, BookOpen, Users, Calendar, HeartHandshake, Loader2 } from 'lucide-react';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import SentinelWatchTower from '../../components/relogio/SentinelWatchTower';
@@ -84,7 +84,7 @@ const RelogioPage: React.FC = () => {
 
   useEffect(() => {
     fetchAllData();
-    const interval = setInterval(fetchAllData, 60000); // Atualiza a cada 1 minuto
+    const interval = setInterval(fetchAllData, 60000);
     return () => clearInterval(interval);
   }, [fetchAllData]);
 
@@ -105,8 +105,8 @@ const RelogioPage: React.FC = () => {
 
         <div className="container mx-auto px-4 relative z-10 text-center">
           <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold uppercase tracking-[0.25em] text-xs mb-5 animate-fade-in shadow-sm">
-            <Flame className="w-4 h-4 text-amber-500 animate-pulse" />
-            Vigília Contínua dos Sentinelas
+            <HeartHandshake className="w-4 h-4 text-amber-500" />
+            Ministério de Oração & Intercessão
           </span>
 
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-serif font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white via-amber-100 to-amber-500/60 tracking-tight">
@@ -114,9 +114,9 @@ const RelogioPage: React.FC = () => {
           </h1>
 
           <p className="text-stone-300 max-w-2xl mx-auto text-base md:text-lg leading-relaxed mb-10">
-            "Sobre os teus muros, ó Jerusalém, pus guardas, que todo o dia e toda a noite jamais se calarão; vós, os que fareis lembrado o Senhor, não descanseis."
+            "Perseverai na oração, vigiando com ações de graças. Suplicai, ao mesmo tempo, também por nós, para que Deus nos abra porta à palavra."
             <br />
-            <span className="text-amber-400/90 font-serif italic text-sm md:text-base">— Isaías 62:6</span>
+            <span className="text-amber-400 font-serif italic text-sm md:text-base">— Colossenses 4:2-3</span>
           </p>
 
           {/* Cards de Métricas Vivas */}
@@ -136,36 +136,36 @@ const RelogioPage: React.FC = () => {
               <div className="p-4 md:p-5 rounded-2xl bg-stone-850/80 border border-white/5 shadow-lg backdrop-blur-sm">
                 <div className="flex items-center justify-center gap-1.5 text-amber-400 text-xs uppercase tracking-wider font-bold mb-1">
                   <Users className="w-3.5 h-3.5" />
-                  Sentinelas
+                  Intercessores
                 </div>
                 <div className="text-2xl md:text-3xl font-serif font-bold text-white">
                   {monthData.totalSentinels}
                 </div>
-                <div className="text-[11px] text-stone-400 mt-1">na brecha</div>
+                <div className="text-[11px] text-stone-400 mt-1">cadastrados</div>
               </div>
 
               <div className="p-4 md:p-5 rounded-2xl bg-stone-850/80 border border-white/5 shadow-lg backdrop-blur-sm">
                 <div className="flex items-center justify-center gap-1.5 text-amber-400 text-xs uppercase tracking-wider font-bold mb-1">
                   <Shield className="w-3.5 h-3.5" />
-                  Vigília de Hoje
+                  Escala de Hoje
                 </div>
                 <div className="text-2xl md:text-3xl font-serif font-bold text-white">
                   Dia {monthData.currentDayOfMonth}
                 </div>
                 <div className="text-[11px] text-stone-400 mt-1">
-                  {monthData.todayHandoversCount > 0 ? '🔥 Guarda Cumprida' : '⏳ Em Andamento'}
+                  {monthData.todayHandoversCount > 0 ? '✓ Oração Registrada' : '⏳ Em Andamento'}
                 </div>
               </div>
 
               <div className="p-4 md:p-5 rounded-2xl bg-stone-850/80 border border-white/5 shadow-lg backdrop-blur-sm">
                 <div className="flex items-center justify-center gap-1.5 text-amber-400 text-xs uppercase tracking-wider font-bold mb-1">
-                  <HeartHandshake className="w-3.5 h-3.5" />
+                  <BookOpen className="w-3.5 h-3.5" />
                   Capacidade
                 </div>
                 <div className="text-2xl md:text-3xl font-serif font-bold text-white">
                   {monthData.capacity}
                 </div>
-                <div className="text-[11px] text-stone-400 mt-1">sentinelas/dia</div>
+                <div className="text-[11px] text-stone-400 mt-1">irmãos/dia</div>
               </div>
             </div>
           )}
@@ -178,19 +178,19 @@ const RelogioPage: React.FC = () => {
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <Loader2 className="w-10 h-10 text-amber-500 animate-spin" />
             <p className="text-stone-400 text-xs uppercase tracking-widest font-bold">
-              Carregando a Torre dos Sentinelas...
+              Carregando a Escala de Oração...
             </p>
           </div>
         ) : (
           <>
-            {/* 1. Painel da Torre de Guarda de Hoje & Bastão */}
+            {/* 1. Painel de Intercessores de Hoje & Transmissão Fraterna */}
             <SentinelWatchTower
               todayData={towerData ? towerData.today : null}
               recentHandovers={towerData ? towerData.recentHandovers : []}
               onOpenHandoverModal={() => setIsHandoverModalOpen(true)}
             />
 
-            {/* 2. Motivos de Oração da Semana (Mural Vivo com 'Já Orei') */}
+            {/* 2. Guia Pastoral de Oração da Semana */}
             {topics.length > 0 && (
               <PrayerTopicsSection
                 topics={topics}
@@ -208,7 +208,7 @@ const RelogioPage: React.FC = () => {
               />
             )}
 
-            {/* 4. Mural de Gratidão e Respostas de Oração */}
+            {/* 4. Ações de Graças & Providência Divina */}
             {praises.length > 0 && (
               <PrayerPraisesSection praises={praises} />
             )}
