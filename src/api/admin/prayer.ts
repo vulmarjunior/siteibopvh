@@ -37,27 +37,71 @@ export function createAdminPrayerRouter(prisma: PrismaClient) {
   });
 
   // ==========================================
-  // 1. GESTÃO DOS SENTINELAS (DIAS DO MÊS)
+  // 1. GESTÃO DOS INTERCESSORES (DIAS DA SEMANA)
   // ==========================================
   router.get('/sentinels', async (req: AdminAuthenticatedRequest, res) => {
-    const day = typeof req.query.day === 'string' ? Number.parseInt(req.query.day, 10) : null;
+    const dayOfWeek = typeof req.query.dayOfWeek === 'string' ? Number.parseInt(req.query.dayOfWeek, 10) : null;
     const where: any = { active: true, cancelledAt: null };
-    if (day && Number.isInteger(day) && day >= 1 && day <= 31) {
-      where.dayOfMonth = day;
+    if (dayOfWeek !== null && Number.isInteger(dayOfWeek) && dayOfWeek >= 0 && dayOfWeek <= 6) {
+      where.dayOfWeek = dayOfWeek;
     }
 
     const sentinels = await prisma.prayerSentinel.findMany({
       where,
-      orderBy: [{ dayOfMonth: 'asc' }, { createdAt: 'asc' }],
+      orderBy: [{ dayOfWeek: 'asc' }, { createdAt: 'asc' }],
     });
     res.json(sentinels);
   });
 
+  // Cadastro Rápido Pastoral (Culto de Oração / Mesa de Escalação)
+  router.post('/sentinels/quick-add', async (req: AdminAuthenticatedRequest, res) => {
+    const dayOfWeek = Number.parseInt(String(req.body?.dayOfWeek), 10);
+    const name = String(req.body?.name ?? '').trim();
+    const email = typeof req.body?.email === 'string' && req.body.email.trim() ? req.body.email.trim().toLowerCase() : null;
+    const phone = typeof req.body?.phone === 'string' && req.body.phone.trim() ? req.body.phone.trim() : null;
+
+    if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) {
+      return res.status(400).json({ error: 'Dia da semana inválido (0 a 6).' });
+    }
+    if (name.length < 2 || name.length > 120) {
+      return res.status(400).json({ error: 'Informe o nome do intercessor, família ou ministério.' });
+    }
+
+    try {
+      const sentinel = await prisma.prayerSentinel.create({
+        data: {
+          dayOfWeek,
+          name,
+          email,
+          phone,
+          active: true,
+        },
+      });
+
+      const user = req.adminUser!;
+      await prisma.curadoriaAuditoria.create({
+        data: {
+          usuarioId: user.id,
+          usuarioEmail: user.email,
+          acao: 'CRIAR_INTERCESSOR_ADMIN',
+          entidade: 'PrayerSentinel',
+          entidadeId: String(sentinel.id),
+          dados: { name, dayOfWeek, email },
+        },
+      });
+
+      res.status(201).json(sentinel);
+    } catch (error) {
+      console.error('Erro ao adicionar intercessor via admin:', error);
+      res.status(500).json({ error: 'Falha ao cadastrar intercessor' });
+    }
+  });
+
   router.delete('/sentinels/:id', async (req: AdminAuthenticatedRequest, res) => {
     const id = idParam(req.params.id);
-    if (!id) return res.status(400).json({ error: 'Sentinela inválido' });
+    if (!id) return res.status(400).json({ error: 'Intercessor inválido' });
     const existing = await prisma.prayerSentinel.findUnique({ where: { id } });
-    if (!existing) return res.status(404).json({ error: 'Sentinela não encontrado' });
+    if (!existing) return res.status(404).json({ error: 'Intercessor não encontrado' });
 
     await prisma.prayerSentinel.update({
       where: { id },
@@ -69,10 +113,10 @@ export function createAdminPrayerRouter(prisma: PrismaClient) {
       data: {
         usuarioId: user.id,
         usuarioEmail: user.email,
-        acao: 'DESATIVAR_SENTINELA',
+        acao: 'DESATIVAR_INTERCESSOR',
         entidade: 'PrayerSentinel',
         entidadeId: String(id),
-        dados: { name: existing.name, dayOfMonth: existing.dayOfMonth },
+        dados: { name: existing.name, dayOfWeek: existing.dayOfWeek },
       },
     });
     res.json({ success: true });

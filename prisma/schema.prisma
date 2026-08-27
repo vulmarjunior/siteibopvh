@@ -59,28 +59,32 @@ model PrayerTheme {
 
 model PrayerSentinel {
   id          Int       @id @default(autoincrement())
-  dayOfMonth  Int       // 1 a 31
+  dayOfWeek   Int       @default(1) // 0=Domingo, 1=Segunda, 2=Terça, 3=Quarta, 4=Quinta, 5=Sexta, 6=Sábado
+  dayOfMonth  Int?      // 1 a 31 (retrocompatível)
   name        String
-  email       String
+  email       String?
   phone       String?
-  cancelToken String    @unique
+  cancelToken String?   @unique
   active      Boolean   @default(true)
   createdAt   DateTime  @default(now())
   cancelledAt DateTime?
 
+  @@index([dayOfWeek, active])
   @@index([dayOfMonth, active])
   @@index([email, active])
 }
 
 model PrayerHandover {
   id          Int      @id @default(autoincrement())
-  dayOfMonth  Int      // 1 a 31
+  dayOfWeek   Int      @default(1) // 0=Domingo, 1=Segunda, 2=Terça, 3=Quarta, 4=Quinta, 5=Sexta, 6=Sábado
+  dayOfMonth  Int?     // 1 a 31
   date        String   // "YYYY-MM-DD"
   authorName  String
   message     String?
   verse       String?
   completedAt DateTime @default(now())
 
+  @@index([date, dayOfWeek])
   @@index([date, dayOfMonth])
   @@index([completedAt])
 }

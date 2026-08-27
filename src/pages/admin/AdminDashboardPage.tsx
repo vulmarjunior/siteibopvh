@@ -145,14 +145,16 @@ export default function AdminDashboardPage() {
         const token = await getAdminAccessToken();
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        // Fetch prayer stats (Sentinelas do Mês)
-        const prayerRes = await fetch('/api/relogio/sentinelas/mes').catch(() => null);
+        // Fetch prayer stats (Escala Semanal)
+        const prayerRes = await fetch('/api/relogio/sentinelas/semana').catch(() => null);
         if (prayerRes && prayerRes.ok) {
           const prayerData = await prayerRes.json();
+          const coveredDays = Array.isArray(prayerData.days) ? prayerData.days.filter((d: any) => d.count > 0).length : 0;
+          const todayItem = Array.isArray(prayerData.days) ? prayerData.days.find((d: any) => d.isToday) : null;
           setStats((prev) => ({
             ...prev,
-            prayerCoverage: Math.round(((prayerData.coveredDaysCount || 0) / 31) * 100),
-            currentIntercessorsCount: prayerData.days?.[prayerData.currentDayOfMonth]?.count || 0,
+            prayerCoverage: Math.round(((coveredDays || 0) / 7) * 100),
+            currentIntercessorsCount: todayItem?.count || 0,
             monthlyIntercessors: prayerData.totalSentinels || 0,
           }));
         }

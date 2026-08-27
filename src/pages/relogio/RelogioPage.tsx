@@ -1,27 +1,30 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Shield, BookOpen, Users, Calendar, HeartHandshake, Loader2, UserPlus, ArrowDown } from 'lucide-react';
+import { Shield, BookOpen, Users, Calendar, HeartHandshake, Loader2, UserPlus } from 'lucide-react';
+import dayjs from 'dayjs';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import SentinelWatchTower from '../../components/relogio/SentinelWatchTower';
-import SentinelMonthGrid from '../../components/relogio/SentinelMonthGrid';
+import SentinelWeekGrid, { WeekDayItem } from '../../components/relogio/SentinelWeekGrid';
 import SentinelSubscribeModal from '../../components/relogio/SentinelSubscribeModal';
 import SentinelHandoverModal from '../../components/relogio/SentinelHandoverModal';
 import PrayerTopicsSection, { PrayerTopicItem } from '../../components/relogio/PrayerTopicsSection';
 import PrayerPraisesSection, { PrayerPraiseItem } from '../../components/relogio/PrayerPraisesSection';
 
-interface SentinelMonthData {
-  days: Record<number, { sentinels: { id: number; name: string }[]; count: number; isFull: boolean }>;
+interface WeekDataResponse {
+  days: WeekDayItem[];
   capacity: number;
-  currentDayOfMonth: number;
+  currentDayOfWeek: number;
   currentDateStr: string;
+  startDate: string;
+  endDate: string;
+  formattedRange: string;
   totalSentinels: number;
-  coveredDaysCount: number;
-  todayHandoversCount: number;
 }
 
 interface WatchTowerData {
   today: {
-    dayOfMonth: number;
+    dayOfWeek: number;
+    dayName: string;
     dateStr: string;
     formattedDate: string;
     sentinels: { id: number; name: string }[];
@@ -30,7 +33,7 @@ interface WatchTowerData {
   };
   recentHandovers: {
     id: number;
-    dayOfMonth: number;
+    dayOfWeek: number;
     date: string;
     authorName: string;
     message: string | null;
@@ -41,47 +44,52 @@ interface WatchTowerData {
 
 const RelogioPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
-  const [monthData, setMonthData] = useState<SentinelMonthData | null>(null);
+  const [currentWeekStartDate, setCurrentWeekStartDate] = useState<string | null>(null);
+  const [weekData, setWeekData] = useState<WeekDataResponse | null>(null);
   const [towerData, setTowerData] = useState<WatchTowerData | null>(null);
   const [topics, setTopics] = useState<PrayerTopicItem[]>([]);
   const [praises, setPraises] = useState<PrayerPraiseItem[]>([]);
 
   // Estados de modais
   const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
-  const [selectedDayToSubscribe, setSelectedDayToSubscribe] = useState<number | null>(null);
+  const [selectedDayOfWeekToSubscribe, setSelectedDayOfWeekToSubscribe] = useState<number | null>(null);
   const [isHandoverModalOpen, setIsHandoverModalOpen] = useState(false);
+
+  const fetchWeekData = useCallback(async (startDateStr?: string | null) => {
+    try {
+      const url = startDateStr
+        ? `/api/relogio/sentinelas/semana?startDate=${startDateStr}`
+        : '/api/relogio/sentinelas/semana';
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        setWeekData(data);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar semana da escala:', error);
+    }
+  }, []);
 
   const fetchAllData = useCallback(async () => {
     try {
-      const [monthRes, towerRes, topicsRes, praisesRes] = await Promise.all([
-        fetch('/api/relogio/sentinelas/mes'),
-        fetch('/api/relogio/sentinelas/bastao-atual'),
-        fetch('/api/relogio/sentinelas/motivos'),
-        fetch('/api/relogio/sentinelas/testemunhos'),
+      await Promise.all([
+        fetchWeekData(currentWeekStartDate),
+        fetch('/api/relogio/sentinelas/bastao-atual')
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data) => data && setTowerData(data)),
+        fetch('/api/relogio/sentinelas/motivos')
+          .then((r) => (r.ok ? r.json() : []))
+          .then((data) => setTopics(data)),
+        fetch('/api/relogio/sentinelas/testemunhos')
+          .then((r) => (r.ok ? r.json() : []))
+          .then((data) => setPraises(data)),
       ]);
-
-      if (monthRes.ok) {
-        const data = await monthRes.json();
-        setMonthData(data);
-      }
-      if (towerRes.ok) {
-        const data = await towerRes.json();
-        setTowerData(data);
-      }
-      if (topicsRes.ok) {
-        const data = await topicsRes.json();
-        setTopics(data);
-      }
-      if (praisesRes.ok) {
-        const data = await praisesRes.json();
-        setPraises(data);
-      }
     } catch (error) {
       console.error('Erro ao carregar dados do Relógio de Oração:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentWeekStartDate, fetchWeekData]);
 
   useEffect(() => {
     fetchAllData();
@@ -89,8 +97,30 @@ const RelogioPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [fetchAllData]);
 
-  const handleOpenSubscribe = (day?: number) => {
-    setSelectedDayToSubscribe(day ?? (monthData?.currentDayOfMonth || 1));
+  // Navegação de Semanas
+  const handlePrevWeek = () => {
+    if (!weekData) return;
+    const prev = dayjs(weekData.startDate).subtract(7, 'day').format('YYYY-MM-DD');
+    setCurrentWeekStartDate(prev);
+    fetchWeekData(prev);
+  };
+
+  const handleNextWeek = () => {
+    if (!weekData) return;
+    const next = dayjs(weekData.startDate).add(7, 'day').format('YYYY-MM-DD');
+    setCurrentWeekStartDate(next);
+    fetchWeekData(next);
+  };
+
+  const handleCurrentWeek = () => {
+    setCurrentWeekStartDate(null);
+    fetchWeekData(null);
+  };
+
+  const handleOpenSubscribe = (dayOfWeek?: number) => {
+    setSelectedDayOfWeekToSubscribe(
+      typeof dayOfWeek === 'number' ? dayOfWeek : weekData?.currentDayOfWeek || 1
+    );
     setIsSubscribeModalOpen(true);
   };
 
@@ -106,6 +136,9 @@ const RelogioPage: React.FC = () => {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  const coveredDaysCount = weekData ? weekData.days.filter((d) => d.count > 0).length : 0;
+  const isCurrentWeek = weekData ? !currentWeekStartDate || weekData.startDate === dayjs().startOf('isoWeek').format('YYYY-MM-DD') : true;
 
   return (
     <div className="min-h-screen bg-stone-900 text-stone-100 font-sans selection:bg-amber-500 selection:text-stone-950">
@@ -139,7 +172,7 @@ const RelogioPage: React.FC = () => {
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm tracking-wide shadow-lg shadow-amber-500/20 active:scale-95 transition-all"
             >
               <UserPlus className="w-4 h-4" />
-              <span>Cadastrar-se na Escala Mensal</span>
+              <span>Cadastrar meu Dia de Oração</span>
             </button>
 
             <button
@@ -147,12 +180,12 @@ const RelogioPage: React.FC = () => {
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-stone-800 hover:bg-stone-750 border border-white/10 hover:border-amber-500/30 text-stone-200 font-bold text-sm tracking-wide transition-all"
             >
               <BookOpen className="w-4 h-4 text-amber-400" />
-              <span>Ver Motivos da Semana</span>
+              <span>Ver Guia de Motivos</span>
             </button>
           </div>
 
           {/* Cards de Métricas Vivas */}
-          {monthData && (
+          {weekData && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto">
               <div className="p-4 md:p-5 rounded-2xl bg-stone-850/80 border border-white/5 shadow-lg backdrop-blur-sm">
                 <div className="flex items-center justify-center gap-1.5 text-amber-400 text-xs uppercase tracking-wider font-bold mb-1">
@@ -160,9 +193,9 @@ const RelogioPage: React.FC = () => {
                   Dias Cobertos
                 </div>
                 <div className="text-2xl md:text-3xl font-serif font-bold text-white">
-                  {monthData.coveredDaysCount}/31
+                  {coveredDaysCount}/7
                 </div>
-                <div className="text-[11px] text-stone-400 mt-1">no mês</div>
+                <div className="text-[11px] text-stone-400 mt-1">na semana</div>
               </div>
 
               <div className="p-4 md:p-5 rounded-2xl bg-stone-850/80 border border-white/5 shadow-lg backdrop-blur-sm">
@@ -171,7 +204,7 @@ const RelogioPage: React.FC = () => {
                   Intercessores
                 </div>
                 <div className="text-2xl md:text-3xl font-serif font-bold text-white">
-                  {monthData.totalSentinels}
+                  {weekData.totalSentinels}
                 </div>
                 <div className="text-[11px] text-stone-400 mt-1">cadastrados</div>
               </div>
@@ -182,10 +215,10 @@ const RelogioPage: React.FC = () => {
                   Escala de Hoje
                 </div>
                 <div className="text-2xl md:text-3xl font-serif font-bold text-white">
-                  Dia {monthData.currentDayOfMonth}
+                  {towerData?.today?.dayName?.split('-')[0] || 'Hoje'}
                 </div>
                 <div className="text-[11px] text-stone-400 mt-1">
-                  {monthData.todayHandoversCount > 0 ? '✓ Oração Registrada' : '⏳ Em Andamento'}
+                  {towerData?.today?.isCompleted ? '✓ Oração Realizada' : '⏳ Em Andamento'}
                 </div>
               </div>
 
@@ -195,7 +228,7 @@ const RelogioPage: React.FC = () => {
                   Capacidade
                 </div>
                 <div className="text-2xl md:text-3xl font-serif font-bold text-white">
-                  {monthData.capacity}
+                  {weekData.capacity}
                 </div>
                 <div className="text-[11px] text-stone-400 mt-1">irmãos/dia</div>
               </div>
@@ -232,13 +265,17 @@ const RelogioPage: React.FC = () => {
               </div>
             )}
 
-            {/* 3. Grade dos 31 Dias do Mês */}
-            {monthData && (
-              <SentinelMonthGrid
-                days={monthData.days}
-                capacity={monthData.capacity}
-                currentDayOfMonth={monthData.currentDayOfMonth}
-                onSelectDayToSubscribe={(day) => handleOpenSubscribe(day)}
+            {/* 3. Grade dos 7 Dias da Semana com Navegação */}
+            {weekData && (
+              <SentinelWeekGrid
+                days={weekData.days}
+                capacity={weekData.capacity}
+                formattedRange={weekData.formattedRange}
+                isCurrentWeek={isCurrentWeek}
+                onPrevWeek={handlePrevWeek}
+                onNextWeek={handleNextWeek}
+                onCurrentWeek={handleCurrentWeek}
+                onSelectDayToSubscribe={(dayOfWeek) => handleOpenSubscribe(dayOfWeek)}
               />
             )}
 
@@ -253,9 +290,9 @@ const RelogioPage: React.FC = () => {
       {/* Modais */}
       {isSubscribeModalOpen && (
         <SentinelSubscribeModal
-          dayOfMonth={selectedDayToSubscribe}
-          daysData={monthData?.days}
-          capacity={monthData?.capacity || 4}
+          initialDayOfWeek={selectedDayOfWeekToSubscribe}
+          weekDaysData={weekData?.days}
+          capacity={weekData?.capacity || 4}
           onClose={() => setIsSubscribeModalOpen(false)}
           onSuccess={() => {
             setIsSubscribeModalOpen(false);
@@ -264,9 +301,9 @@ const RelogioPage: React.FC = () => {
         />
       )}
 
-      {isHandoverModalOpen && monthData && (
+      {isHandoverModalOpen && (
         <SentinelHandoverModal
-          currentDayOfMonth={monthData.currentDayOfMonth}
+          currentDayOfMonth={towerData?.today?.dayOfWeek || 1}
           onClose={() => setIsHandoverModalOpen(false)}
           onSuccess={() => {
             setIsHandoverModalOpen(false);

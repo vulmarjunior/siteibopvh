@@ -3,7 +3,9 @@ import { Shield, BookOpen, Users, CheckCircle2, MessageSquareQuote, HeartHandsha
 
 interface SentinelWatchTowerProps {
   todayData: {
-    dayOfMonth: number;
+    dayOfWeek?: number;
+    dayName?: string;
+    dayOfMonth?: number;
     formattedDate: string;
     sentinels: { id: number; name: string }[];
     handovers: { id: number; authorName: string; message: string | null; verse: string | null; completedAt: string }[];
@@ -11,7 +13,8 @@ interface SentinelWatchTowerProps {
   } | null;
   recentHandovers: {
     id: number;
-    dayOfMonth: number;
+    dayOfWeek?: number;
+    dayOfMonth?: number;
     date: string;
     authorName: string;
     message: string | null;
@@ -51,7 +54,7 @@ export const SentinelWatchTower: React.FC<SentinelWatchTowerProps> = ({
 
             <div>
               <h2 className="text-3xl md:text-4xl font-serif font-bold text-white tracking-tight">
-                Intercessores do Dia {todayData?.dayOfMonth || ''}
+                {todayData?.dayName ? `Intercessores de ${todayData.dayName}` : 'Intercessores de Hoje'}
               </h2>
               <p className="text-stone-300 text-sm md:text-base mt-2 leading-relaxed">
                 "Perseverai na oração, vigiando com ações de graças. Suplicai, ao mesmo tempo, também por nós, para que Deus nos abra porta à palavra."

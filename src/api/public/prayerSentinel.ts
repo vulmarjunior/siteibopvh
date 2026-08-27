@@ -5,12 +5,14 @@ import crypto from 'crypto';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
+import isoWeek from 'dayjs/plugin/isoWeek.js';
 import 'dayjs/locale/pt-br.js';
 import { consumeRateLimit } from '../../lib/server/rateLimit.js';
 import { isModulePublicOperationOpen } from '../admin/modules.js';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(isoWeek);
 
 const TZ = 'America/Porto_Velho';
 const escapeHtml = (value: unknown) =>
@@ -26,102 +28,123 @@ const escapeHtml = (value: unknown) =>
       })[character]!
   );
 
+const DAY_NAMES = [
+  'Domingo',
+  'Segunda-feira',
+  'Terça-feira',
+  'Quarta-feira',
+  'Quinta-feira',
+  'Sexta-feira',
+  'Sábado',
+];
+
 export function createPublicPrayerSentinelRouter(
   prisma: PrismaClient,
   getResend: () => Resend | null
 ) {
   const router = express.Router();
 
-  // Helper para obter o dia do mês atual no fuso de Porto Velho
-  const getChurchCurrentDay = () => {
+  // Helper para obter informações da data atual no fuso de Porto Velho
+  const getChurchCurrentInfo = () => {
     const now = dayjs().tz(TZ);
     return {
-      dayOfMonth: now.date(),
+      now,
+      dayOfWeek: now.day(), // 0 = Dom, 1 = Seg ... 6 = Sáb
       dateStr: now.format('YYYY-MM-DD'),
-      formattedDate: now.locale('pt-br').format('DD [de] MMMM'),
+      formattedDate: now.locale('pt-br').format('dddd, DD [de] MMMM'),
     };
   };
 
-  // 1. Obter a grade completa dos 31 dias do mês com sentinelas
-  router.get('/mes', async (_req, res) => {
+  // 1. Obter a grade dos 7 dias da semana (com navegação por startDate)
+  router.get('/semana', async (req, res) => {
     try {
-      const [sentinels, capacityConfig, handoversToday] = await Promise.all([
+      const churchNow = getChurchCurrentInfo();
+      const requestedDate = typeof req.query.startDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(req.query.startDate)
+        ? dayjs.tz(req.query.startDate, TZ)
+        : churchNow.now;
+
+      // Iniciar a semana na Segunda-feira (padrão brasileiro/eclesial de escala)
+      const startOfWeek = requestedDate.startOf('isoWeek'); // Segunda-feira
+      const endOfWeek = requestedDate.endOf('isoWeek'); // Domingo
+
+      const [sentinels, capacityConfig, weekHandovers] = await Promise.all([
         prisma.prayerSentinel.findMany({
           where: { active: true, cancelledAt: null },
           select: {
             id: true,
-            dayOfMonth: true,
+            dayOfWeek: true,
             name: true,
             createdAt: true,
           },
           orderBy: { createdAt: 'asc' },
         }),
         prisma.config.findUnique({ where: { key: 'sentinel_capacity' } }),
-        (async () => {
-          const { dateStr } = getChurchCurrentDay();
-          return prisma.prayerHandover.findMany({
-            where: { date: dateStr },
-            select: { id: true, authorName: true, completedAt: true },
-          });
-        })(),
+        prisma.prayerHandover.findMany({
+          where: {
+            date: {
+              gte: startOfWeek.format('YYYY-MM-DD'),
+              lte: endOfWeek.format('YYYY-MM-DD'),
+            },
+          },
+          select: { id: true, date: true, dayOfWeek: true, authorName: true, completedAt: true },
+        }),
       ]);
 
       const parsedCapacity = Number.parseInt(capacityConfig?.value || '4', 10);
       const capacity = Number.isInteger(parsedCapacity) && parsedCapacity > 0 ? parsedCapacity : 4;
 
-      // Agrupar sentinelas por dia (1 a 31)
-      const daysMap: Record<
-        number,
-        {
-          sentinels: { id: number; name: string }[];
-          count: number;
-          isFull: boolean;
-        }
-      > = {};
+      // Construir os 7 dias da semana (Segunda=1 a Domingo=0/7)
+      const days = [];
+      for (let i = 0; i < 7; i++) {
+        const currentDayDate = startOfWeek.add(i, 'day');
+        const dayOfWeekIndex = currentDayDate.day(); // 0 a 6
+        const dateStr = currentDayDate.format('YYYY-MM-DD');
 
-      for (let d = 1; d <= 31; d++) {
-        daysMap[d] = {
-          sentinels: [],
-          count: 0,
-          isFull: false,
-        };
+        // Filtrar intercessores alocados neste dia da semana
+        const daySentinels = sentinels
+          .filter((s) => s.dayOfWeek === dayOfWeekIndex)
+          .map((s) => ({ id: s.id, name: s.name.split(' ')[0] || s.name }));
+
+        // Handovers completados nesta data específica da semana
+        const dayHandovers = weekHandovers.filter((h) => h.date === dateStr);
+
+        const isToday = dateStr === churchNow.dateStr;
+        const isPast = dateStr < churchNow.dateStr;
+
+        days.push({
+          dayOfWeek: dayOfWeekIndex,
+          dayName: DAY_NAMES[dayOfWeekIndex],
+          shortDayName: DAY_NAMES[dayOfWeekIndex]?.split('-')[0] || '',
+          dateStr,
+          formattedDate: currentDayDate.locale('pt-br').format('DD/MMM'),
+          dayNumber: currentDayDate.date(),
+          sentinels: daySentinels,
+          count: daySentinels.length,
+          isFull: daySentinels.length >= capacity,
+          openSlots: Math.max(0, capacity - daySentinels.length),
+          isToday,
+          isPast,
+          isCompleted: dayHandovers.length > 0,
+        });
       }
-
-      sentinels.forEach((s) => {
-        if (daysMap[s.dayOfMonth]) {
-          // Apenas primeiro nome ou nome curto para privacidade na visão pública
-          const firstName = s.name.split(' ')[0] || s.name;
-          daysMap[s.dayOfMonth].sentinels.push({ id: s.id, name: firstName });
-          daysMap[s.dayOfMonth].count++;
-        }
-      });
-
-      for (let d = 1; d <= 31; d++) {
-        daysMap[d].isFull = daysMap[d].count >= capacity;
-      }
-
-      const churchNow = getChurchCurrentDay();
-
-      // Estatísticas gerais do mês
-      const totalSentinels = sentinels.length;
-      const coveredDaysCount = Object.values(daysMap).filter((d) => d.count > 0).length;
 
       res.json({
-        days: daysMap,
+        days,
         capacity,
-        currentDayOfMonth: churchNow.dayOfMonth,
+        currentDayOfWeek: churchNow.dayOfWeek,
         currentDateStr: churchNow.dateStr,
-        totalSentinels,
-        coveredDaysCount,
-        todayHandoversCount: handoversToday.length,
+        startDate: startOfWeek.format('YYYY-MM-DD'),
+        endDate: endOfWeek.format('YYYY-MM-DD'),
+        formattedRange: `${startOfWeek.locale('pt-br').format('DD [de] MMMM')} a ${endOfWeek.locale('pt-br').format('DD [de] MMMM [de] YYYY')}`,
+        totalSentinels: sentinels.length,
       });
     } catch (error) {
-      console.error('Erro ao buscar dados do mês dos sentinelas:', error);
-      res.status(500).json({ error: 'Falha ao carregar grade de sentinelas' });
+      console.error('Erro ao buscar semana da escala:', error);
+      res.status(500).json({ error: 'Falha ao carregar escala semanal' });
     }
   });
 
-  // 2. Inscrever-se como sentinela em um dia do mês
+  // 2. Inscrever-se como intercessor recorrente em um dia da semana
   router.post('/inscrever', async (req, res) => {
     const rateLimit = await consumeRateLimit(prisma, req, {
       scope: 'sentinel-subscription',
@@ -137,13 +160,13 @@ export function createPublicPrayerSentinelRouter(
       return res.status(410).json({ error: 'As inscrições do Relógio de Oração estão temporariamente pausadas.' });
     }
 
-    const dayOfMonth = Number.parseInt(String(req.body?.dayOfMonth), 10);
+    const dayOfWeek = Number.parseInt(String(req.body?.dayOfWeek), 10);
     const name = String(req.body?.name ?? '').trim();
     const email = String(req.body?.email ?? '').trim().toLowerCase();
     const phone = typeof req.body?.phone === 'string' ? req.body.phone.trim() : null;
 
-    if (!Number.isInteger(dayOfMonth) || dayOfMonth < 1 || dayOfMonth > 31) {
-      return res.status(400).json({ error: 'Dia do mês inválido (deve ser entre 1 e 31).' });
+    if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) {
+      return res.status(400).json({ error: 'Dia da semana inválido (deve ser entre 0 e 6).' });
     }
     if (name.length < 2 || name.length > 120) {
       return res.status(400).json({ error: 'Por favor, informe seu nome completo.' });
@@ -154,32 +177,33 @@ export function createPublicPrayerSentinelRouter(
 
     try {
       const cancelToken = crypto.randomBytes(32).toString('hex');
+      const dayName = DAY_NAMES[dayOfWeek];
 
       const sentinel = await prisma.$transaction(async (tx) => {
         const capacityConfig = await tx.config.findUnique({ where: { key: 'sentinel_capacity' } });
         const parsedCapacity = Number.parseInt(capacityConfig?.value || '4', 10);
         const capacity = Number.isInteger(parsedCapacity) && parsedCapacity > 0 ? parsedCapacity : 4;
 
-        // Verificar vagas no dia
+        // Verificar vagas no dia da semana
         const existingCount = await tx.prayerSentinel.count({
-          where: { dayOfMonth, active: true, cancelledAt: null },
+          where: { dayOfWeek, active: true, cancelledAt: null },
         });
 
         if (existingCount >= capacity) {
-          throw Object.assign(new Error(`O Dia ${dayOfMonth} já atingiu a capacidade máxima de sentinelas.`), { statusCode: 409 });
+          throw Object.assign(new Error(`${dayName} já atingiu a capacidade máxima de intercessores.`), { statusCode: 409 });
         }
 
-        // Verificar duplicata (mesmo email no mesmo dia)
+        // Verificar duplicata (mesmo email no mesmo dia da semana)
         const duplicate = await tx.prayerSentinel.findFirst({
-          where: { dayOfMonth, email, active: true, cancelledAt: null },
+          where: { dayOfWeek, email, active: true, cancelledAt: null },
         });
         if (duplicate) {
-          throw Object.assign(new Error(`Você já está cadastrado(a) como sentinela no Dia ${dayOfMonth}.`), { statusCode: 400 });
+          throw Object.assign(new Error(`Você já está cadastrado(a) para orar toda(o) ${dayName}.`), { statusCode: 400 });
         }
 
         return tx.prayerSentinel.create({
           data: {
-            dayOfMonth,
+            dayOfWeek,
             name,
             email,
             phone,
@@ -189,7 +213,7 @@ export function createPublicPrayerSentinelRouter(
         });
       });
 
-      // Envio de e-mail de confirmação via Resend (não bloqueia resposta em caso de falha)
+      // Envio de e-mail de confirmação via Resend
       const resend = getResend();
       const appUrl = process.env.APP_URL || 'https://ibopvh.com.br';
       const cancelUrl = `${appUrl}/relogio?cancelToken=${cancelToken}`;
@@ -199,7 +223,7 @@ export function createPublicPrayerSentinelRouter(
           await resend.emails.send({
             from: 'Relógio de Oração IBO <contato@ibopvh.com.br>',
             to: [email],
-            subject: `Escala de Intercessão: Dia ${dayOfMonth} — Igreja Batista Olaria`,
+            subject: `Escala de Intercessão: Toda ${dayName} — Igreja Batista Olaria`,
             html: `
               <div style="font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #1c1917; color: #f5f5f4; border-radius: 16px; overflow: hidden; border: 1px solid rgba(245, 158, 11, 0.2);">
                 <div style="background: linear-gradient(135deg, #1c1917 0%, #292524 100%); padding: 36px 28px; text-align: center; border-bottom: 2px solid #f59e0b;">
@@ -209,10 +233,10 @@ export function createPublicPrayerSentinelRouter(
                 </div>
                 <div style="padding: 28px; line-height: 1.6;">
                   <p style="font-size: 16px; margin-top: 0;">Graça e paz, <strong>${escapeHtml(name)}</strong>!</p>
-                  <p>Seu compromisso na escala mensal de intercessão da nossa igreja foi registrado com sucesso.</p>
+                  <p>Seu compromisso na escala semanal de intercessão da nossa igreja foi registrado com sucesso.</p>
                   <div style="background: rgba(245, 158, 11, 0.08); border-left: 4px solid #f59e0b; padding: 18px; border-radius: 8px; margin: 24px 0;">
                     <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #f59e0b; font-weight: bold;">Seu Dia de Oração</div>
-                    <div style="font-size: 22px; font-weight: bold; color: #ffffff; margin-top: 4px;">Todo Dia ${dayOfMonth} de cada mês</div>
+                    <div style="font-size: 22px; font-weight: bold; color: #ffffff; margin-top: 4px;">Toda ${dayName}</div>
                     <p style="font-size: 13px; color: #a8a29e; margin: 6px 0 0 0;">Ao longo deste dia, em seus momentos devocionais, dedique-se a orar pela fidelidade doutrinária, pela pregação da Palavra, pelos nossos missionários e pelas famílias da congregação.</p>
                   </div>
                   <p style="font-size: 14px; color: #d6d3d1;">No seu dia de intercessão, acesse o portal da igreja para consultar o <strong>Guia Pastoral de Oração da Semana</strong> e registrar a realização da sua oração.</p>
@@ -234,7 +258,8 @@ export function createPublicPrayerSentinelRouter(
         success: true,
         sentinel: {
           id: sentinel.id,
-          dayOfMonth: sentinel.dayOfMonth,
+          dayOfWeek: sentinel.dayOfWeek,
+          dayName,
           name: sentinel.name,
         },
       });
@@ -285,7 +310,7 @@ export function createPublicPrayerSentinelRouter(
       return res.status(429).json({ error: 'Você acabou de registrar uma oração. Aguarde um momento.' });
     }
 
-    const churchNow = getChurchCurrentDay();
+    const churchNow = getChurchCurrentInfo();
     const authorName = String(req.body?.authorName ?? '').trim();
     const message = typeof req.body?.message === 'string' ? req.body.message.trim() : null;
     const verse = typeof req.body?.verse === 'string' ? req.body.verse.trim() : null;
@@ -303,7 +328,7 @@ export function createPublicPrayerSentinelRouter(
     try {
       const handover = await prisma.prayerHandover.create({
         data: {
-          dayOfMonth: churchNow.dayOfMonth,
+          dayOfWeek: churchNow.dayOfWeek,
           date: churchNow.dateStr,
           authorName,
           message,
@@ -311,12 +336,13 @@ export function createPublicPrayerSentinelRouter(
         },
       });
 
-      // Calcular o próximo dia (1 a 31)
-      const nextDay = churchNow.dayOfMonth === 31 ? 1 : churchNow.dayOfMonth + 1;
+      // Calcular o próximo dia da semana (0 a 6)
+      const nextDayOfWeek = (churchNow.dayOfWeek + 1) % 7;
+      const nextDayName = DAY_NAMES[nextDayOfWeek];
 
-      // Buscar os intercessores do próximo dia para notificação
+      // Buscar os intercessores do próximo dia da semana que possuem e-mail
       const nextSentinels = await prisma.prayerSentinel.findMany({
-        where: { dayOfMonth: nextDay, active: true, cancelledAt: null },
+        where: { dayOfWeek: nextDayOfWeek, active: true, cancelledAt: null, email: { not: null } },
         select: { email: true, name: true },
       });
 
@@ -324,25 +350,26 @@ export function createPublicPrayerSentinelRouter(
       const resend = getResend();
       const appUrl = process.env.APP_URL || 'https://ibopvh.com.br';
 
-      if (resend && nextSentinels.length > 0) {
-        const nextEmails = nextSentinels.map((s) => s.email);
+      const validEmails = nextSentinels.map((s) => s.email).filter(Boolean) as string[];
+
+      if (resend && validEmails.length > 0) {
         try {
           await resend.emails.send({
             from: 'Relógio de Oração IBO <contato@ibopvh.com.br>',
-            to: nextEmails,
-            subject: `Escala de Intercessão: Dia ${nextDay} — Igreja Batista Olaria`,
+            to: validEmails,
+            subject: `Escala de Intercessão: ${nextDayName} — Igreja Batista Olaria`,
             html: `
               <div style="font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #1c1917; color: #f5f5f4; border-radius: 16px; overflow: hidden; border: 1px solid rgba(245, 158, 11, 0.2);">
                 <div style="background: linear-gradient(135deg, #1c1917 0%, #292524 100%); padding: 32px 24px; text-align: center; border-bottom: 2px solid #f59e0b;">
                   <span style="color: #f59e0b; text-transform: uppercase; letter-spacing: 3px; font-size: 11px; font-weight: bold;">Comunhão dos Intercessores</span>
-                  <h1 style="color: #ffffff; font-family: 'Cinzel', Georgia, serif; font-size: 22px; margin: 10px 0 4px 0;">Escala de Oração — Dia ${nextDay}</h1>
+                  <h1 style="color: #ffffff; font-family: 'Cinzel', Georgia, serif; font-size: 22px; margin: 10px 0 4px 0;">Escala de Oração — ${nextDayName}</h1>
                   <p style="color: #a8a29e; font-size: 14px; margin: 0;">"Com toda oração e súplica, orando em todo tempo..." — Ef 6:18</p>
                 </div>
                 <div style="padding: 28px; line-height: 1.6;">
-                  <p style="font-size: 15px; margin-top: 0;">Irmãos da escala do <strong>Dia ${nextDay}</strong>,</p>
-                  <p>O irmão <strong>${escapeHtml(authorName)}</strong> concluiu seus momentos de oração no Dia ${churchNow.dayOfMonth} e compartilhou a seguinte saudação fraterna:</p>
+                  <p style="font-size: 15px; margin-top: 0;">Irmãos da escala de <strong>${nextDayName}</strong>,</p>
+                  <p>O irmão <strong>${escapeHtml(authorName)}</strong> concluiu seus momentos de oração hoje e compartilhou a seguinte saudação fraterna:</p>
                   <div style="background: rgba(245, 158, 11, 0.08); border-left: 4px solid #f59e0b; padding: 18px; border-radius: 8px; margin: 20px 0;">
-                    <p style="font-style: italic; color: #f5f5f4; font-size: 15px; margin: 0;">"${escapeHtml(message || 'Intercedemos com alegria e gratidão pelo rebanho e pela proclamação do Evangelho. Que o Senhor fortaleça a escala de hoje!')}"</p>
+                    <p style="font-style: italic; color: #f5f5f4; font-size: 15px; margin: 0;">"${escapeHtml(message || 'Intercedemos com alegria e gratidão pelo rebanho e pela proclamação do Evangelho. Que o Senhor fortaleça a escala de amanhã!')}"</p>
                     ${verse ? `<p style="color: #f59e0b; font-size: 13px; font-weight: bold; margin: 10px 0 0 0;">— ${escapeHtml(verse)}</p>` : ''}
                   </div>
                   <p style="font-size: 14px; color: #d6d3d1;">Acesse o portal da igreja para consultar os <strong>Motivos de Oração da Semana</strong> e permanecer perseverante em súplicas e ações de graças.</p>
@@ -361,24 +388,24 @@ export function createPublicPrayerSentinelRouter(
       res.status(201).json({
         success: true,
         handover,
-        nextDay,
-        notifiedSentinelsCount: nextSentinels.length,
+        nextDayOfWeek,
+        nextDayName,
+        notifiedSentinelsCount: validEmails.length,
       });
     } catch (error) {
-      console.error('Erro ao passar o bastão:', error);
-      res.status(500).json({ error: 'Falha ao registrar passagem do bastão' });
+      console.error('Erro ao registrar transmissão de oração:', error);
+      res.status(500).json({ error: 'Falha ao registrar oração' });
     }
   });
 
-  // 5. Obter o estado atual da torre de guarda (hoje e ontem)
+  // 5. Obter o estado atual da intercessão (hoje)
   router.get('/bastao-atual', async (_req, res) => {
     try {
-      const churchNow = getChurchCurrentDay();
-      const yesterdayDate = dayjs().tz(TZ).subtract(1, 'day').format('YYYY-MM-DD');
+      const churchNow = getChurchCurrentInfo();
 
       const [todaySentinels, todayHandovers, recentHandovers] = await Promise.all([
         prisma.prayerSentinel.findMany({
-          where: { dayOfMonth: churchNow.dayOfMonth, active: true, cancelledAt: null },
+          where: { dayOfWeek: churchNow.dayOfWeek, active: true, cancelledAt: null },
           select: { id: true, name: true },
         }),
         prisma.prayerHandover.findMany({
@@ -393,7 +420,8 @@ export function createPublicPrayerSentinelRouter(
 
       res.json({
         today: {
-          dayOfMonth: churchNow.dayOfMonth,
+          dayOfWeek: churchNow.dayOfWeek,
+          dayName: DAY_NAMES[churchNow.dayOfWeek],
           dateStr: churchNow.dateStr,
           formattedDate: churchNow.formattedDate,
           sentinels: todaySentinels.map((s) => ({ id: s.id, name: s.name.split(' ')[0] || s.name })),
@@ -403,8 +431,8 @@ export function createPublicPrayerSentinelRouter(
         recentHandovers,
       });
     } catch (error) {
-      console.error('Erro ao buscar bastão atual:', error);
-      res.status(500).json({ error: 'Falha ao carregar estado da torre de guarda' });
+      console.error('Erro ao buscar estado da intercessão:', error);
+      res.status(500).json({ error: 'Falha ao carregar estado de hoje' });
     }
   });
 
@@ -422,7 +450,7 @@ export function createPublicPrayerSentinelRouter(
     }
   });
 
-  // 7. Registrar clique em "Já orei por este motivo"
+  // 7. Registrar clique em "Intercedi por este motivo"
   router.post('/motivos/:id/orar', async (req, res) => {
     const id = Number.parseInt(req.params.id, 10);
     if (!Number.isInteger(id) || id <= 0) {
@@ -435,7 +463,7 @@ export function createPublicPrayerSentinelRouter(
       windowMs: 60 * 1000,
     });
     if (!rateLimit.allowed) {
-      return res.status(429).json({ error: 'Obrigado por suas orações! Registrado com sucesso.' });
+      return res.status(429).json({ error: 'Intercessão já registrada. Obrigado por suas orações!' });
     }
 
     try {
@@ -451,7 +479,7 @@ export function createPublicPrayerSentinelRouter(
     }
   });
 
-  // 8. Mural de Testemunhos / Orações Respondidas
+  // 8. Mural de Ações de Graças / Testemunhos
   router.get('/testemunhos', async (_req, res) => {
     try {
       const praises = await prisma.prayerPraise.findMany({

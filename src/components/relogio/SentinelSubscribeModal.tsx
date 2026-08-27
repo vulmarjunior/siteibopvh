@@ -1,23 +1,35 @@
 import React, { useState } from 'react';
 import { X, HeartHandshake, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
-import MonthCalendarPicker from './MonthCalendarPicker';
+import WeekDayPicker from './WeekDayPicker';
 
 interface SentinelSubscribeModalProps {
-  dayOfMonth: number | null;
-  daysData?: Record<number, { sentinels: { id: number; name: string }[]; count: number; isFull: boolean }>;
+  initialDayOfWeek: number | null;
+  weekDaysData?: { dayOfWeek: number; dayName: string; count: number; openSlots: number; isFull: boolean }[];
   capacity?: number;
   onClose: () => void;
   onSuccess: () => void;
 }
 
+const DAY_NAMES: Record<number, string> = {
+  0: 'Domingo',
+  1: 'Segunda-feira',
+  2: 'Terça-feira',
+  3: 'Quarta-feira',
+  4: 'Quinta-feira',
+  5: 'Sexta-feira',
+  6: 'Sábado',
+};
+
 export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
-  dayOfMonth: initialDay,
-  daysData = {},
+  initialDayOfWeek,
+  weekDaysData = [],
   capacity = 4,
   onClose,
   onSuccess,
 }) => {
-  const [selectedDay, setSelectedDay] = useState<number>(initialDay || 1);
+  const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<number>(
+    initialDayOfWeek !== null && initialDayOfWeek >= 0 && initialDayOfWeek <= 6 ? initialDayOfWeek : 1
+  );
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -35,7 +47,7 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          dayOfMonth: selectedDay,
+          dayOfWeek: selectedDayOfWeek,
           name,
           email,
           phone: phone.trim() || undefined,
@@ -78,7 +90,7 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
               Compromisso Registrado!
             </h3>
             <p className="text-stone-300 text-sm max-w-sm mx-auto leading-relaxed">
-              Você agora faz parte da escala de intercessão do <strong>Dia {selectedDay}</strong> de cada mês. Enviamos a confirmação para o seu e-mail.
+              Você agora faz parte da escala de intercessão de <strong>Toda(o) {DAY_NAMES[selectedDayOfWeek]}</strong>. Enviamos a confirmação para o seu e-mail.
             </p>
           </div>
         ) : (
@@ -99,7 +111,7 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
             </div>
 
             <p className="text-stone-300 text-sm leading-relaxed">
-              Selecione no calendário o dia do mês para o seu compromisso de oração pela nossa congregação:
+              Escolha um dia da semana para o seu compromisso recorrente de oração pela nossa congregação:
             </p>
 
             {error && (
@@ -109,11 +121,11 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
               </div>
             )}
 
-            {/* Calendário Visual do Mês */}
-            <MonthCalendarPicker
-              selectedDay={selectedDay}
-              onSelectDay={(day) => setSelectedDay(day)}
-              daysData={daysData}
+            {/* Seletor dos 7 Dias da Semana */}
+            <WeekDayPicker
+              selectedDayOfWeek={selectedDayOfWeek}
+              onSelectDayOfWeek={(day) => setSelectedDayOfWeek(day)}
+              weekDaysData={weekDaysData}
               capacity={capacity}
             />
 
@@ -174,7 +186,7 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
                 ) : (
                   <>
                     <HeartHandshake className="w-4 h-4" />
-                    <span>Confirmar Intercessão no Dia {selectedDay}</span>
+                    <span>Confirmar Intercessão: Toda(o) {DAY_NAMES[selectedDayOfWeek]}</span>
                   </>
                 )}
               </button>
