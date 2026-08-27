@@ -9,6 +9,7 @@ import SentinelSubscribeModal from '../../components/relogio/SentinelSubscribeMo
 import SentinelHandoverModal from '../../components/relogio/SentinelHandoverModal';
 import PrayerTopicsSection, { PrayerTopicItem } from '../../components/relogio/PrayerTopicsSection';
 import PrayerPraisesSection, { PrayerPraiseItem } from '../../components/relogio/PrayerPraisesSection';
+import PrayerOccupancyChart from '../../components/relogio/PrayerOccupancyChart';
 
 interface WeekDataResponse {
   days: WeekDayItem[];
@@ -279,7 +280,16 @@ const RelogioPage: React.FC = () => {
               />
             )}
 
-            {/* 4. Ações de Graças & Providência Divina */}
+            {/* 4. Gráfico de Ocupação & Termômetro da Semana */}
+            {weekData && (
+              <PrayerOccupancyChart
+                days={weekData.days}
+                capacity={weekData.capacity}
+                onSelectDayToSubscribe={(dayOfWeek) => handleOpenSubscribe(dayOfWeek)}
+              />
+            )}
+
+            {/* 5. Ações de Graças & Providência Divina */}
             {praises.length > 0 && (
               <PrayerPraisesSection praises={praises} />
             )}

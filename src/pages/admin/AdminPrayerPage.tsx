@@ -454,6 +454,76 @@ export default function AdminPrayerPage() {
                   </form>
                 </div>
 
+                {/* Painel Gráfico de Ocupação da Semana */}
+                {(() => {
+                  const capacity = Number.parseInt(configs.find((c) => c.key === 'sentinel_capacity')?.value || '4', 10) || 4;
+                  const totalCapacity = 7 * capacity;
+                  const totalFilled = sentinels.length;
+                  const occupancyPercent = totalCapacity > 0 ? Math.round((Math.min(totalFilled, totalCapacity) / totalCapacity) * 100) : 0;
+                  const fullyCoveredDays = ORDERED_DAYS.filter((d) => sentinels.filter((s) => s.dayOfWeek === d.dayOfWeek).length >= capacity).length;
+
+                  return (
+                    <div className="rounded-3xl border border-stone-800 bg-stone-900 p-6 space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                          <h3 className="text-base font-serif font-bold text-white flex items-center gap-2">
+                            <Shield className="h-4 w-4 text-amber-500" />
+                            Taxa de Ocupação & Cobertura Semanal
+                          </h3>
+                          <p className="text-xs text-stone-400 mt-0.5">
+                            {totalFilled} intercessores ativos em {totalCapacity} vagas totais da semana.
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="rounded-2xl bg-stone-800 border border-white/5 px-3 py-1.5 text-right">
+                            <span className="text-lg font-serif font-bold text-amber-400">{occupancyPercent}%</span>
+                            <span className="text-[10px] text-stone-400 block">Ocupação Geral</span>
+                          </div>
+                          <div className="rounded-2xl bg-stone-800 border border-white/5 px-3 py-1.5 text-right">
+                            <span className="text-lg font-serif font-bold text-emerald-400">{fullyCoveredDays}/7</span>
+                            <span className="text-[10px] text-stone-400 block">Dias 100% Cheios</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Termômetro */}
+                      <div className="space-y-1.5">
+                        <div className="h-3 w-full rounded-full bg-stone-800 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-500"
+                            style={{ width: `${Math.max(occupancyPercent, 5)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Gráfico de Barras dos 7 Dias */}
+                      <div className="grid grid-cols-7 gap-2 pt-2 items-end h-28 border-t border-stone-800">
+                        {ORDERED_DAYS.map((d) => {
+                          const count = sentinels.filter((s) => s.dayOfWeek === d.dayOfWeek).length;
+                          const percent = Math.min(100, Math.round((count / capacity) * 100));
+                          const isFull = count >= capacity;
+
+                          return (
+                            <div key={d.dayOfWeek} className="flex flex-col items-center justify-end h-full">
+                              <span className="text-[10px] font-bold text-stone-400 mb-1">{count}/{capacity}</span>
+                              <div className="w-full max-w-[36px] bg-stone-800 rounded-lg h-16 p-0.5 flex items-end">
+                                <div
+                                  className={`w-full rounded transition-all duration-300 ${
+                                    isFull ? 'bg-emerald-500' : count > 0 ? 'bg-amber-500' : 'bg-stone-700'
+                                  }`}
+                                  style={{ height: `${Math.max(percent, 10)}%` }}
+                                />
+                              </div>
+                              <span className="text-[10px] font-bold text-stone-300 mt-1.5">{d.name.split('-')[0]}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Grade dos 7 Dias da Semana com Alocações */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
