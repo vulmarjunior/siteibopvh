@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Plus, Users, CheckCircle, CalendarDays } from 'lucide-react';
+import { Shield, Plus, Users, CheckCircle, CalendarDays, UserPlus, Sparkles } from 'lucide-react';
 
 interface DayData {
   sentinels: { id: number; name: string }[];
@@ -11,7 +11,7 @@ interface SentinelMonthGridProps {
   days: Record<number, DayData>;
   capacity: number;
   currentDayOfMonth: number;
-  onSelectDayToSubscribe: (day: number) => void;
+  onSelectDayToSubscribe: (day?: number) => void;
 }
 
 export const SentinelMonthGrid: React.FC<SentinelMonthGridProps> = ({
@@ -23,19 +23,47 @@ export const SentinelMonthGrid: React.FC<SentinelMonthGridProps> = ({
   const daysArray = Array.from({ length: 31 }, (_, i) => i + 1);
 
   return (
-    <div className="space-y-6">
+    <div id="escala-mensal" className="space-y-8 scroll-mt-28">
+      {/* Banner / Card Chamada de Inscrição em Destaque */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-500/15 via-stone-850 to-stone-900 border border-amber-500/30 p-6 md:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+            <UserPlus className="w-6 h-6" />
+          </div>
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-widest text-amber-400">
+              Faça Parte da Intercessão
+            </span>
+            <h3 className="text-xl md:text-2xl font-serif font-bold text-white mt-0.5">
+              Assuma um Dia Fixo na Escala Mensal
+            </h3>
+            <p className="text-stone-300 text-sm mt-1 max-w-xl leading-relaxed">
+              Você pode participar individualmente, em casal ou como família. Escolha um dos 31 dias com vagas disponíveis e sustente nossa igreja em oração.
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => onSelectDayToSubscribe()}
+          className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm tracking-wide shadow-lg shadow-amber-500/20 active:scale-95 transition-all shrink-0 w-full md:w-auto"
+        >
+          <UserPlus className="w-4 h-4" />
+          <span>Cadastrar meu Dia de Oração</span>
+        </button>
+      </div>
+
       {/* Cabeçalho da Seção */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-white/5">
         <div>
           <span className="text-xs font-bold uppercase tracking-widest text-amber-500 flex items-center gap-1.5 mb-2">
             <CalendarDays className="w-3.5 h-3.5" />
-            Escala Mensal de Oração
+            Visão Geral do Mês
           </span>
           <h2 className="text-2xl md:text-3xl font-serif font-bold text-white">
-            Escala dos 31 Dias do Mês
+            Grade dos 31 Dias do Mês
           </h2>
           <p className="text-stone-300 text-sm mt-1">
-            Escolha um dia fixo mensal para se dedicar, em seus momentos devocionais, à intercessão pela nossa congregação e ministérios.
+            Clique em qualquer dia com vagas abertas para se cadastrar ou ver os intercessores.
           </p>
         </div>
 
@@ -139,7 +167,7 @@ export const SentinelMonthGrid: React.FC<SentinelMonthGridProps> = ({
                 {!isFull ? (
                   <button
                     onClick={() => onSelectDayToSubscribe(day)}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-amber-400 hover:text-amber-300 hover:translate-x-0.5 transition-all"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-amber-400 hover:text-amber-300 hover:translate-x-0.5 transition-all bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-2.5 py-1 rounded-lg"
                   >
                     <Plus className="w-3 h-3" />
                     <span>Assumir Dia</span>

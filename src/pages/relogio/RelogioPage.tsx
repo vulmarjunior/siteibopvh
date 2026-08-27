@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Shield, BookOpen, Users, Calendar, HeartHandshake, Loader2 } from 'lucide-react';
+import { Shield, BookOpen, Users, Calendar, HeartHandshake, Loader2, UserPlus, ArrowDown } from 'lucide-react';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import SentinelWatchTower from '../../components/relogio/SentinelWatchTower';
@@ -47,6 +47,7 @@ const RelogioPage: React.FC = () => {
   const [praises, setPraises] = useState<PrayerPraiseItem[]>([]);
 
   // Estados de modais
+  const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
   const [selectedDayToSubscribe, setSelectedDayToSubscribe] = useState<number | null>(null);
   const [isHandoverModalOpen, setIsHandoverModalOpen] = useState(false);
 
@@ -88,10 +89,22 @@ const RelogioPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [fetchAllData]);
 
+  const handleOpenSubscribe = (day?: number) => {
+    setSelectedDayToSubscribe(day ?? (monthData?.currentDayOfMonth || 1));
+    setIsSubscribeModalOpen(true);
+  };
+
   const handleTopicPrayed = (topicId: number, newCount: number) => {
     setTopics((prev) =>
       prev.map((t) => (t.id === topicId ? { ...t, prayedCount: newCount } : t))
     );
+  };
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
@@ -113,11 +126,30 @@ const RelogioPage: React.FC = () => {
             Relógio de Oração
           </h1>
 
-          <p className="text-stone-300 max-w-2xl mx-auto text-base md:text-lg leading-relaxed mb-10">
+          <p className="text-stone-300 max-w-2xl mx-auto text-base md:text-lg leading-relaxed mb-8">
             "Perseverai na oração, vigiando com ações de graças. Suplicai, ao mesmo tempo, também por nós, para que Deus nos abra porta à palavra."
             <br />
             <span className="text-amber-400 font-serif italic text-sm md:text-base">— Colossenses 4:2-3</span>
           </p>
+
+          {/* Botões de Ação do Hero */}
+          <div className="flex flex-wrap items-center justify-center gap-3.5 mb-12">
+            <button
+              onClick={() => handleOpenSubscribe()}
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm tracking-wide shadow-lg shadow-amber-500/20 active:scale-95 transition-all"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Cadastrar-se na Escala Mensal</span>
+            </button>
+
+            <button
+              onClick={() => scrollToSection('motivos-oracao')}
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-stone-800 hover:bg-stone-750 border border-white/10 hover:border-amber-500/30 text-stone-200 font-bold text-sm tracking-wide transition-all"
+            >
+              <BookOpen className="w-4 h-4 text-amber-400" />
+              <span>Ver Motivos da Semana</span>
+            </button>
+          </div>
 
           {/* Cards de Métricas Vivas */}
           {monthData && (
@@ -192,10 +224,12 @@ const RelogioPage: React.FC = () => {
 
             {/* 2. Guia Pastoral de Oração da Semana */}
             {topics.length > 0 && (
-              <PrayerTopicsSection
-                topics={topics}
-                onTopicPrayed={handleTopicPrayed}
-              />
+              <div id="motivos-oracao" className="scroll-mt-28">
+                <PrayerTopicsSection
+                  topics={topics}
+                  onTopicPrayed={handleTopicPrayed}
+                />
+              </div>
             )}
 
             {/* 3. Grade dos 31 Dias do Mês */}
@@ -204,7 +238,7 @@ const RelogioPage: React.FC = () => {
                 days={monthData.days}
                 capacity={monthData.capacity}
                 currentDayOfMonth={monthData.currentDayOfMonth}
-                onSelectDayToSubscribe={(day) => setSelectedDayToSubscribe(day)}
+                onSelectDayToSubscribe={(day) => handleOpenSubscribe(day)}
               />
             )}
 
@@ -217,12 +251,14 @@ const RelogioPage: React.FC = () => {
       </main>
 
       {/* Modais */}
-      {selectedDayToSubscribe && (
+      {isSubscribeModalOpen && (
         <SentinelSubscribeModal
           dayOfMonth={selectedDayToSubscribe}
-          onClose={() => setSelectedDayToSubscribe(null)}
+          daysData={monthData?.days}
+          capacity={monthData?.capacity || 4}
+          onClose={() => setIsSubscribeModalOpen(false)}
           onSuccess={() => {
-            setSelectedDayToSubscribe(null);
+            setIsSubscribeModalOpen(false);
             fetchAllData();
           }}
         />

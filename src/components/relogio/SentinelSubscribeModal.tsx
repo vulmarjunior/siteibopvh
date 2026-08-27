@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
-import { X, HeartHandshake, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { X, HeartHandshake, CheckCircle2, Loader2, AlertCircle, Calendar } from 'lucide-react';
 
 interface SentinelSubscribeModalProps {
-  dayOfMonth: number;
+  dayOfMonth: number | null;
+  daysData?: Record<number, { sentinels: { id: number; name: string }[]; count: number; isFull: boolean }>;
+  capacity?: number;
   onClose: () => void;
   onSuccess: () => void;
 }
 
 export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
-  dayOfMonth,
+  dayOfMonth: initialDay,
+  daysData,
+  capacity = 4,
   onClose,
   onSuccess,
 }) => {
+  const [selectedDay, setSelectedDay] = useState<number>(initialDay || 1);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -29,7 +34,7 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          dayOfMonth,
+          dayOfMonth: selectedDay,
           name,
           email,
           phone: phone.trim() || undefined,
@@ -69,10 +74,10 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
               <CheckCircle2 className="w-10 h-10" />
             </div>
             <h3 className="text-2xl font-serif font-bold text-white">
-              Compromisso Registrado
+              Compromisso Registrado!
             </h3>
             <p className="text-stone-300 text-sm max-w-sm mx-auto leading-relaxed">
-              Você agora faz parte da escala de intercessão do <strong>Dia {dayOfMonth}</strong> de cada mês. Enviamos a confirmação para o seu e-mail.
+              Você agora faz parte da escala de intercessão do <strong>Dia {selectedDay}</strong> de cada mês. Enviamos a confirmação para o seu e-mail.
             </p>
           </div>
         ) : (
@@ -87,13 +92,13 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
                   Ministério de Intercessão
                 </span>
                 <h3 className="text-2xl font-serif font-bold text-white">
-                  Intercessão do Dia {dayOfMonth}
+                  Cadastro de Intercessor
                 </h3>
               </div>
             </div>
 
             <p className="text-stone-300 text-sm leading-relaxed">
-              Ao se inscrever, você assume o compromisso de dedicar momentos devocionais para interceder pela nossa igreja, ministérios e famílias todo <strong>Dia {dayOfMonth} de cada mês</strong>.
+              Escolha o dia fixo do mês em que você se compromete a dedicar momentos de oração pela nossa congregação, liderança e famílias.
             </p>
 
             {error && (
@@ -104,6 +109,33 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
             )}
 
             <div className="space-y-3.5">
+              {/* Seletor de Dia do Mês */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5">
+                  Dia Fixo do Mês para Orar *
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedDay}
+                    onChange={(e) => setSelectedDay(Number(e.target.value))}
+                    className="w-full px-4 py-3 rounded-xl bg-stone-800 border border-white/10 text-white focus:outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/40 text-sm"
+                  >
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => {
+                      const dayInfo = daysData ? daysData[d] : null;
+                      const count = dayInfo ? dayInfo.count : 0;
+                      const isFull = count >= capacity;
+                      const vagas = Math.max(0, capacity - count);
+
+                      return (
+                        <option key={d} value={d} disabled={isFull}>
+                          Dia {d < 10 ? `0${d}` : d} {isFull ? '(Lotado)' : `(${vagas} ${vagas === 1 ? 'vaga' : 'vagas'})`}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5">
                   Seu Nome Completo *
@@ -155,12 +187,12 @@ export const SentinelSubscribeModal: React.FC<SentinelSubscribeModalProps> = ({
                 {submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Registrando Compromisso...</span>
+                    <span>Confirmando Cadastro...</span>
                   </>
                 ) : (
                   <>
                     <HeartHandshake className="w-4 h-4" />
-                    <span>Confirmar Intercessão no Dia {dayOfMonth}</span>
+                    <span>Confirmar Intercessão no Dia {selectedDay}</span>
                   </>
                 )}
               </button>
