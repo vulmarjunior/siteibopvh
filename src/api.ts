@@ -19,6 +19,7 @@ import { createAdminUsersRouter } from "./api/admin/users.js";
 import { createAdminHomeBannersRouter, createPublicHomeBannersRouter } from "./api/admin/homeBanners.js";
 import { createPublicEbfRouter } from "./api/public/ebf.js";
 import { createPublicParousiaRouter } from "./api/public/parousia.js";
+import { createPublicPrayerSentinelRouter } from "./api/public/prayerSentinel.js";
 import { consumeRateLimit } from "./lib/server/rateLimit.js";
 
 dayjs.extend(utc);
@@ -70,6 +71,7 @@ apiRouter.use("/admin/users", createAdminUsersRouter(prisma));
 apiRouter.use("/admin/home-banners", createAdminHomeBannersRouter(prisma));
 apiRouter.use("/ebf", createPublicEbfRouter(prisma, getResend));
 apiRouter.use("/parousia", createPublicParousiaRouter(prisma, getResend));
+apiRouter.use("/relogio/sentinelas", createPublicPrayerSentinelRouter(prisma, getResend));
 apiRouter.use("/modules", createPublicModulesRouter(prisma));
 apiRouter.use("/home-banners", createPublicHomeBannersRouter(prisma));
 apiRouter.use("/series", createEditorialSeriesRouter(prisma));
@@ -97,9 +99,36 @@ export async function seed() {
 
     const capacityConfig = await prisma.config.findUnique({ where: { key: 'slot_capacity' } });
     if (!capacityConfig) {
-      console.log("No capacity config found, creating default...");
       await prisma.config.create({ data: { key: 'slot_capacity', value: '4' } });
-      console.log("Default capacity config created.");
+    }
+
+    const sentinelCapacityConfig = await prisma.config.findUnique({ where: { key: 'sentinel_capacity' } });
+    if (!sentinelCapacityConfig) {
+      await prisma.config.create({ data: { key: 'sentinel_capacity', value: '4' } });
+    }
+
+    const topicsCount = await prisma.prayerTopic.count();
+    if (topicsCount === 0) {
+      const defaultTopics = [
+        { title: 'Liderança e Famílias Pastorais', description: 'Por sabedoria, proteção e graça sobre os pastores, líderes de ministérios e seus lares.', category: 'Igreja', order: 1, prayedCount: 24 },
+        { title: 'Missões & Evangelismo Local', description: 'Pelos missionários apoiados pela IBO e pela proclamação do Evangelho no bairro Olaria e Porto Velho.', category: 'Missões', order: 2, prayedCount: 31 },
+        { title: 'Enfermos, Idosos e Enlutados', description: 'Por consolo divino, alívio, restauração da saúde e assistência às famílias que enfrentam aflições.', category: 'Enfermos', order: 3, prayedCount: 19 },
+        { title: 'Jovens, Crianças e Próxima Geração', description: 'Para que permaneçam firmes na fé, cheios do Espírito Santo e guardados na verdade bíblica.', category: 'Famílias', order: 4, prayedCount: 28 },
+      ];
+      for (const t of defaultTopics) {
+        await prisma.prayerTopic.create({ data: t });
+      }
+    }
+
+    const praisesCount = await prisma.prayerPraise.count();
+    if (praisesCount === 0) {
+      const defaultPraises = [
+        { title: 'Gratidão pelas Vidas Alcançadas na EBF 2026', testimony: 'Louvamos a Deus por mais de 120 crianças acolhidas e sementes do Evangelho plantadas em seus corações.', authorName: 'Ministério Infantil', date: 'Julho de 2026', order: 1 },
+        { title: 'Provisão e Unidade na Reforma do Templo', testimony: 'Agradecemos ao Senhor pela fidelidade dos irmãos e pelos recursos concedidos para o avanço da nossa comunidade.', authorName: 'Conselho Administrativo', date: 'Agosto de 2026', order: 2 },
+      ];
+      for (const p of defaultPraises) {
+        await prisma.prayerPraise.create({ data: p });
+      }
     }
   } catch (error) {
     console.error("Error during database seeding:", error);

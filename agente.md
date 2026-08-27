@@ -1,28 +1,28 @@
 # 🤖 Contexto do Projeto — Guia para Agentes de IA
 
-> **Última atualização:** 2026-08-25
+> **Última atualização:** 2026-08-27
 > **Propósito:** Fornecer contexto completo para qualquer agente de codificação que trabalhe neste projeto, eliminando a necessidade de re-análise.
 
 ---
-## Atualização operacional — 2026-08-25
+## Atualização operacional — 2026-08-27
 
-> O portal está em produção na **Vercel**, projeto `ibopvh`, conectado ao GitHub `vulmarjunior/siteibopvh`. O deploy é automático pela branch `main`. URLs: `https://ibopvh.com.br` e `https://ibopvh.vercel.app`. O DNS autoritativo está na Vercel, com registros de e-mail preservados. Consulte `docs/CONTINUIDADE.md` e `docs/planos/migracao-vercel.md` antes de trabalhar.
+> O portal está em produção na **Vercel**, projeto `ibopvh`, conectado ao GitHub `vulmarjunior/siteibopvh`. O deploy é automático pela branch `main`. URLs: `https://ibopvh.com.br` e `https://ibopvh.vercel.app`.
 >
-> A **Central Administrativa** foi totalmente modernizada com:
-> 1. Shell com **Sidebar vertical categorizada em 4 pilares** (`AdminSidebar.tsx`): *Visão Geral*, *Editorial & Conteúdo*, *Pastoral & Eventos*, e *Governança & Sistema*.
-> 2. **Header inteligente com Breadcrumbs e Command Palette** (`AdminHeader.tsx` e `AdminCommandPalette.tsx`) com acionamento por `Ctrl + K` / `Cmd + K`.
-> 3. **Dashboard 2.0 Executivo** (`AdminDashboardPage.tsx`) com KPIs em tempo real (Relógio de Oração, intercessores, módulos ativos e séries) e barra de Ações Rápidas.
-> 4. **Cabeçalho padronizado** (`AdminPageHeader.tsx`) para telas internas.
+> O **Relógio de Oração 2.0** foi reformulado para o modelo comunitário de **Sentinelas Diários (Dias 1 a 31 do Mês)**:
+> 1. Vagas configuráveis por dia para intercessão contínua por membros, famílias e ministérios.
+> 2. Mecânica de **Passagem do Bastão da Vigília** (Isaías 62:6) com transmissão de palavras de bênção e e-mails automáticos para a guarda seguinte.
+> 3. **Mural de Motivos Vivos** da semana com botão reativo *"Já Orei por Este Pedido"* e **Mural de Gratidão / Testemunhos**.
+> 4. Painel administrativo completo integrado à Central Administrativa.
 >
-> O módulo **Veredas IBO** está ativo em `/veredas` e integrado ao painel administrativo.
+> A **Central Administrativa** conta com Sidebar categorizada em 4 pilares, Command Palette (`Ctrl+K`), Dashboard 2.0 e o módulo **Veredas IBO** em `/veredas`.
 
 ## 📋 Visão Geral
 
 **Nome do Projeto:** Portal da Igreja Batista Olaria (IBO) — Porto Velho, Rondônia
 **Nome do Pacote:** `ibopvh-portal`
 **Repositório:** https://github.com/vulmarjunior/siteibopvh
-**URL de Produção:** https://www.ibopvh.com.br (domínio principal, DNS apontando para Netlify)
-**URL Reserva Netlify:** https://ibopvh.netlify.app
+**URL de Produção:** https://www.ibopvh.com.br (domínio principal, DNS apontando para Netlify/Vercel)
+**URL Reserva:** https://ibopvh.vercel.app
 **Responsável:** Pr. Vulmar Junior
 **Idioma do Conteúdo:** Português (pt-BR)
 **Idioma do Código:** Inglês (nomes de variáveis/funções) com comentários em português
@@ -30,7 +30,7 @@
 ### O que é
 Portal institucional de uma igreja batista, composto por:
 1. **Home page** — Identidade, pregações (via YouTube RSS), horários de culto, contribuição (PIX), contato
-2. **Relógio de Oração** (`/relogio`) — Sistema de reserva de horários de oração 24h com calendário, e-mail transacional e painel admin
+2. **Relógio de Oração** (`/relogio`) — Sistema dos Sentinelas (Dias 1..31), Passagem do Bastão, Motivos Vivos e Gratidão
 3. **Hotsite Parousia** (`/da-ascensao-a-parousia`) — 🟢 **ATIVO** — Série de mensagens "Da Ascensão à Parousia" com roteiro de leitura interativo
 4. **Hotsite Páscoa** (`/pascoa`) — 🟡 **DORMENTE** — Evento sazonal de Páscoa (programação Trevas + Ressurreição). Arquivos preservados para reuso anual.
 5. **Hotsite Molda-nos** (`/moldanos`) — 🟡 **DORMENTE** — Conferência de aniversário 57 anos (2026). Arquivos preservados como template para conferências futuras.

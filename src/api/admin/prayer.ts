@@ -14,11 +14,11 @@ function csvCell(value: unknown): string {
   return `"${safe.replace(/"/g, '""')}"`;
 }
 
-const PRAYER_CONFIG_KEYS = new Set(['slot_capacity', 'email_encouragement']);
+const PRAYER_CONFIG_KEYS = new Set(['slot_capacity', 'sentinel_capacity', 'email_encouragement']);
 
 function validatePrayerConfig(key: string, value: string): string | null {
   if (!PRAYER_CONFIG_KEYS.has(key)) return 'Configuração não permitida';
-  if (key === 'slot_capacity') {
+  if (key === 'slot_capacity' || key === 'sentinel_capacity') {
     const capacity = Number(value);
     if (!Number.isInteger(capacity) || capacity < 1 || capacity > 100) return 'A capacidade deve ser um inteiro entre 1 e 100';
   }
@@ -36,6 +36,228 @@ export function createAdminPrayerRouter(prisma: PrismaClient) {
     next();
   });
 
+  // ==========================================
+  // 1. GESTÃO DOS SENTINELAS (DIAS DO MÊS)
+  // ==========================================
+  router.get('/sentinels', async (req: AdminAuthenticatedRequest, res) => {
+    const day = typeof req.query.day === 'string' ? Number.parseInt(req.query.day, 10) : null;
+    const where: any = { active: true, cancelledAt: null };
+    if (day && Number.isInteger(day) && day >= 1 && day <= 31) {
+      where.dayOfMonth = day;
+    }
+
+    const sentinels = await prisma.prayerSentinel.findMany({
+      where,
+      orderBy: [{ dayOfMonth: 'asc' }, { createdAt: 'asc' }],
+    });
+    res.json(sentinels);
+  });
+
+  router.delete('/sentinels/:id', async (req: AdminAuthenticatedRequest, res) => {
+    const id = idParam(req.params.id);
+    if (!id) return res.status(400).json({ error: 'Sentinela inválido' });
+    const existing = await prisma.prayerSentinel.findUnique({ where: { id } });
+    if (!existing) return res.status(404).json({ error: 'Sentinela não encontrado' });
+
+    await prisma.prayerSentinel.update({
+      where: { id },
+      data: { active: false, cancelledAt: new Date() },
+    });
+
+    const user = req.adminUser!;
+    await prisma.curadoriaAuditoria.create({
+      data: {
+        usuarioId: user.id,
+        usuarioEmail: user.email,
+        acao: 'DESATIVAR_SENTINELA',
+        entidade: 'PrayerSentinel',
+        entidadeId: String(id),
+        dados: { name: existing.name, dayOfMonth: existing.dayOfMonth },
+      },
+    });
+    res.json({ success: true });
+  });
+
+  // ==========================================
+  // 2. HISTÓRICO DE PASSAGEM DO BASTÃO
+  // ==========================================
+  router.get('/handovers', async (_req, res) => {
+    const handovers = await prisma.prayerHandover.findMany({
+      orderBy: { completedAt: 'desc' },
+      take: 100,
+    });
+    res.json(handovers);
+  });
+
+  // ==========================================
+  // 3. GESTÃO DE MOTIVOS DE ORAÇÃO (TOPICS)
+  // ==========================================
+  router.get('/topics', async (_req, res) => {
+    const topics = await prisma.prayerTopic.findMany({
+      orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+    });
+    res.json(topics);
+  });
+
+  router.post('/topics', async (req: AdminAuthenticatedRequest, res) => {
+    const title = String(req.body?.title ?? '').trim();
+    const description = typeof req.body?.description === 'string' ? req.body.description.trim() : null;
+    const category = typeof req.body?.category === 'string' && req.body.category.trim() ? req.body.category.trim() : 'Geral';
+    const order = Number.isInteger(req.body?.order) ? req.body.order : 0;
+
+    if (title.length < 3 || title.length > 200) {
+      return res.status(400).json({ error: 'O título do motivo deve ter entre 3 e 200 caracteres' });
+    }
+
+    const topic = await prisma.prayerTopic.create({
+      data: { title, description, category, order, active: true },
+    });
+
+    const user = req.adminUser!;
+    await prisma.curadoriaAuditoria.create({
+      data: {
+        usuarioId: user.id,
+        usuarioEmail: user.email,
+        acao: 'CRIAR_MOTIVO_ORACAO',
+        entidade: 'PrayerTopic',
+        entidadeId: String(topic.id),
+      },
+    });
+    res.status(201).json(topic);
+  });
+
+  router.patch('/topics/:id', async (req: AdminAuthenticatedRequest, res) => {
+    const id = idParam(req.params.id);
+    if (!id) return res.status(400).json({ error: 'Motivo inválido' });
+
+    const data: any = {};
+    if (typeof req.body?.title === 'string') data.title = req.body.title.trim();
+    if (typeof req.body?.description !== 'undefined') data.description = req.body.description ? String(req.body.description).trim() : null;
+    if (typeof req.body?.category === 'string') data.category = req.body.category.trim();
+    if (typeof req.body?.active === 'boolean') data.active = req.body.active;
+    if (Number.isInteger(req.body?.order)) data.order = req.body.order;
+
+    if (data.title !== undefined && (data.title.length < 3 || data.title.length > 200)) {
+      return res.status(400).json({ error: 'Título inválido' });
+    }
+
+    const topic = await prisma.prayerTopic.update({ where: { id }, data });
+    const user = req.adminUser!;
+    await prisma.curadoriaAuditoria.create({
+      data: {
+        usuarioId: user.id,
+        usuarioEmail: user.email,
+        acao: 'ATUALIZAR_MOTIVO_ORACAO',
+        entidade: 'PrayerTopic',
+        entidadeId: String(id),
+      },
+    });
+    res.json(topic);
+  });
+
+  router.delete('/topics/:id', async (req: AdminAuthenticatedRequest, res) => {
+    const id = idParam(req.params.id);
+    if (!id) return res.status(400).json({ error: 'Motivo inválido' });
+    await prisma.prayerTopic.delete({ where: { id } });
+
+    const user = req.adminUser!;
+    await prisma.curadoriaAuditoria.create({
+      data: {
+        usuarioId: user.id,
+        usuarioEmail: user.email,
+        acao: 'EXCLUIR_MOTIVO_ORACAO',
+        entidade: 'PrayerTopic',
+        entidadeId: String(id),
+      },
+    });
+    res.json({ success: true });
+  });
+
+  // ==========================================
+  // 4. GESTÃO DE TESTEMUNHOS (PRAISES)
+  // ==========================================
+  router.get('/praises', async (_req, res) => {
+    const praises = await prisma.prayerPraise.findMany({
+      orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+    });
+    res.json(praises);
+  });
+
+  router.post('/praises', async (req: AdminAuthenticatedRequest, res) => {
+    const title = String(req.body?.title ?? '').trim();
+    const testimony = String(req.body?.testimony ?? '').trim();
+    const authorName = typeof req.body?.authorName === 'string' ? req.body.authorName.trim() : null;
+    const date = typeof req.body?.date === 'string' ? req.body.date.trim() : null;
+    const order = Number.isInteger(req.body?.order) ? req.body.order : 0;
+
+    if (title.length < 3 || testimony.length < 5) {
+      return res.status(400).json({ error: 'Título e testemunho são obrigatórios' });
+    }
+
+    const praise = await prisma.prayerPraise.create({
+      data: { title, testimony, authorName, date, order, active: true },
+    });
+
+    const user = req.adminUser!;
+    await prisma.curadoriaAuditoria.create({
+      data: {
+        usuarioId: user.id,
+        usuarioEmail: user.email,
+        acao: 'CRIAR_TESTEMUNHO_ORACAO',
+        entidade: 'PrayerPraise',
+        entidadeId: String(praise.id),
+      },
+    });
+    res.status(201).json(praise);
+  });
+
+  router.patch('/praises/:id', async (req: AdminAuthenticatedRequest, res) => {
+    const id = idParam(req.params.id);
+    if (!id) return res.status(400).json({ error: 'Testemunho inválido' });
+
+    const data: any = {};
+    if (typeof req.body?.title === 'string') data.title = req.body.title.trim();
+    if (typeof req.body?.testimony === 'string') data.testimony = req.body.testimony.trim();
+    if (typeof req.body?.authorName !== 'undefined') data.authorName = req.body.authorName ? String(req.body.authorName).trim() : null;
+    if (typeof req.body?.date !== 'undefined') data.date = req.body.date ? String(req.body.date).trim() : null;
+    if (typeof req.body?.active === 'boolean') data.active = req.body.active;
+    if (Number.isInteger(req.body?.order)) data.order = req.body.order;
+
+    const praise = await prisma.prayerPraise.update({ where: { id }, data });
+    const user = req.adminUser!;
+    await prisma.curadoriaAuditoria.create({
+      data: {
+        usuarioId: user.id,
+        usuarioEmail: user.email,
+        acao: 'ATUALIZAR_TESTEMUNHO_ORACAO',
+        entidade: 'PrayerPraise',
+        entidadeId: String(id),
+      },
+    });
+    res.json(praise);
+  });
+
+  router.delete('/praises/:id', async (req: AdminAuthenticatedRequest, res) => {
+    const id = idParam(req.params.id);
+    if (!id) return res.status(400).json({ error: 'Testemunho inválido' });
+    await prisma.prayerPraise.delete({ where: { id } });
+
+    const user = req.adminUser!;
+    await prisma.curadoriaAuditoria.create({
+      data: {
+        usuarioId: user.id,
+        usuarioEmail: user.email,
+        acao: 'EXCLUIR_TESTEMUNHO_ORACAO',
+        entidade: 'PrayerPraise',
+        entidadeId: String(id),
+      },
+    });
+    res.json({ success: true });
+  });
+
+  // ==========================================
+  // 5. RESERVAS HISTÓRICAS (LEGADO RETROCOMPATÍVEL)
+  // ==========================================
   router.get('/reservations', async (req: AdminAuthenticatedRequest, res) => {
     const date = typeof req.query.date === 'string' ? req.query.date : '';
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'Data inválida' });
@@ -91,6 +313,9 @@ export function createAdminPrayerRouter(prisma: PrismaClient) {
     res.send(`\uFEFFID,Data,Inicio,Fim,Nome,Email,Temas,ReservadoEm\n${rows.join('\n')}`);
   });
 
+  // ==========================================
+  // 6. CONFIGURAÇÕES & TEMAS
+  // ==========================================
   router.get('/config', async (_req, res) => res.json(await prisma.config.findMany({ where: { key: { in: [...PRAYER_CONFIG_KEYS] } }, orderBy: { key: 'asc' } })));
   router.put('/config/:key', async (req: AdminAuthenticatedRequest, res) => {
     const key = Array.isArray(req.params.key) ? req.params.key[0] : req.params.key;

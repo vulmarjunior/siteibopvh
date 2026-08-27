@@ -57,6 +57,61 @@ model PrayerTheme {
   order  Int     @default(0)
 }
 
+model PrayerSentinel {
+  id          Int       @id @default(autoincrement())
+  dayOfMonth  Int       // 1 a 31
+  name        String
+  email       String
+  phone       String?
+  cancelToken String    @unique
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  cancelledAt DateTime?
+
+  @@index([dayOfMonth, active])
+  @@index([email, active])
+}
+
+model PrayerHandover {
+  id          Int      @id @default(autoincrement())
+  dayOfMonth  Int      // 1 a 31
+  date        String   // "YYYY-MM-DD"
+  authorName  String
+  message     String?
+  verse       String?
+  completedAt DateTime @default(now())
+
+  @@index([date, dayOfMonth])
+  @@index([completedAt])
+}
+
+model PrayerTopic {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  category    String   @default("Geral") // "Igreja", "Missões", "Famílias", "Enfermos", "Geral"
+  prayedCount Int      @default(0)
+  active      Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active, order])
+}
+
+model PrayerPraise {
+  id         Int      @id @default(autoincrement())
+  title      String
+  testimony  String
+  authorName String?
+  date       String?  // "YYYY-MM-DD" ou texto aproximado
+  active     Boolean  @default(true)
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@index([active, order])
+}
+
 model EbfRegistration {
   id            Int       @id @default(autoincrement())
   editionId     String
