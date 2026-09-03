@@ -6,6 +6,7 @@ import { VeredasNavbar } from '../../components/veredas/VeredasNavbar';
 import { VeredasFooter } from '../../components/veredas/VeredasFooter';
 import { RecommendationBlock } from '../../components/veredas/RecommendationBlock';
 import { CrossReferenceSection } from '../../components/veredas/CrossReferenceSection';
+import { SharePageButton } from '../../components/veredas/SharePageButton';
 
 export const VeredasCourseDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -25,7 +26,14 @@ export const VeredasCourseDetailPage: React.FC = () => {
   return <div className="min-h-screen bg-stone-950 text-stone-100 flex flex-col">
     <Helmet><title>{item.titulo} — Curso Veredas IBO</title></Helmet><VeredasNavbar />
     <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full">
-      <Link to="/veredas/cursos" className="inline-flex items-center gap-1 text-xs text-stone-400 hover:text-amber-400"><ArrowLeft className="w-4 h-4" /> Voltar aos cursos</Link>
+      <div className="flex items-center justify-between gap-4">
+        <Link to="/veredas/cursos" className="inline-flex items-center gap-1 text-xs text-stone-400 hover:text-amber-400"><ArrowLeft className="w-4 h-4" /> Voltar aos cursos</Link>
+        <SharePageButton
+          title={item.titulo}
+          contentType="Curso"
+          imageUrl={item.curso?.thumbnailUrl || aula?.thumbnailUrl}
+        />
+      </div>
       <div className="mt-5 grid lg:grid-cols-[minmax(0,1fr)_22rem] gap-6">
         <section>
           <div className="aspect-video bg-black rounded-xl overflow-hidden border border-stone-800"><iframe key={aula.youtubeId} src={`https://www.youtube.com/embed/${aula.youtubeId}?rel=0`} title={aula.titulo} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen className="w-full h-full" /></div>

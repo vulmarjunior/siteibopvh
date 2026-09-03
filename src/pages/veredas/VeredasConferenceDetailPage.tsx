@@ -6,6 +6,7 @@ import { VeredasNavbar } from '../../components/veredas/VeredasNavbar';
 import { VeredasFooter } from '../../components/veredas/VeredasFooter';
 import { RecommendationBlock } from '../../components/veredas/RecommendationBlock';
 import { CrossReferenceSection } from '../../components/veredas/CrossReferenceSection';
+import { SharePageButton } from '../../components/veredas/SharePageButton';
 
 export const VeredasConferenceDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -68,7 +69,7 @@ export const VeredasConferenceDetailPage: React.FC = () => {
       <VeredasNavbar />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <Link
             to="/veredas/conferencias"
             className="inline-flex items-center gap-1.5 text-xs text-stone-400 hover:text-indigo-300 transition-colors font-medium"
@@ -76,9 +77,16 @@ export const VeredasConferenceDetailPage: React.FC = () => {
             <ArrowLeft className="w-4 h-4" /> Voltar às conferências
           </Link>
 
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-indigo-950 border border-indigo-800 text-indigo-300">
-            <Flame className="w-3.5 h-3.5 text-indigo-400" /> CONFERÊNCIA
-          </span>
+          <div className="flex items-center gap-3">
+            <SharePageButton
+              title={item.titulo}
+              contentType="Conferência"
+              imageUrl={item.curso?.thumbnailUrl || aula?.thumbnailUrl}
+            />
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-indigo-950 border border-indigo-800 text-indigo-300">
+              <Flame className="w-3.5 h-3.5 text-indigo-400" /> CONFERÊNCIA
+            </span>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-[minmax(0,1fr)_22rem] gap-8 items-start">
