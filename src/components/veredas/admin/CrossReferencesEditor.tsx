@@ -25,30 +25,16 @@ export interface CrossReferencesEditorProps {
   currentPeople: string[];
 }
 
-const PRESET_LABELS: Record<string, string[]> = {
-  CONFERENCIA: [
-    'Livro-texto da conferência',
-    'Bibliografia recomendada pelo preletor',
-    'Leitura preparatória indicada',
-    'Conferência complementar',
-  ],
-  LIVRO: [
-    'Conferência sobre este tema',
-    'Exposição em vídeo recomendada',
-    'Curso de aprofundamento',
-    'Leitura complementar',
-  ],
-  VIDEO: [
-    'Livro recomendado para aprofundamento',
-    'Conferência correlata',
-    'Curso completo sobre o tema',
-  ],
-  CURSO: [
-    'Livro-texto do curso',
-    'Bibliografia complementar',
-    'Mensagem em vídeo de introdução',
-  ],
-};
+const PRESET_LABELS: string[] = [
+  'Livro-texto da conferência',
+  'Bibliografia recomendada pelo preletor',
+  'Leitura preparatória indicada',
+  'Exposição em vídeo recomendada',
+  'Mensagem em vídeo correlata',
+  'Conferência complementar',
+  'Curso de aprofundamento',
+  'Material complementar',
+];
 
 export const CrossReferencesEditor: React.FC<CrossReferencesEditorProps> = ({
   currentItemId,
@@ -89,10 +75,26 @@ export const CrossReferencesEditor: React.FC<CrossReferencesEditorProps> = ({
       )
     : [];
 
+  const getDefaultLabel = (targetItem: any) => {
+    if (targetItem?.tipo === 'LIVRO') {
+      return currentTipo === 'CONFERENCIA'
+        ? 'Livro-texto da conferência'
+        : 'Bibliografia recomendada';
+    }
+    if (targetItem?.tipo === 'VIDEO') {
+      return 'Exposição em vídeo recomendada';
+    }
+    if (targetItem?.tipo === 'CONFERENCIA') {
+      return 'Conferência complementar';
+    }
+    if (targetItem?.tipo === 'CURSO') {
+      return 'Curso de aprofundamento';
+    }
+    return 'Material complementar';
+  };
+
   const addReference = (item: any, customRotulo?: string) => {
-    const defaultLabel =
-      customRotulo ||
-      (PRESET_LABELS[currentTipo] ? PRESET_LABELS[currentTipo][0] : 'Material complementar');
+    const defaultLabel = customRotulo || getDefaultLabel(item);
 
     onChange([
       ...references,
@@ -290,7 +292,7 @@ export const CrossReferencesEditor: React.FC<CrossReferencesEditorProps> = ({
                       className="flex-1 bg-stone-900 border border-stone-700/80 rounded px-2.5 py-1 text-xs text-amber-200 placeholder:text-stone-500 focus:border-amber-500 focus:outline-none"
                     />
                     <datalist id={`presets-${idx}`}>
-                      {(PRESET_LABELS[currentTipo] || []).map((labelPreset) => (
+                      {PRESET_LABELS.map((labelPreset) => (
                         <option key={labelPreset} value={labelPreset} />
                       ))}
                     </datalist>

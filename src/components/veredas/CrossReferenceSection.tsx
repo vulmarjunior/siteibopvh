@@ -40,24 +40,49 @@ export interface CrossReferenceSectionProps {
   currentTitle?: string;
 }
 
-const SECTION_HEADERS: Record<string, { title: string; subtitle: string }> = {
-  CONFERENCIA: {
-    title: 'Aprofunde este tema — Livros e Leituras Recomendadas',
-    subtitle: 'Obras selecionadas para fundamentar e expandir os ensinamentos desta conferência.',
-  },
-  LIVRO: {
-    title: 'Mensagens e Conferências sobre esta temática',
-    subtitle: 'Exposições e plenárias que dialogam com os tópicos abordados nesta obra.',
-  },
-  VIDEO: {
-    title: 'Materiais e Livros para Aprofundamento',
-    subtitle: 'Indicações de leitura para continuar seu estudo deste tema.',
-  },
-  CURSO: {
-    title: 'Bibliografia e Conteúdos Relacionados',
-    subtitle: 'Livros-texto e mensagens correlatas para apoiar suas aulas.',
-  },
-};
+function getSectionHeader(currentTipo: string, relatedItems: RelatedItemResult[]): { title: string; subtitle: string } {
+  const types = new Set(relatedItems.map((r) => r.item.tipo));
+  const hasBooks = types.has('LIVRO');
+  const hasVideos = types.has('VIDEO');
+  const hasConferences = types.has('CONFERENCIA');
+  const hasCourses = types.has('CURSO');
+  const hasMedia = hasVideos || hasConferences || hasCourses;
+
+  // Mixed: Books + Videos / Conferences / Courses
+  if (hasBooks && hasMedia) {
+    return {
+      title: 'Aprofunde este tema — Livros, Vídeos e Materiais Recomendados',
+      subtitle: 'Obras bibliográficas, conferências e mensagens selecionadas para expandir seu estudo.',
+    };
+  }
+
+  // Only Books
+  if (hasBooks && !hasMedia) {
+    return {
+      title: 'Aprofunde este tema — Livros e Leituras Recomendadas',
+      subtitle: 'Obras selecionadas para fundamentar e expandir seu conhecimento sobre este tema.',
+    };
+  }
+
+  // Only Videos / Conferences / Courses
+  if (!hasBooks && hasMedia) {
+    if (hasConferences && !hasVideos && !hasCourses) {
+      return {
+        title: 'Aprofunde este tema — Conferências e Plenárias Recomendadas',
+        subtitle: 'Conferências correlatas selecionadas para aprofundar esta temática.',
+      };
+    }
+    return {
+      title: 'Aprofunde este tema — Vídeos e Mensagens Recomendadas',
+      subtitle: 'Exposições bíblicas, conferências e mensagens que dialogam com este conteúdo.',
+    };
+  }
+
+  return {
+    title: 'Aprofunde este tema — Materiais e Conteúdos Relacionados',
+    subtitle: 'Recomendações selecionadas para continuar sua jornada de estudo e reflexão.',
+  };
+}
 
 function getItemRoute(tipo: string, slug: string): string {
   switch (tipo) {
@@ -177,7 +202,7 @@ export const CrossReferenceSection: React.FC<CrossReferenceSectionProps> = ({
     return null;
   }
 
-  const header = SECTION_HEADERS[currentTipo] || SECTION_HEADERS.CONFERENCIA;
+  const header = getSectionHeader(currentTipo, related);
 
   return (
     <section className="border-t border-stone-800 pt-10 mt-10 space-y-6">
