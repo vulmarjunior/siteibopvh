@@ -1,4 +1,21 @@
-import { addDays, differenceInDays, isSameDay } from 'date-fns';
+function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function differenceInDays(dateLeft: Date, dateRight: Date): number {
+  const diffTime = dateLeft.getTime() - dateRight.getTime();
+  return Math.round(diffTime / (1000 * 60 * 60 * 24));
+}
+
+function isSameDay(dateLeft: Date, dateRight: Date): boolean {
+  return (
+    dateLeft.getFullYear() === dateRight.getFullYear() &&
+    dateLeft.getMonth() === dateRight.getMonth() &&
+    dateLeft.getDate() === dateRight.getDate()
+  );
+}
 import type { LiturgicalState, MacroSeason, LiturgicalPhase } from './types';
 import { LITURGICAL_COLORS, TRANSITION_CONFIG, MACRO_LABELS, PHASE_LABELS, TIMEZONE } from './config';
 import { getLiturgicalDates } from './getLiturgicalDates';

@@ -22,6 +22,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // GET /api/veredas/items
   router.get('/items', async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
       const result = await itemsService.getPublicItems({
         q: req.query.q as string,
         tipo: req.query.tipo as any,
@@ -43,6 +44,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // GET /api/veredas/destaques
   router.get('/destaques', async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
       const result = await itemsService.getPublicItems({
         destaqueOnly: true,
         limit: 6,
@@ -58,6 +60,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // GET /api/veredas/recentes
   router.get('/recentes', async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
       const result = await itemsService.getPublicItems({
         page: 1,
         limit: 8,
@@ -73,6 +76,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // GET /api/veredas/items/:slug
   router.get('/items/:slug', async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
       let item = await itemsService.getPublicItemBySlug(req.params.slug);
       if (!item) {
         return res.status(404).json({ error: 'Conteúdo não encontrado ou não publicado' });
@@ -113,6 +117,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // GET /api/veredas/items/:slug/relacionados
   router.get('/items/:slug/relacionados', async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=120, s-maxage=600, stale-while-revalidate=1200');
       const item = await prisma.curadoriaItem.findUnique({
         where: { slug: req.params.slug },
         select: { id: true, status: true },
@@ -134,6 +139,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // GET /api/veredas/categorias
   router.get('/categorias', async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=1800, stale-while-revalidate=3600');
       const categorias = await prisma.curadoriaCategoria.findMany({
         where: { ativa: true },
         orderBy: [{ ordem: 'asc' }, { nome: 'asc' }],
@@ -148,6 +154,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // GET /api/veredas/pessoas
   router.get('/pessoas', async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=1800, stale-while-revalidate=3600');
       const pessoas = await prisma.curadoriaPessoa.findMany({
         where: { ativa: true },
         orderBy: { nome: 'asc' },
@@ -171,6 +178,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // GET /api/veredas/pessoas/:slug
   router.get('/pessoas/:slug', async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=1800, stale-while-revalidate=3600');
       const pessoa = await prisma.curadoriaPessoa.findUnique({
         where: { slug: req.params.slug },
       });

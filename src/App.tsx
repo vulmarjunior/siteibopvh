@@ -78,9 +78,13 @@ const App: React.FC = () => (
         <Route path="/veredas/cursos" element={<ModuleRoute moduleId="veredas"><VeredasCatalogPage /></ModuleRoute>} />
         <Route path="/veredas/conferencias" element={<ModuleRoute moduleId="veredas"><VeredasCatalogPage /></ModuleRoute>} />
         <Route path="/veredas/livro/:slug" element={<ModuleRoute moduleId="veredas"><VeredasBookDetailPage /></ModuleRoute>} />
+        <Route path="/veredas/livros/:slug" element={<ModuleRoute moduleId="veredas"><VeredasBookDetailPage /></ModuleRoute>} />
         <Route path="/veredas/video/:slug" element={<ModuleRoute moduleId="veredas"><VeredasVideoDetailPage /></ModuleRoute>} />
+        <Route path="/veredas/videos/:slug" element={<ModuleRoute moduleId="veredas"><VeredasVideoDetailPage /></ModuleRoute>} />
         <Route path="/veredas/curso/:slug" element={<ModuleRoute moduleId="veredas"><VeredasCourseDetailPage /></ModuleRoute>} />
+        <Route path="/veredas/cursos/:slug" element={<ModuleRoute moduleId="veredas"><VeredasCourseDetailPage /></ModuleRoute>} />
         <Route path="/veredas/conferencia/:slug" element={<ModuleRoute moduleId="veredas"><VeredasConferenceDetailPage /></ModuleRoute>} />
+        <Route path="/veredas/conferencias/:slug" element={<ModuleRoute moduleId="veredas"><VeredasConferenceDetailPage /></ModuleRoute>} />
         <Route path="/veredas/biblioteca-gratuita" element={<ModuleRoute moduleId="veredas"><VeredasFreeLibraryPage /></ModuleRoute>} />
         <Route path="/veredas/sobre" element={<ModuleRoute moduleId="veredas"><VeredasAboutPage /></ModuleRoute>} />
 

@@ -87,15 +87,15 @@ function getSectionHeader(currentTipo: string, relatedItems: RelatedItemResult[]
 function getItemRoute(tipo: string, slug: string): string {
   switch (tipo) {
     case 'LIVRO':
-      return `/veredas/livros/${slug}`;
+      return `/veredas/livro/${slug}`;
     case 'CONFERENCIA':
-      return `/veredas/conferencias/${slug}`;
+      return `/veredas/conferencia/${slug}`;
     case 'CURSO':
-      return `/veredas/cursos/${slug}`;
+      return `/veredas/curso/${slug}`;
     case 'VIDEO':
-      return `/veredas/videos/${slug}`;
+      return `/veredas/video/${slug}`;
     default:
-      return `/veredas/${slug}`;
+      return `/veredas/livro/${slug}`;
   }
 }
 

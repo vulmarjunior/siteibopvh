@@ -64,8 +64,10 @@ export const VeredasHomePage: React.FC = () => {
         {/* HERO EDITORIAL */}
         <section className="relative isolate min-h-[34rem] sm:min-h-[38rem] lg:min-h-[42rem] border-b border-amber-900/30 overflow-hidden flex items-center">
           <img
-            src="/images/veredas/caminho-dourado-fe-sabedoria.png"
+            src="/images/veredas/caminho-dourado-fe-sabedoria.jpg"
             alt="Caminho de pedras em direção a uma cruz, com Bíblia e livros à luz dourada"
+            fetchPriority="high"
+            decoding="async"
             className="absolute inset-0 -z-20 h-full w-full object-cover object-[67%_center] sm:object-center"
           />
           <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#fff4dc] via-[#fff0d2]/95 to-[#f6d99d]/20 sm:via-[#fff0d2]/85 sm:to-transparent" />

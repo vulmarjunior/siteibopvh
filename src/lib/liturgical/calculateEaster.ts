@@ -1,4 +1,8 @@
-import { addDays } from 'date-fns';
+function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
 
 export function calculateEaster(year: number): Date {
   const a = year % 19;
