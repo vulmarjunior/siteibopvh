@@ -144,14 +144,123 @@ export class ItemsService {
       };
     }
 
-    const [items, total] = await Promise.all([
-      this.prisma.curadoriaItem.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: params.destaqueOnly
-          ? [{ ordemDestaque: 'asc' }, { publicadoEm: 'desc' }]
-          : [{ publicadoEm: 'desc' }, { criadoEm: 'desc' }],
+    let items: any[] = [];
+    let total = 0;
+
+    try {
+      [items, total] = await Promise.all([
+        this.prisma.curadoriaItem.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: params.destaqueOnly
+            ? [{ ordemDestaque: 'asc' }, { publicadoEm: 'desc' }]
+            : [{ publicadoEm: 'desc' }, { criadoEm: 'desc' }],
+          include: {
+            categorias: {
+              include: {
+                categoria: true,
+              },
+            },
+            livro: {
+              include: {
+                autores: {
+                  orderBy: { ordem: 'asc' },
+                  include: { pessoa: true },
+                },
+                acessos: {
+                  where: { ativo: true },
+                  orderBy: { ordem: 'asc' },
+                },
+              },
+            },
+            video: {
+              include: {
+                participantes: {
+                  orderBy: { ordem: 'asc' },
+                  include: { pessoa: true },
+                },
+              },
+            },
+            curso: {
+              include: {
+                participantes: {
+                  orderBy: { ordem: 'asc' },
+                  include: { pessoa: true },
+                },
+                aulas: { orderBy: { ordem: 'asc' } },
+                materiais: { orderBy: { ordem: 'asc' } },
+              },
+            },
+          },
+        }),
+        this.prisma.curadoriaItem.count({ where }),
+      ]);
+    } catch (queryErr) {
+      console.warn('Full items query failed, trying safe baseline query:', queryErr);
+      const safeWhere = { ...where };
+      if (safeWhere.OR) {
+        safeWhere.OR = safeWhere.OR.filter((condition: any) => !condition.curso?.participantes);
+        if (safeWhere.OR.length === 0) delete safeWhere.OR;
+      }
+      [items, total] = await Promise.all([
+        this.prisma.curadoriaItem.findMany({
+          where: safeWhere,
+          skip,
+          take: limit,
+          orderBy: params.destaqueOnly
+            ? [{ ordemDestaque: 'asc' }, { publicadoEm: 'desc' }]
+            : [{ publicadoEm: 'desc' }, { criadoEm: 'desc' }],
+          include: {
+            categorias: {
+              include: {
+                categoria: true,
+              },
+            },
+            livro: {
+              include: {
+                autores: {
+                  orderBy: { ordem: 'asc' },
+                  include: { pessoa: true },
+                },
+                acessos: {
+                  where: { ativo: true },
+                  orderBy: { ordem: 'asc' },
+                },
+              },
+            },
+            video: true,
+            curso: {
+              include: {
+                aulas: { orderBy: { ordem: 'asc' } },
+                materiais: { orderBy: { ordem: 'asc' } },
+              },
+            },
+          },
+        }),
+        this.prisma.curadoriaItem.count({ where: safeWhere }),
+      ]);
+    }
+
+    return {
+      items,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
+   * Fetches published item by slug.
+   */
+  async getPublicItemBySlug(slug: string) {
+    let item: any = null;
+    try {
+      item = await this.prisma.curadoriaItem.findUnique({
+        where: { slug },
         include: {
           categorias: {
             include: {
@@ -188,92 +297,66 @@ export class ItemsService {
               materiais: { orderBy: { ordem: 'asc' } },
             },
           },
-        },
-      }),
-      this.prisma.curadoriaItem.count({ where }),
-    ]);
-
-    return {
-      items,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  }
-
-  /**
-   * Fetches published item by slug.
-   */
-  async getPublicItemBySlug(slug: string) {
-    const item = await this.prisma.curadoriaItem.findUnique({
-      where: { slug },
-      include: {
-        categorias: {
-          include: {
-            categoria: true,
-          },
-        },
-        livro: {
-          include: {
-            autores: {
-              orderBy: { ordem: 'asc' },
-              include: { pessoa: true },
-            },
-            acessos: {
-              where: { ativo: true },
-              orderBy: { ordem: 'asc' },
-            },
-          },
-        },
-        video: {
-          include: {
-            participantes: {
-              orderBy: { ordem: 'asc' },
-              include: { pessoa: true },
-            },
-          },
-        },
-        curso: {
-          include: {
-            participantes: {
-              orderBy: { ordem: 'asc' },
-              include: { pessoa: true },
-            },
-            aulas: { orderBy: { ordem: 'asc' } },
-            materiais: { orderBy: { ordem: 'asc' } },
-          },
-        },
-        relacionadosOrigem: {
-          orderBy: { ordem: 'asc' },
-          include: {
-            destino: {
-              include: {
-                categorias: { include: { categoria: true } },
-                livro: {
-                  include: {
-                    autores: { include: { pessoa: true } },
-                    acessos: { where: { ativo: true }, orderBy: { ordem: 'asc' } },
+          relacionadosOrigem: {
+            orderBy: { ordem: 'asc' },
+            include: {
+              destino: {
+                include: {
+                  categorias: { include: { categoria: true } },
+                  livro: {
+                    include: {
+                      autores: { include: { pessoa: true } },
+                      acessos: { where: { ativo: true }, orderBy: { ordem: 'asc' } },
+                    },
                   },
-                },
-                video: {
-                  include: {
-                    participantes: { include: { pessoa: true } },
+                  video: {
+                    include: {
+                      participantes: { include: { pessoa: true } },
+                    },
                   },
-                },
-                curso: {
-                  include: {
-                    participantes: { include: { pessoa: true } },
+                  curso: {
+                    include: {
+                      participantes: { include: { pessoa: true } },
+                    },
                   },
                 },
               },
             },
           },
         },
-      },
-    });
+      });
+    } catch (err) {
+      console.warn('Full slug query failed, falling back to baseline query:', err);
+      item = await this.prisma.curadoriaItem.findUnique({
+        where: { slug },
+        include: {
+          categorias: {
+            include: {
+              categoria: true,
+            },
+          },
+          livro: {
+            include: {
+              autores: {
+                orderBy: { ordem: 'asc' },
+                include: { pessoa: true },
+              },
+              acessos: {
+                where: { ativo: true },
+                orderBy: { ordem: 'asc' },
+              },
+            },
+          },
+          video: true,
+          curso: {
+            include: {
+              aulas: { orderBy: { ordem: 'asc' } },
+              materiais: { orderBy: { ordem: 'asc' } },
+            },
+          },
+        },
+      });
+    }
 
     if (!item || item.status !== CuradoriaStatus.PUBLICADO) {
       return null;
@@ -327,8 +410,32 @@ export class ItemsService {
         },
       });
     } catch (err) {
-      console.error('getAdminItems error:', err);
-      return [];
+      console.warn('getAdminItems full query failed, falling back to baseline:', err);
+      try {
+        return await this.prisma.curadoriaItem.findMany({
+          where,
+          orderBy: [{ criadoEm: 'desc' }],
+          include: {
+            categorias: { include: { categoria: true } },
+            livro: {
+              include: {
+                autores: { include: { pessoa: true } },
+                acessos: true,
+              },
+            },
+            video: true,
+            curso: {
+              include: {
+                aulas: { orderBy: { ordem: 'asc' } },
+                materiais: { orderBy: { ordem: 'asc' } },
+              },
+            },
+          },
+        });
+      } catch (fallbackErr) {
+        console.error('getAdminItems error:', fallbackErr);
+        return [];
+      }
     }
   }
 
@@ -336,44 +443,59 @@ export class ItemsService {
    * Get single item by ID for editing.
    */
   async getAdminItemById(id: number) {
-    return this.prisma.curadoriaItem.findUnique({
-      where: { id },
-      include: {
-        categorias: {
-          include: { categoria: true },
-        },
-        livro: {
-          include: {
-            autores: { include: { pessoa: true } },
-            acessos: true,
+    try {
+      return await this.prisma.curadoriaItem.findUnique({
+        where: { id },
+        include: {
+          categorias: {
+            include: { categoria: true },
+          },
+          livro: {
+            include: {
+              autores: { include: { pessoa: true } },
+              acessos: true,
+            },
+          },
+          video: {
+            include: {
+              participantes: { include: { pessoa: true } },
+            },
+          },
+          curso: {
+            include: {
+              participantes: { include: { pessoa: true } },
+              aulas: { orderBy: { ordem: 'asc' } },
+              materiais: { orderBy: { ordem: 'asc' } },
+            },
+          },
+          relacionadosOrigem: {
+            orderBy: { ordem: 'asc' },
+            include: { destino: true },
           },
         },
-        video: {
-          include: {
-            participantes: { include: { pessoa: true } },
+      });
+    } catch (err) {
+      console.warn('getAdminItemById full query failed, falling back to baseline:', err);
+      return await this.prisma.curadoriaItem.findUnique({
+        where: { id },
+        include: {
+          categorias: { include: { categoria: true } },
+          livro: {
+            include: {
+              autores: { include: { pessoa: true } },
+              acessos: true,
+            },
           },
-        },
-        curso: {
-          include: {
-            participantes: { include: { pessoa: true } },
-            aulas: { orderBy: { ordem: 'asc' } },
-            materiais: { orderBy: { ordem: 'asc' } },
-          },
-        },
-        relacionadosOrigem: {
-          orderBy: { ordem: 'asc' },
-          include: {
-            destino: {
-              include: {
-                livro: { include: { autores: { include: { pessoa: true } } } },
-                video: { include: { participantes: { include: { pessoa: true } } } },
-                curso: { include: { participantes: { include: { pessoa: true } } } },
-              },
+          video: true,
+          curso: {
+            include: {
+              aulas: { orderBy: { ordem: 'asc' } },
+              materiais: { orderBy: { ordem: 'asc' } },
             },
           },
         },
-      },
-    });
+      });
+    }
   }
 
   /**
@@ -720,46 +842,69 @@ export class ItemsService {
    * Fetches hybrid related items (manual curation + automated affinity fallback).
    */
   async getRelatedItems(itemId: number, limit = 4) {
-    const currentItem = await this.prisma.curadoriaItem.findUnique({
-      where: { id: itemId },
-      include: {
-        categorias: true,
-        livro: { include: { autores: true } },
-        video: { include: { participantes: true } },
-        curso: { include: { participantes: true } },
-      },
-    });
+    let currentItem: any = null;
+    try {
+      currentItem = await this.prisma.curadoriaItem.findUnique({
+        where: { id: itemId },
+        include: {
+          categorias: true,
+          livro: { include: { autores: true } },
+          video: { include: { participantes: true } },
+          curso: { include: { participantes: true } },
+        },
+      });
+    } catch {
+      try {
+        currentItem = await this.prisma.curadoriaItem.findUnique({
+          where: { id: itemId },
+          include: {
+            categorias: true,
+            livro: { include: { autores: true } },
+            video: true,
+            curso: true,
+          },
+        });
+      } catch {
+        return [];
+      }
+    }
 
     if (!currentItem) return [];
 
-    const manualRelations = await this.prisma.curadoriaItemRelacionado.findMany({
-      where: { origemId: itemId },
-      orderBy: { ordem: 'asc' },
-      include: {
-        destino: {
-          include: {
-            categorias: { include: { categoria: true } },
-            livro: {
-              include: {
-                autores: { include: { pessoa: true } },
-                acessos: { where: { ativo: true }, orderBy: { ordem: 'asc' } },
+    let manualRelations: any[] = [];
+    try {
+      manualRelations = await this.prisma.curadoriaItemRelacionado.findMany({
+        where: { origemId: itemId },
+        orderBy: { ordem: 'asc' },
+        include: {
+          destino: {
+            include: {
+              categorias: { include: { categoria: true } },
+              livro: {
+                include: {
+                  autores: { include: { pessoa: true } },
+                  acessos: { where: { ativo: true }, orderBy: { ordem: 'asc' } },
+                },
               },
-            },
-            video: {
-              include: {
-                participantes: { include: { pessoa: true } },
+              video: {
+                include: {
+                  participantes: { include: { pessoa: true } },
+                },
               },
-            },
-            curso: {
-              include: {
-                participantes: { include: { pessoa: true } },
-                aulas: { orderBy: { ordem: 'asc' } },
+              curso: {
+                include: {
+                  participantes: { include: { pessoa: true } },
+                  aulas: { orderBy: { ordem: 'asc' } },
+                },
               },
             },
           },
         },
-      },
-    });
+      });
+    } catch (relErr) {
+      console.warn('curadoriaItemRelacionado query failed (table may not exist yet):', relErr);
+      manualRelations = [];
+    }
 
     const result: Array<{
       item: any;
@@ -771,7 +916,7 @@ export class ItemsService {
     const addedIds = new Set<number>([itemId]);
 
     for (const rel of manualRelations) {
-      if (rel.destino.status === CuradoriaStatus.PUBLICADO && !addedIds.has(rel.destinoId)) {
+      if (rel.destino?.status === CuradoriaStatus.PUBLICADO && !addedIds.has(rel.destinoId)) {
         result.push({
           item: rel.destino,
           rotulo: rel.rotulo,
@@ -786,11 +931,11 @@ export class ItemsService {
     }
 
     // Automated Affinity Matching
-    const currentCategoryIds = new Set(currentItem.categorias.map((c) => c.categoriaId));
+    const currentCategoryIds = new Set(currentItem.categorias.map((c: any) => c.categoriaId));
     const currentPessoaIds = new Set<number>([
-      ...(currentItem.livro?.autores?.map((a) => a.pessoaId) || []),
-      ...(currentItem.video?.participantes?.map((p) => p.pessoaId) || []),
-      ...(currentItem.curso?.participantes?.map((p) => p.pessoaId) || []),
+      ...(currentItem.livro?.autores?.map((a: any) => a.pessoaId) || []),
+      ...(currentItem.video?.participantes?.map((p: any) => p.pessoaId) || []),
+      ...(currentItem.curso?.participantes?.map((p: any) => p.pessoaId) || []),
     ]);
 
     const stopWords = new Set(['para', 'com', 'sem', 'sobre', 'pelo', 'pela', 'como', 'onde', 'qual', 'este', 'esta', 'isso', 'aquele', 'aquela', 'mais', 'menos', 'seus', 'suas', 'entre', 'quando', 'tudo', 'nada', 'cada', 'outro', 'outra']);
@@ -798,36 +943,67 @@ export class ItemsService {
       .toLowerCase()
       .replace(/[^a-záéíóúâêîôûãõç\s]/gi, ' ')
       .split(/\s+/)
-      .filter((w) => w.length >= 4 && !stopWords.has(w));
+      .filter((w: string) => w.length >= 4 && !stopWords.has(w));
 
-    const candidates = await this.prisma.curadoriaItem.findMany({
-      where: {
-        status: CuradoriaStatus.PUBLICADO,
-        id: { notIn: Array.from(addedIds) },
-      },
-      take: 40,
-      orderBy: [{ publicadoEm: 'desc' }, { criadoEm: 'desc' }],
-      include: {
-        categorias: { include: { categoria: true } },
-        livro: {
-          include: {
-            autores: { include: { pessoa: true } },
-            acessos: { where: { ativo: true }, orderBy: { ordem: 'asc' } },
+    let candidates: any[] = [];
+    try {
+      candidates = await this.prisma.curadoriaItem.findMany({
+        where: {
+          status: CuradoriaStatus.PUBLICADO,
+          id: { notIn: Array.from(addedIds) },
+        },
+        take: 40,
+        orderBy: [{ publicadoEm: 'desc' }, { criadoEm: 'desc' }],
+        include: {
+          categorias: { include: { categoria: true } },
+          livro: {
+            include: {
+              autores: { include: { pessoa: true } },
+              acessos: { where: { ativo: true }, orderBy: { ordem: 'asc' } },
+            },
+          },
+          video: {
+            include: {
+              participantes: { include: { pessoa: true } },
+            },
+          },
+          curso: {
+            include: {
+              participantes: { include: { pessoa: true } },
+              aulas: { orderBy: { ordem: 'asc' } },
+            },
           },
         },
-        video: {
-          include: {
-            participantes: { include: { pessoa: true } },
+      });
+    } catch {
+      try {
+        candidates = await this.prisma.curadoriaItem.findMany({
+          where: {
+            status: CuradoriaStatus.PUBLICADO,
+            id: { notIn: Array.from(addedIds) },
           },
-        },
-        curso: {
+          take: 40,
+          orderBy: [{ publicadoEm: 'desc' }, { criadoEm: 'desc' }],
           include: {
-            participantes: { include: { pessoa: true } },
-            aulas: { orderBy: { ordem: 'asc' } },
+            categorias: { include: { categoria: true } },
+            livro: {
+              include: {
+                autores: { include: { pessoa: true } },
+                acessos: { where: { ativo: true }, orderBy: { ordem: 'asc' } },
+              },
+            },
+            video: true,
+            curso: {
+              include: {
+                aulas: { orderBy: { ordem: 'asc' } },
+              },
+            },
           },
-        },
-      },
-    });
+        });
+      } catch {
+        candidates = [];
+      }
+    }
 
     const scoredCandidates: Array<{ item: any; score: number }> = [];
 
