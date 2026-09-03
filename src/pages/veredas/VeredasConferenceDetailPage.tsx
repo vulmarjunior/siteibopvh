@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet-async';
 import { VeredasNavbar } from '../../components/veredas/VeredasNavbar';
 import { VeredasFooter } from '../../components/veredas/VeredasFooter';
 import { RecommendationBlock } from '../../components/veredas/RecommendationBlock';
+import { CrossReferenceSection } from '../../components/veredas/CrossReferenceSection';
 
 export const VeredasConferenceDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -198,6 +199,8 @@ export const VeredasConferenceDetailPage: React.FC = () => {
             </div>
           </aside>
         </div>
+
+        <CrossReferenceSection itemSlug={slug!} currentTipo="CONFERENCIA" currentTitle={item.titulo} />
       </main>
 
       <VeredasFooter />

@@ -6,6 +6,7 @@ import { VeredasFooter } from '../../components/veredas/VeredasFooter';
 import { AccessLinksList } from '../../components/veredas/AccessLinksList';
 import { SharePageButton } from '../../components/veredas/SharePageButton';
 import { RecommendationBlock } from '../../components/veredas/RecommendationBlock';
+import { CrossReferenceSection } from '../../components/veredas/CrossReferenceSection';
 import { Helmet } from 'react-helmet-async';
 
 export const VeredasBookDetailPage: React.FC = () => {
@@ -199,6 +200,7 @@ export const VeredasBookDetailPage: React.FC = () => {
           <AccessLinksList acessos={acessos} />
         </section>
 
+        <CrossReferenceSection itemSlug={slug!} currentTipo="LIVRO" currentTitle={item.titulo} />
       </main>
 
       <VeredasFooter />

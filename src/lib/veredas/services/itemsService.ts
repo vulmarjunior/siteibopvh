@@ -119,6 +119,17 @@ export class ItemsService {
             },
           },
         },
+        {
+          curso: {
+            participantes: {
+              some: {
+                pessoa: {
+                  slug: params.pessoa,
+                },
+              },
+            },
+          },
+        },
       ];
     }
 
@@ -169,6 +180,10 @@ export class ItemsService {
           },
           curso: {
             include: {
+              participantes: {
+                orderBy: { ordem: 'asc' },
+                include: { pessoa: true },
+              },
               aulas: { orderBy: { ordem: 'asc' } },
               materiais: { orderBy: { ordem: 'asc' } },
             },
@@ -221,7 +236,42 @@ export class ItemsService {
             },
           },
         },
-        curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
+        curso: {
+          include: {
+            participantes: {
+              orderBy: { ordem: 'asc' },
+              include: { pessoa: true },
+            },
+            aulas: { orderBy: { ordem: 'asc' } },
+            materiais: { orderBy: { ordem: 'asc' } },
+          },
+        },
+        relacionadosOrigem: {
+          orderBy: { ordem: 'asc' },
+          include: {
+            destino: {
+              include: {
+                categorias: { include: { categoria: true } },
+                livro: {
+                  include: {
+                    autores: { include: { pessoa: true } },
+                    acessos: { where: { ativo: true }, orderBy: { ordem: 'asc' } },
+                  },
+                },
+                video: {
+                  include: {
+                    participantes: { include: { pessoa: true } },
+                  },
+                },
+                curso: {
+                  include: {
+                    participantes: { include: { pessoa: true } },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 
@@ -263,7 +313,17 @@ export class ItemsService {
               participantes: { include: { pessoa: true } },
             },
           },
-          curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
+          curso: {
+            include: {
+              participantes: { include: { pessoa: true } },
+              aulas: { orderBy: { ordem: 'asc' } },
+              materiais: { orderBy: { ordem: 'asc' } },
+            },
+          },
+          relacionadosOrigem: {
+            orderBy: { ordem: 'asc' },
+            include: { destino: true },
+          },
         },
       });
     } catch (err) {
@@ -293,7 +353,25 @@ export class ItemsService {
             participantes: { include: { pessoa: true } },
           },
         },
-        curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
+        curso: {
+          include: {
+            participantes: { include: { pessoa: true } },
+            aulas: { orderBy: { ordem: 'asc' } },
+            materiais: { orderBy: { ordem: 'asc' } },
+          },
+        },
+        relacionadosOrigem: {
+          orderBy: { ordem: 'asc' },
+          include: {
+            destino: {
+              include: {
+                livro: { include: { autores: { include: { pessoa: true } } } },
+                video: { include: { participantes: { include: { pessoa: true } } } },
+                curso: { include: { participantes: { include: { pessoa: true } } } },
+              },
+            },
+          },
+        },
       },
     });
   }
@@ -325,12 +403,13 @@ export class ItemsService {
     }));
   }
 
-  private buildBookAuthors(livro: any = {}) {
-    const authorNames: string[] = Array.isArray(livro.authorNames)
-      ? [...new Set<string>(livro.authorNames.map((name: unknown) => String(name || '').trim()).filter(Boolean))]
+  private buildPeopleRelations(source: any = {}, defaultRole: 'AUTOR' | 'EXPOSITOR' = 'AUTOR') {
+    const rawNames = source.authorNames || source.pessoaNames || [];
+    const names: string[] = Array.isArray(rawNames)
+      ? [...new Set<string>(rawNames.map((name: unknown) => String(name || '').trim()).filter(Boolean))]
       : [];
-    const importedAuthors = authorNames.map((name, index) => ({
-      papel: 'AUTOR' as const,
+    const imported = names.map((name, index) => ({
+      papel: (source.papel || defaultRole) as any,
       ordem: index,
       pessoa: {
         connectOrCreate: {
@@ -339,16 +418,16 @@ export class ItemsService {
         },
       },
     }));
-    const selectedAuthors = (livro.pessoaIds || []).map((pessoaId: number, index: number) => ({
+    const selected = (source.pessoaIds || []).map((pessoaId: number, index: number) => ({
       pessoaId: Number(pessoaId),
-      papel: livro.papel || 'AUTOR',
-      ordem: importedAuthors.length + index,
+      papel: (source.papel || defaultRole) as any,
+      ordem: imported.length + index,
     }));
-    return [...importedAuthors, ...selectedAuthors];
+    return [...imported, ...selected];
   }
 
   /**
-   * Administrative item creation (Book or Video).
+   * Administrative item creation (Book, Video, Course, or Conference).
    */
   async createAdminItem(data: any) {
     const baseSlug = data.slug ? generateSlug(data.slug) : generateSlug(data.titulo);
@@ -387,6 +466,16 @@ export class ItemsService {
       },
     };
 
+    if (Array.isArray(data.itensRelacionados) && data.itensRelacionados.length > 0) {
+      itemData.relacionadosOrigem = {
+        create: data.itensRelacionados.map((rel: any, idx: number) => ({
+          destinoId: Number(rel.destinoId),
+          rotulo: rel.rotulo?.trim() || null,
+          ordem: Number.isFinite(Number(rel.ordem)) ? Number(rel.ordem) : idx,
+        })),
+      };
+    }
+
     if (data.tipo === CuradoriaTipoItem.LIVRO) {
       itemData.livro = {
         create: {
@@ -403,7 +492,7 @@ export class ItemsService {
           capaUrl: data.livro?.capaUrl || null,
           disponibilidade: data.livro?.disponibilidade || 'DISPONIVEL',
           autores: {
-            create: this.buildBookAuthors(data.livro),
+            create: this.buildPeopleRelations(data.livro, 'AUTOR'),
           },
           acessos: {
             create: this.buildAccessData(data.livro?.acessos),
@@ -420,11 +509,7 @@ export class ItemsService {
           thumbnailUrl: data.video?.thumbnailUrl || null,
           incorporavel: data.video?.incorporavel !== undefined ? Boolean(data.video.incorporavel) : true,
           participantes: {
-            create: (data.video?.pessoaIds || []).map((pessoaId: number, idx: number) => ({
-              pessoaId: Number(pessoaId),
-              papel: data.video?.papel || 'EXPOSITOR',
-              ordem: idx,
-            })),
+            create: this.buildPeopleRelations(data.video, 'EXPOSITOR'),
           },
         },
       };
@@ -435,8 +520,11 @@ export class ItemsService {
           urlOriginal: data.curso.urlOriginal,
           canal: data.curso.canal || null,
           thumbnailUrl: data.curso.thumbnailUrl || data.curso.aulas[0]?.thumbnailUrl || null,
+          participantes: {
+            create: this.buildPeopleRelations(data.curso, 'EXPOSITOR'),
+          },
           aulas: {
-            create: data.curso.aulas.map((aula: any, index: number) => ({
+            create: (data.curso.aulas || []).map((aula: any, index: number) => ({
               ordem: index + 1,
               titulo: aula.titulo.trim(),
               youtubeId: aula.youtubeId,
@@ -509,6 +597,20 @@ export class ItemsService {
         },
       });
 
+      if (Array.isArray(data.itensRelacionados)) {
+        await tx.curadoriaItemRelacionado.deleteMany({ where: { origemId: id } });
+        if (data.itensRelacionados.length > 0) {
+          await tx.curadoriaItemRelacionado.createMany({
+            data: data.itensRelacionados.map((rel: any, idx: number) => ({
+              origemId: id,
+              destinoId: Number(rel.destinoId),
+              rotulo: rel.rotulo?.trim() || null,
+              ordem: Number.isFinite(Number(rel.ordem)) ? Number(rel.ordem) : idx,
+            })),
+          });
+        }
+      }
+
       if (existing.tipo === CuradoriaTipoItem.LIVRO && existing.livro) {
         await tx.curadoriaLivro.update({
           where: { id: existing.livro.id },
@@ -527,7 +629,7 @@ export class ItemsService {
             disponibilidade: data.livro?.disponibilidade || 'DISPONIVEL',
             autores: {
               deleteMany: {},
-              create: this.buildBookAuthors(data.livro),
+              create: this.buildPeopleRelations(data.livro, 'AUTOR'),
             },
             acessos: {
               deleteMany: {},
@@ -545,6 +647,10 @@ export class ItemsService {
             duracaoSegundos: data.video?.duracaoSegundos ? Number(data.video.duracaoSegundos) : null,
             thumbnailUrl: data.video?.thumbnailUrl || null,
             incorporavel: data.video?.incorporavel !== false,
+            participantes: {
+              deleteMany: {},
+              create: this.buildPeopleRelations(data.video, 'EXPOSITOR'),
+            },
           },
         });
       } else if ((existing.tipo === CuradoriaTipoItem.CURSO || existing.tipo === CuradoriaTipoItem.CONFERENCIA) && existing.curso) {
@@ -555,12 +661,16 @@ export class ItemsService {
             urlOriginal: data.curso.urlOriginal,
             canal: data.curso.canal || null,
             thumbnailUrl: data.curso.thumbnailUrl || data.curso.aulas[0]?.thumbnailUrl || null,
+            participantes: {
+              deleteMany: {},
+              create: this.buildPeopleRelations(data.curso, 'EXPOSITOR'),
+            },
           },
         });
         await tx.curadoriaCursoAula.deleteMany({ where: { cursoId: existing.curso.id } });
         await tx.curadoriaCursoMaterial.deleteMany({ where: { cursoId: existing.curso.id } });
         await tx.curadoriaCursoAula.createMany({
-          data: data.curso.aulas.map((aula: any, index: number) => ({
+          data: (data.curso.aulas || []).map((aula: any, index: number) => ({
             cursoId: existing.curso!.id,
             ordem: index + 1,
             titulo: aula.titulo.trim(),
@@ -589,11 +699,193 @@ export class ItemsService {
       where: { id },
       include: {
         categorias: { include: { categoria: true } },
-        livro: { include: { acessos: { orderBy: { ordem: 'asc' } } } },
-        video: true,
-        curso: { include: { aulas: { orderBy: { ordem: 'asc' } }, materiais: { orderBy: { ordem: 'asc' } } } },
+        livro: { include: { acessos: { orderBy: { ordem: 'asc' } }, autores: { include: { pessoa: true } } } },
+        video: { include: { participantes: { include: { pessoa: true } } } },
+        curso: {
+          include: {
+            aulas: { orderBy: { ordem: 'asc' } },
+            materiais: { orderBy: { ordem: 'asc' } },
+            participantes: { include: { pessoa: true } },
+          },
+        },
+        relacionadosOrigem: {
+          orderBy: { ordem: 'asc' },
+          include: { destino: true },
+        },
       },
     });
+  }
+
+  /**
+   * Fetches hybrid related items (manual curation + automated affinity fallback).
+   */
+  async getRelatedItems(itemId: number, limit = 4) {
+    const currentItem = await this.prisma.curadoriaItem.findUnique({
+      where: { id: itemId },
+      include: {
+        categorias: true,
+        livro: { include: { autores: true } },
+        video: { include: { participantes: true } },
+        curso: { include: { participantes: true } },
+      },
+    });
+
+    if (!currentItem) return [];
+
+    const manualRelations = await this.prisma.curadoriaItemRelacionado.findMany({
+      where: { origemId: itemId },
+      orderBy: { ordem: 'asc' },
+      include: {
+        destino: {
+          include: {
+            categorias: { include: { categoria: true } },
+            livro: {
+              include: {
+                autores: { include: { pessoa: true } },
+                acessos: { where: { ativo: true }, orderBy: { ordem: 'asc' } },
+              },
+            },
+            video: {
+              include: {
+                participantes: { include: { pessoa: true } },
+              },
+            },
+            curso: {
+              include: {
+                participantes: { include: { pessoa: true } },
+                aulas: { orderBy: { ordem: 'asc' } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const result: Array<{
+      item: any;
+      rotulo: string | null;
+      isManual: boolean;
+      score?: number;
+    }> = [];
+
+    const addedIds = new Set<number>([itemId]);
+
+    for (const rel of manualRelations) {
+      if (rel.destino.status === CuradoriaStatus.PUBLICADO && !addedIds.has(rel.destinoId)) {
+        result.push({
+          item: rel.destino,
+          rotulo: rel.rotulo,
+          isManual: true,
+        });
+        addedIds.add(rel.destinoId);
+      }
+    }
+
+    if (result.length >= limit) {
+      return result.slice(0, limit);
+    }
+
+    // Automated Affinity Matching
+    const currentCategoryIds = new Set(currentItem.categorias.map((c) => c.categoriaId));
+    const currentPessoaIds = new Set<number>([
+      ...(currentItem.livro?.autores?.map((a) => a.pessoaId) || []),
+      ...(currentItem.video?.participantes?.map((p) => p.pessoaId) || []),
+      ...(currentItem.curso?.participantes?.map((p) => p.pessoaId) || []),
+    ]);
+
+    const stopWords = new Set(['para', 'com', 'sem', 'sobre', 'pelo', 'pela', 'como', 'onde', 'qual', 'este', 'esta', 'isso', 'aquele', 'aquela', 'mais', 'menos', 'seus', 'suas', 'entre', 'quando', 'tudo', 'nada', 'cada', 'outro', 'outra']);
+    const titleWords = currentItem.titulo
+      .toLowerCase()
+      .replace(/[^a-záéíóúâêîôûãõç\s]/gi, ' ')
+      .split(/\s+/)
+      .filter((w) => w.length >= 4 && !stopWords.has(w));
+
+    const candidates = await this.prisma.curadoriaItem.findMany({
+      where: {
+        status: CuradoriaStatus.PUBLICADO,
+        id: { notIn: Array.from(addedIds) },
+      },
+      take: 40,
+      orderBy: [{ publicadoEm: 'desc' }, { criadoEm: 'desc' }],
+      include: {
+        categorias: { include: { categoria: true } },
+        livro: {
+          include: {
+            autores: { include: { pessoa: true } },
+            acessos: { where: { ativo: true }, orderBy: { ordem: 'asc' } },
+          },
+        },
+        video: {
+          include: {
+            participantes: { include: { pessoa: true } },
+          },
+        },
+        curso: {
+          include: {
+            participantes: { include: { pessoa: true } },
+            aulas: { orderBy: { ordem: 'asc' } },
+          },
+        },
+      },
+    });
+
+    const scoredCandidates: Array<{ item: any; score: number }> = [];
+
+    for (const candidate of candidates) {
+      let score = 0;
+
+      // A. Person match: +5 pts per common person
+      const candidatePessoaIds = [
+        ...(candidate.livro?.autores?.map((a) => a.pessoaId) || []),
+        ...(candidate.video?.participantes?.map((p) => p.pessoaId) || []),
+        ...(candidate.curso?.participantes?.map((p) => p.pessoaId) || []),
+      ];
+      for (const pid of candidatePessoaIds) {
+        if (currentPessoaIds.has(pid)) {
+          score += 5;
+        }
+      }
+
+      // B. Category match: +4 pts per common category
+      for (const cat of candidate.categorias) {
+        if (currentCategoryIds.has(cat.categoriaId)) {
+          score += 4;
+        }
+      }
+
+      // C. Complementary media format: +3 pts
+      const isCurrentVideoLike = currentItem.tipo === CuradoriaTipoItem.VIDEO || currentItem.tipo === CuradoriaTipoItem.CONFERENCIA || currentItem.tipo === CuradoriaTipoItem.CURSO;
+      const isCandidateBook = candidate.tipo === CuradoriaTipoItem.LIVRO;
+      if ((isCurrentVideoLike && isCandidateBook) || (currentItem.tipo === CuradoriaTipoItem.LIVRO && !isCandidateBook)) {
+        score += 3;
+      }
+
+      // D. Title word match: +2 pts per matching significant word
+      const candidateTitle = candidate.titulo.toLowerCase();
+      for (const word of titleWords) {
+        if (candidateTitle.includes(word)) {
+          score += 2;
+        }
+      }
+
+      if (score > 0) {
+        scoredCandidates.push({ item: candidate, score });
+      }
+    }
+
+    scoredCandidates.sort((a, b) => b.score - a.score);
+
+    const needed = limit - result.length;
+    for (const sc of scoredCandidates.slice(0, needed)) {
+      result.push({
+        item: sc.item,
+        rotulo: null,
+        isManual: false,
+        score: sc.score,
+      });
+    }
+
+    return result;
   }
 
 }

@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet-async';
 import { VeredasNavbar } from '../../components/veredas/VeredasNavbar';
 import { VeredasFooter } from '../../components/veredas/VeredasFooter';
 import { RecommendationBlock } from '../../components/veredas/RecommendationBlock';
+import { CrossReferenceSection } from '../../components/veredas/CrossReferenceSection';
 
 export const VeredasCourseDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -35,6 +36,7 @@ export const VeredasCourseDetailPage: React.FC = () => {
         </section>
         <aside className="bg-stone-900 border border-stone-800 rounded-xl h-fit lg:sticky lg:top-24 overflow-hidden"><div className="p-4 border-b border-stone-800"><h2 className="font-bold flex items-center gap-2"><ListVideo className="w-4 h-4 text-amber-500" /> Aulas do curso</h2><p className="text-xs text-stone-500 mt-1">{aulas.length} aulas na ordem recomendada</p></div><div className="max-h-[65vh] overflow-y-auto">{aulas.map((lesson: any, index: number) => <button key={lesson.id || lesson.youtubeId} onClick={() => selectLesson(index)} className={`w-full text-left p-4 border-b border-stone-800/70 flex gap-3 ${index === currentIndex ? 'bg-amber-950/40 text-amber-200' : 'hover:bg-stone-800'}`}><span className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-xs ${index === currentIndex ? 'bg-amber-500 text-stone-950' : 'bg-stone-800 text-stone-400'}`}>{index + 1}</span><span className="text-xs font-semibold leading-relaxed">{lesson.titulo}</span></button>)}</div></aside>
       </div>
+      <CrossReferenceSection itemSlug={slug!} currentTipo="CURSO" currentTitle={item.titulo} />
     </main><VeredasFooter />
   </div>;
 };

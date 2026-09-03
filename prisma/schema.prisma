@@ -530,6 +530,8 @@ model CuradoriaItem {
   video           CuradoriaVideo?
   curso           CuradoriaCurso?
   categorias      CuradoriaItemCategoria[]
+  relacionadosOrigem  CuradoriaItemRelacionado[] @relation("RelacoesOrigem")
+  relacionadosDestino CuradoriaItemRelacionado[] @relation("RelacoesDestino")
 
   @@index([status, publicadoEm])
   @@index([tipo, status])
@@ -589,6 +591,7 @@ model CuradoriaCurso {
   thumbnailUrl  String?
   aulas         CuradoriaCursoAula[]
   materiais     CuradoriaCursoMaterial[]
+  participantes CuradoriaCursoPessoa[]
 
   @@index([itemId])
 }
@@ -656,6 +659,7 @@ model CuradoriaPessoa {
 
   livros    CuradoriaLivroPessoa[]
   videos    CuradoriaVideoPessoa[]
+  cursos    CuradoriaCursoPessoa[]
 
   @@index([ativa])
 }
@@ -686,6 +690,36 @@ model CuradoriaVideoPessoa {
   @@id([videoId, pessoaId, papel])
   @@index([pessoaId])
   @@index([videoId, ordem])
+}
+
+model CuradoriaCursoPessoa {
+  cursoId  Int
+  pessoaId Int
+  papel    CuradoriaPapelPessoa @default(EXPOSITOR)
+  ordem    Int                  @default(0)
+
+  curso    CuradoriaCurso       @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  pessoa   CuradoriaPessoa      @relation(fields: [pessoaId], references: [id], onDelete: Cascade)
+
+  @@id([cursoId, pessoaId, papel])
+  @@index([pessoaId])
+  @@index([cursoId, ordem])
+}
+
+model CuradoriaItemRelacionado {
+  id        Int           @id @default(autoincrement())
+  origemId  Int
+  destinoId Int
+  ordem     Int           @default(0)
+  rotulo    String?
+  criadoEm  DateTime      @default(now())
+
+  origem    CuradoriaItem @relation("RelacoesOrigem", fields: [origemId], references: [id], onDelete: Cascade)
+  destino   CuradoriaItem @relation("RelacoesDestino", fields: [destinoId], references: [id], onDelete: Cascade)
+
+  @@unique([origemId, destinoId])
+  @@index([origemId, ordem])
+  @@index([destinoId])
 }
 
 model CuradoriaAcesso {
