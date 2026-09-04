@@ -2,7 +2,23 @@
 
 ## [Em Desenvolvimento]
 
-### 2026-08-27 - Relógio de Oração: Escala Semanal Recorrente, Gráficos de Ocupação & Mesa de Escalação Pastoral
+### 2026-09-04 - Jornada Histórica dos Batistas & Memorial IBO (1609 a 1959 e dias atuais)
+
+- **Página Pública Interativa (`/historia`):**
+  - **Trilha Histórica em 5 Eras:** 1) O Nascedouro & A Liberdade de Consciência (1609-1644); 2) Oceanos & Missões Globais (1638-1812); 3) A Semente no Brasil (1871-1907); 4) As Águas da Amazônia e Porto Velho (1891-1921); 5) O Barro nas Mãos do Oleiro — Fundação da IBO em 1º de Junho de 1959.
+  - **Linha do Tempo Vertical:** Navegação fluida com marcadores temáticos, citações históricas, destaques e gavetas de curiosidades ("Você Sabia?").
+  - **Minimapa de Rota ("Do Tâmisa às Margens do Madeira"):** 6 estações geográficas interativas com salto automático para os relatos.
+  - **Baú do Historiador:** Modal com fontes documentais e fac-símiles de Thomas Helwys (1612), Confissão de Londres (1689), William Carey (1792) e cartas de Eurico Nelson (1919).
+  - **Desafio do Sentinela da História:** Mini-quiz pedagógico e lúdico de 4 perguntas com pontuação instantânea e selo final.
+  - **Memorial IBO (Pastorados & Acervo):** Seção pública para honrar os pastores e pioneiros da congregação.
+- **Central Administrativa (`/admin/historia`):**
+  - CRUD completo para **Pastorados e Períodos Ministeriais** (anos de ministério, cargo, biografia, foto e legados).
+  - CRUD completo para **Acervo Documental & Fotografias Históricas** (ano, categoria, imagem, descrição e fonte).
+  - Nova permissão `history:manage` integrada aos papéis `ADMIN_GERAL` e `EDITOR`.
+- **Banco de Dados (Prisma & Supabase):**
+  - Modelos `ChurchPastorate` e `ChurchHistoryItem` criados com migrations SQL aplicadas e suporte a RLS.
+- **Navegação & SEO:**
+  - Link "História" integrado à `Navbar.tsx` e chamada na seção de identidade da `HomePage.tsx`.
 
 - **Transição para Escala Semanal Recorrente (Segunda a Domingo):**
   - Superação do modelo mensal para a **Escala Semanal Recorrente** (7 dias), criando um hábito devocional natural para membros e famílias (ex: *Toda Terça-feira*).

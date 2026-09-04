@@ -816,3 +816,38 @@ model ApiRateLimitEvent {
   @@index([createdAt])
 }
 
+model ChurchPastorate {
+  id            String    @id @default(cuid())
+  pastorName    String
+  role          String    @default("Pastor Titular")
+  startYear     Int
+  endYear       Int?
+  photoUrl      String?
+  biography     String
+  keyMilestones String?
+  orderIndex    Int       @default(0)
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([startYear, orderIndex])
+  @@index([active])
+}
+
+model ChurchHistoryItem {
+  id          String   @id @default(cuid())
+  year        Int
+  title       String
+  description String
+  imageUrl    String?
+  category    String
+  source      String?
+  orderIndex  Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([year, category])
+  @@index([active])
+}
+

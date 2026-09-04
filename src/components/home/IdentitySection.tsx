@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
 const IdentitySection: React.FC = () => {
@@ -33,13 +34,23 @@ const IdentitySection: React.FC = () => {
                 Comprometidos com a pregação expositiva das Escrituras, a adoração reverente e a glória de Deus em todas as esferas da vida, cremos que a igreja local é a família de Deus na terra — o lugar onde pecadores encontram graça e o senhorio de Cristo é manifestado através do amor mútuo.
               </p>
 
-              <a
-                href="#documentos"
-                className="inline-flex items-center gap-2 text-olaria font-bold uppercase tracking-wider hover:text-olaria-600 transition-colors border-b-2 border-olaria hover:border-olaria-600 pb-1"
-              >
-                Conheça Nossa Declaração de Fé
-                <ArrowRight className="w-4 h-4" />
-              </a>
+              <div className="flex flex-wrap items-center gap-6">
+                <a
+                  href="#documentos"
+                  className="inline-flex items-center gap-2 text-olaria font-bold uppercase tracking-wider hover:text-olaria-600 transition-colors border-b-2 border-olaria hover:border-olaria-600 pb-1"
+                >
+                  Declaração de Fé
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+
+                <Link
+                  to="/historia"
+                  className="inline-flex items-center gap-2 text-stone-700 font-bold uppercase tracking-wider hover:text-olaria transition-colors border-b-2 border-stone-300 hover:border-olaria pb-1"
+                >
+                  Nossa História (1609–1959)
+                  <ArrowRight className="w-4 h-4 text-olaria" />
+                </Link>
+              </div>
             </div>
           </div>
           <div className="relative h-[500px] w-full rounded-2xl overflow-hidden shadow-2xl">

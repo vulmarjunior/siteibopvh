@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Mail,
   Shield,
+  Church,
   Users,
   Plus,
   ArrowRight,
@@ -96,6 +97,16 @@ const moduleCards: ModuleCard[] = [
     permission: 'ebf:manage',
     badge: 'Eventos',
     badgeColor: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
+  },
+  {
+    title: 'Memorial & História IBO',
+    category: 'Pastoral & Eventos',
+    description: 'Gestão dos pastorados, registros de fundação e acervo histórico documental desde 1959.',
+    href: '/admin/historia',
+    icon: Church,
+    permission: 'history:manage',
+    badge: 'Memorial',
+    badgeColor: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
   },
 
   // Governança & Sistema

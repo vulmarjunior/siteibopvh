@@ -21,6 +21,8 @@ const AdminSeriesEmailPage = lazy(() => import('./pages/admin/AdminSeriesEmailPa
 const AdminProtectedRoute = lazy(() => import('./components/admin/AdminProtectedRoute'));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminHomeBannersPage = lazy(() => import('./pages/admin/AdminHomeBannersPage'));
+const AdminHistoryPage = lazy(() => import('./pages/admin/AdminHistoryPage'));
+const HistoryPage = lazy(() => import('./pages/history/HistoryPage'));
 
 // Veredas IBO (Curadoria) Lazy Components
 const VeredasHomePage = lazy(() => import('./pages/veredas/VeredasHomePage').then(m => ({ default: m.VeredasHomePage })));
@@ -52,11 +54,13 @@ const App: React.FC = () => (
         <Route path="/moldanos" element={<ModuleRoute moduleId="moldanos"><ModuleClosingPage moduleId="moldanos" /></ModuleRoute>} />
         <Route path="/ebf" element={<ModuleRoute moduleId="ebf"><EbfPage /></ModuleRoute>} />
         <Route path="/ebf/admin" element={<Navigate to="/admin/ebf" replace />} />
+        <Route path="/historia" element={<HistoryPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/definir-senha" element={<AdminSetPasswordPage />} />
         <Route element={<AdminProtectedRoute />}>
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/modulos" element={<AdminModulesPage />} />
+          <Route path="/admin/historia" element={<AdminHistoryPage />} />
           <Route path="/admin/series" element={<AdminSeriesPage />} />
           <Route path="/admin/series/:id" element={<AdminSeriesEditorPage />} />
           <Route path="/admin/series/:id/preview" element={<AdminSeriesPreviewPage />} />

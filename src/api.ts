@@ -17,6 +17,8 @@ import { createAdminPrayerRouter } from "./api/admin/prayer.js";
 import { createAdminEbfRouter } from "./api/admin/ebf.js";
 import { createAdminUsersRouter } from "./api/admin/users.js";
 import { createAdminHomeBannersRouter, createPublicHomeBannersRouter } from "./api/admin/homeBanners.js";
+import { createAdminHistoryRouter } from "./api/admin/history.js";
+import { createPublicHistoryRouter } from "./api/public/history.js";
 import { createPublicEbfRouter } from "./api/public/ebf.js";
 import { createPublicParousiaRouter } from "./api/public/parousia.js";
 import { createPublicPrayerSentinelRouter } from "./api/public/prayerSentinel.js";
@@ -69,12 +71,14 @@ apiRouter.use("/admin/prayer", createAdminPrayerRouter(prisma));
 apiRouter.use("/admin/ebf", createAdminEbfRouter(prisma));
 apiRouter.use("/admin/users", createAdminUsersRouter(prisma));
 apiRouter.use("/admin/home-banners", createAdminHomeBannersRouter(prisma));
+apiRouter.use("/admin/history", createAdminHistoryRouter(prisma));
 apiRouter.use("/ebf", createPublicEbfRouter(prisma, getResend));
 apiRouter.use("/parousia", createPublicParousiaRouter(prisma, getResend));
 apiRouter.use("/relogio/sentinelas", createPublicPrayerSentinelRouter(prisma, getResend));
 apiRouter.use("/modules", createPublicModulesRouter(prisma));
 apiRouter.use("/home-banners", createPublicHomeBannersRouter(prisma));
 apiRouter.use("/series", createEditorialSeriesRouter(prisma));
+apiRouter.use("/history", createPublicHistoryRouter(prisma));
 
 export async function seed() {
   console.log("Starting database seeding check...");
