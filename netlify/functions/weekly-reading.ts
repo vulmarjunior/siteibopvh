@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { Resend } from "resend";
 import { buildWeeklyReadingEmail } from "../../src/lib/email-templates/weekly-reading";
-import { selectCurrentWeeklyReading } from "../../src/lib/editorial/weeklyReading";
+import { getFallbackWeeklyReadingFromJSON, selectCurrentWeeklyReading } from "../../src/lib/editorial/weeklyReading";
 
 // Config: toda segunda-feira às 11h UTC = 7h Porto Velho
 export const config = {
@@ -24,8 +24,17 @@ function getResend() {
   return resend;
 }
 
+// Utilitário para fatiar array em lotes
+function chunkArray<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+}
+
 export default async () => {
-  console.log("[weekly-reading] Iniciando envio semanal...");
+  console.log("[weekly-reading] Iniciando envio semanal automatizado...");
 
   // 1. Calcular segunda-feira da semana atual (horário de Porto Velho)
   const now = new Date();
@@ -36,106 +45,240 @@ export default async () => {
   monday.setUTCHours(11, 0, 0, 0); // 11h UTC = 7h Porto Velho
   const mondayStr = monday.toISOString().split("T")[0]; // YYYY-MM-DD
 
-  console.log(`[weekly-reading] Segunda-feira: ${mondayStr}`);
+  console.log(`[weekly-reading] Data de referência: ${mondayStr}`);
 
-  // 2. Selecionar a leitura vigente na plataforma editorial
+  // 2. Selecionar a leitura vigente na plataforma editorial (com fallback seguro)
   const db = getPrisma();
-  const sermoeVigente = await selectCurrentWeeklyReading(db, now);
+  let sermoeVigente = await selectCurrentWeeklyReading(db, now).catch((err) => {
+    console.error("[weekly-reading] Erro ao consultar leitura vigente no banco:", err);
+    return null;
+  });
+
+  if (!sermoeVigente) {
+    console.log("[weekly-reading] Usando fallback local para catálogo sermoes.json...");
+    sermoeVigente = getFallbackWeeklyReadingFromJSON(now);
+  }
 
   if (!sermoeVigente) {
     console.log("[weekly-reading] Nenhum sermão com leituras encontrado para esta semana.");
     return { status: "no_sermon", monday: mondayStr };
   }
 
-  console.log(
-    `[weekly-reading] Sermão: #${sermoeVigente.number} — ${sermoeVigente.title}`
-  );
+  console.log(`[weekly-reading] Sermão identificado: #${sermoeVigente.number} — ${sermoeVigente.title}`);
 
-  // 3. Buscar subscribers ativos
+  // 3. Checar status da série no banco e se o envio está habilitado ANTES de registrar a execução
+  let seriesId = sermoeVigente.seriesId;
+  let messageId = sermoeVigente.messageId;
+  let emailEnabled = sermoeVigente.emailEnabled;
+
+  const dbSeries = await db.editorialSeries.findFirst({
+    where: { slug: sermoeVigente.seriesSlug },
+    select: { id: true, emailEnabled: true },
+  }).catch(() => null);
+
+  if (dbSeries) {
+    seriesId = dbSeries.id;
+    emailEnabled = dbSeries.emailEnabled;
+  }
+
+  // Se o envio automático estiver desabilitado na série, sai imediatamente sem travar o banco
+  if (!emailEnabled) {
+    console.log("[weekly-reading] Envio de e-mail está desabilitado na Central para esta série.");
+    return { status: "disabled", sermon: sermoeVigente.number, monday: mondayStr };
+  }
+
+  // 4. Buscar inscritos ativos
   const subscribers = await db.readingSubscriber.findMany({
     where: { active: true },
   });
 
   if (subscribers.length === 0) {
-    console.log("[weekly-reading] Nenhum inscrito ativo.");
-    return { status: "no_subscribers", sermon: sermoeVigente.number };
+    console.log("[weekly-reading] Nenhum inscrito ativo encontrado.");
+    return { status: "no_subscribers", sermon: sermoeVigente.number, monday: mondayStr };
   }
 
-  console.log(`[weekly-reading] ${subscribers.length} inscrito(s) ativo(s)`);
+  console.log(`[weekly-reading] ${subscribers.length} inscrito(s) ativo(s) para receber`);
 
-  let run;
-  try {
-    run = await db.editorialEmailRun.create({
-      data: {
-        seriesId: sermoeVigente.seriesId,
-        messageId: sermoeVigente.messageId,
-        weekStart: monday,
-        recipientCount: subscribers.length,
-      },
-    });
-  } catch (error: any) {
-    if (error?.code === 'P2002') {
-      console.log('[weekly-reading] Esta edição semanal já foi processada. Envio ignorado.');
-      return { status: 'already_processed', sermon: sermoeVigente.number, monday: mondayStr };
+  // Se a mensagem for de fallback com prefixo json-, tenta vincular com a mensagem do banco se existir
+  if (messageId.startsWith("json-") && dbSeries) {
+    const dbMessage = await db.editorialMessage.findFirst({
+      where: { seriesId: dbSeries.id, order: Number(sermoeVigente.number) },
+      select: { id: true },
+    }).catch(() => null);
+    if (dbMessage) {
+      messageId = dbMessage.id;
     }
-    throw error;
-  }
-  if (!sermoeVigente.emailEnabled) {
-    console.log('[weekly-reading] E-mail desabilitado para esta série.');
-    return { status: 'disabled', sermon: sermoeVigente.number, monday: mondayStr };
   }
 
-  // 4. Enviar e-mails
+  // 5. Gestão auto-recuperável da execução (EditorialEmailRun)
+  let run: { id: string; status: string } | null = null;
+  const canPersistRun = Boolean(dbSeries && !messageId.startsWith("json-"));
+
+  if (canPersistRun) {
+    try {
+      const existingRun = await db.editorialEmailRun.findUnique({
+        where: {
+          seriesId_messageId_weekStart: {
+            seriesId,
+            messageId,
+            weekStart: monday,
+          },
+        },
+        select: { id: true, status: true },
+      });
+
+      if (existingRun) {
+        if (existingRun.status === "COMPLETED") {
+          console.log("[weekly-reading] Esta edição semanal já foi concluída com sucesso.");
+          return {
+            status: "already_completed",
+            sermon: sermoeVigente.number,
+            monday: mondayStr,
+            runId: existingRun.id,
+          };
+        }
+        console.log(`[weekly-reading] Retomando execução existente (${existingRun.status}): ${existingRun.id}`);
+        run = existingRun;
+      } else {
+        run = await db.editorialEmailRun.create({
+          data: {
+            seriesId,
+            messageId,
+            weekStart: monday,
+            recipientCount: subscribers.length,
+            status: "RUNNING",
+          },
+          select: { id: true, status: true },
+        });
+      }
+    } catch (err: any) {
+      console.warn("[weekly-reading] Aviso ao gerenciar registro de execução:", err?.message || err);
+    }
+  }
+
+  // 6. Filtrar inscritos que já receberam com sucesso nesta execução (idempotência no nível de destinatário)
+  let pendingSubscribers = subscribers;
+  if (run) {
+    try {
+      const alreadySent = await db.editorialEmailDelivery.findMany({
+        where: { runId: run.id, status: "SENT" },
+        select: { subscriberId: true },
+      });
+      const sentIds = new Set(alreadySent.map((d) => d.subscriberId));
+      if (sentIds.size > 0) {
+        pendingSubscribers = subscribers.filter((s) => !sentIds.has(s.id));
+        console.log(`[weekly-reading] ${sentIds.size} já receberam; restam ${pendingSubscribers.length} pendentes.`);
+      }
+    } catch (err) {
+      console.warn("[weekly-reading] Não foi possível checar envios prévios, enviando para todos os ativos:", err);
+    }
+  }
+
+  if (pendingSubscribers.length === 0) {
+    console.log("[weekly-reading] Todos os inscritos já receberam a leitura desta semana.");
+    if (run) {
+      await db.editorialEmailRun.update({
+        where: { id: run.id },
+        data: { status: "COMPLETED", completedAt: new Date() },
+      }).catch(() => null);
+    }
+    return { status: "already_completed", sermon: sermoeVigente.number, monday: mondayStr };
+  }
+
+  // 7. Envio em lotes concorrentes (chunks de 5) para máxima velocidade e sem estourar timeout
   const siteUrl = process.env.APP_URL || "https://www.ibopvh.com.br";
   const resendClient = getResend();
   let sent = 0;
   let errors = 0;
 
-  for (const sub of subscribers) {
-    const unsubscribeUrl = `${siteUrl}/api/parousia/unsubscribe?token=${sub.token}`;
+  const batches = chunkArray(pendingSubscribers, 5);
 
-    const html = buildWeeklyReadingEmail({
-      sermoeNumero: sermoeVigente.number,
-      sermoeTitulo: sermoeVigente.title,
-      tema: sermoeVigente.theme,
-      dias: sermoeVigente.days,
-      unsubscribeUrl,
-      siteUrl,
-    });
+  for (const batch of batches) {
+    await Promise.allSettled(
+      batch.map(async (sub) => {
+        const unsubscribeUrl = `${siteUrl}/api/parousia/unsubscribe?token=${sub.token}`;
+        const html = buildWeeklyReadingEmail({
+          sermoeNumero: sermoeVigente.number,
+          sermoeTitulo: sermoeVigente.title,
+          tema: sermoeVigente.theme,
+          dias: sermoeVigente.days,
+          unsubscribeUrl,
+          siteUrl,
+        });
 
-    try {
-      const delivery = await db.editorialEmailDelivery.create({ data: { runId: run.id, subscriberId: sub.id } });
-      const { data, error } = await resendClient.emails.send({
-        from: "IBO Parousia <contato@ibopvh.com.br>",
-        to: sub.email,
-        subject: `Leitura da Semana — #${sermoeVigente.number} ${sermoeVigente.title}`,
-        html,
-      }, { idempotencyKey: `weekly-reading/${run.id}/${sub.id}` });
-      if (error) throw new Error(error.message);
-      await db.editorialEmailDelivery.update({ where: { id: delivery.id }, data: { status: 'SENT', providerId: data?.id, sentAt: new Date() } });
-      sent++;
-    } catch (err) {
-      console.error(`[weekly-reading] Erro ao enviar para ${sub.email}:`, err);
-      await db.editorialEmailDelivery.upsert({
-        where: { runId_subscriberId: { runId: run.id, subscriberId: sub.id } },
-        create: { runId: run.id, subscriberId: sub.id, status: 'FAILED', error: err instanceof Error ? err.message : 'Erro desconhecido' },
-        update: { status: 'FAILED', error: err instanceof Error ? err.message : 'Erro desconhecido' },
-      });
-      errors++;
-    }
+        let deliveryId: string | null = null;
+        if (run) {
+          try {
+            const delivery = await db.editorialEmailDelivery.create({
+              data: { runId: run.id, subscriberId: sub.id },
+              select: { id: true },
+            });
+            deliveryId = delivery.id;
+          } catch {
+            // Segue mesmo se a auditoria individual falhar
+          }
+        }
+
+        try {
+          const idempotencyKey = run
+            ? `weekly-reading/${run.id}/${sub.id}`
+            : `weekly-reading/${mondayStr}/${sub.id}`;
+
+          const { data, error } = await resendClient.emails.send(
+            {
+              from: "IBO Parousia <contato@ibopvh.com.br>",
+              to: sub.email,
+              subject: `Leitura da Semana — #${sermoeVigente.number} ${sermoeVigente.title}`,
+              html,
+            },
+            { idempotencyKey }
+          );
+
+          if (error) throw new Error(error.message);
+
+          if (deliveryId) {
+            await db.editorialEmailDelivery.update({
+              where: { id: deliveryId },
+              data: { status: "SENT", providerId: data?.id, sentAt: new Date() },
+            }).catch(() => null);
+          }
+          sent++;
+        } catch (err) {
+          console.error(`[weekly-reading] Erro ao enviar para ${sub.email}:`, err);
+          if (deliveryId) {
+            await db.editorialEmailDelivery.update({
+              where: { id: deliveryId },
+              data: {
+                status: "FAILED",
+                error: err instanceof Error ? err.message : "Erro desconhecido",
+              },
+            }).catch(() => null);
+          }
+          errors++;
+        }
+      })
+    );
   }
 
-  await db.editorialEmailRun.update({
-    where: { id: run.id },
-    data: { status: errors === 0 ? 'COMPLETED' : sent > 0 ? 'PARTIAL' : 'FAILED', sentCount: sent, failedCount: errors, completedAt: new Date() },
-  });
+  // 8. Atualizar status final da execução
+  if (run) {
+    await db.editorialEmailRun.update({
+      where: { id: run.id },
+      data: {
+        status: errors === 0 ? "COMPLETED" : sent > 0 ? "PARTIAL" : "FAILED",
+        sentCount: { increment: sent },
+        failedCount: { increment: errors },
+        completedAt: new Date(),
+      },
+    }).catch((err) => console.error("[weekly-reading] Erro ao atualizar status final da execução:", err));
+  }
 
-  console.log(`[weekly-reading] Envio concluído: ${sent} enviados, ${errors} erros.`);
+  console.log(`[weekly-reading] Envio concluído: ${sent} enviados com sucesso, ${errors} falhas.`);
 
   return {
     status: "sent",
     sermon: `#${sermoeVigente.number} ${sermoeVigente.title}`,
-    subscribers: subscribers.length,
+    subscribers: pendingSubscribers.length,
     sent,
     errors,
   };

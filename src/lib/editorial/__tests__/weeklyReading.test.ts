@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { currentReadingDay, type WeeklyReadingSelection } from '../weeklyReading';
+import { currentReadingDay, getFallbackWeeklyReadingFromJSON, type WeeklyReadingSelection } from '../weeklyReading';
 
 const selection: WeeklyReadingSelection = {
   messageId: 'message-1', seriesId: 'series-1', seriesSlug: 'serie', emailEnabled: true, number: '01', title: 'Mensagem', theme: 'Tema',
@@ -18,3 +18,16 @@ describe('currentReadingDay', () => {
     expect(currentReadingDay(selection, new Date('2026-08-09T12:00:00Z'))).toEqual({ dayLabel: 'Domingo', reading: null });
   });
 });
+
+describe('getFallbackWeeklyReadingFromJSON', () => {
+  it('obtém a leitura vigente de sermoes.json para a data informada', () => {
+    const reading = getFallbackWeeklyReadingFromJSON(new Date('2026-09-07T12:00:00Z'));
+    expect(reading).not.toBeNull();
+    expect(reading?.seriesSlug).toBe('da-ascensao-a-parousia');
+    expect(reading?.number).toBe('11');
+    expect(reading?.title).toBe('Uma Só Casa no Deserto');
+    expect(reading?.days.length).toBe(6);
+    expect(reading?.days[0].dia).toBe('Segunda');
+  });
+});
+
