@@ -4,7 +4,7 @@ import { ItemsService } from '../../lib/veredas/services/itemsService.js';
 import { createAuthMiddleware, requireRole, VeredasAuthenticatedRequest } from './authMiddleware.js';
 import { validateReportPayload, validateItemPayload, validateAccessPayload } from '../../lib/veredas/validation.js';
 import { checkReportRateLimit, generateIpHash } from '../../lib/veredas/rateLimit.js';
-import { parseYoutubeUrl } from '../../lib/veredas/youtube.js';
+import { parseYoutubeUrl, extractSpeakerSuggestions } from '../../lib/veredas/youtube.js';
 import { parseAmazonUrl } from '../../lib/veredas/amazon.js';
 import { lookupBookByIsbn } from '../../lib/veredas/books.js';
 import { generateSlug } from '../../lib/veredas/slug.js';
@@ -22,6 +22,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // GET /api/veredas/items
   router.get('/items', async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
       const result = await itemsService.getPublicItems({
         q: req.query.q as string,
         tipo: req.query.tipo as any,
@@ -43,6 +44,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // GET /api/veredas/destaques
   router.get('/destaques', async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
       const result = await itemsService.getPublicItems({
         destaqueOnly: true,
         limit: 6,
@@ -58,6 +60,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // GET /api/veredas/recentes
   router.get('/recentes', async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
       const result = await itemsService.getPublicItems({
         page: 1,
         limit: 8,
@@ -73,6 +76,7 @@ export function createVeredasRouter(prisma: PrismaClient) {
   // GET /api/veredas/items/:slug
   router.get('/items/:slug', async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
       let item = await itemsService.getPublicItemBySlug(req.params.slug);
       if (!item) {
         return res.status(404).json({ error: 'Conteúdo não encontrado ou não publicado' });
@@ -110,9 +114,32 @@ export function createVeredasRouter(prisma: PrismaClient) {
     }
   });
 
+  // GET /api/veredas/items/:slug/relacionados
+  router.get('/items/:slug/relacionados', async (req, res) => {
+    try {
+      res.setHeader('Cache-Control', 'public, max-age=120, s-maxage=600, stale-while-revalidate=1200');
+      const item = await prisma.curadoriaItem.findUnique({
+        where: { slug: req.params.slug },
+        select: { id: true, status: true },
+      });
+
+      if (!item || item.status !== CuradoriaStatus.PUBLICADO) {
+        return res.status(404).json({ error: 'Conteúdo não encontrado ou não publicado' });
+      }
+
+      const limit = req.query.limit ? Number(req.query.limit) : 4;
+      const related = await itemsService.getRelatedItems(item.id, limit);
+      res.json(related);
+    } catch (err) {
+      console.error('Error fetching related items:', err);
+      res.status(500).json({ error: 'Erro ao carregar itens relacionados' });
+    }
+  });
+
   // GET /api/veredas/categorias
   router.get('/categorias', async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=1800, stale-while-revalidate=3600');
       const categorias = await prisma.curadoriaCategoria.findMany({
         where: { ativa: true },
         orderBy: [{ ordem: 'asc' }, { nome: 'asc' }],
@@ -124,9 +151,34 @@ export function createVeredasRouter(prisma: PrismaClient) {
     }
   });
 
+  // GET /api/veredas/pessoas
+  router.get('/pessoas', async (req, res) => {
+    try {
+      res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=1800, stale-while-revalidate=3600');
+      const pessoas = await prisma.curadoriaPessoa.findMany({
+        where: { ativa: true },
+        orderBy: { nome: 'asc' },
+        include: {
+          _count: {
+            select: {
+              livros: true,
+              videos: true,
+              cursos: true,
+            },
+          },
+        },
+      });
+      res.json(pessoas);
+    } catch (err) {
+      console.error('Error fetching people list:', err);
+      res.status(500).json({ error: 'Erro ao carregar pessoas' });
+    }
+  });
+
   // GET /api/veredas/pessoas/:slug
   router.get('/pessoas/:slug', async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=1800, stale-while-revalidate=3600');
       const pessoa = await prisma.curadoriaPessoa.findUnique({
         where: { slug: req.params.slug },
       });
@@ -219,11 +271,21 @@ export function createVeredasRouter(prisma: PrismaClient) {
       );
       if (oembedResponse.ok) {
         const metadata: any = await oembedResponse.json();
+        const knownPeople = await prisma.curadoriaPessoa.findMany({
+          where: { ativa: true },
+          select: { nome: true },
+        });
+        const suggestedSpeakers = extractSpeakerSuggestions(
+          metadata.title || '',
+          knownPeople.map((p) => p.nome),
+        );
+
         return res.json({
           ...parsed,
           title: metadata.title || null,
           channel: metadata.author_name || null,
           thumbnailUrl: metadata.thumbnail_url || parsed.thumbnailUrl,
+          suggestedSpeakers,
         });
       }
     } catch (error) {

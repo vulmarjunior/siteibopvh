@@ -12,12 +12,13 @@ describe('ItemsService public catalog', () => {
 
     expect(findMany).toHaveBeenCalledWith(expect.objectContaining({
       include: expect.objectContaining({
-        curso: {
-          include: {
+        curso: expect.objectContaining({
+          include: expect.objectContaining({
             aulas: { orderBy: { ordem: 'asc' } },
             materiais: { orderBy: { ordem: 'asc' } },
-          },
-        },
+            participantes: expect.anything(),
+          }),
+        }),
       }),
     }));
   });

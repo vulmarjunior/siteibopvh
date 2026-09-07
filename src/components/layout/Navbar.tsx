@@ -34,6 +34,7 @@ const Navbar: React.FC = () => {
     { name: 'Home', href: '/' },
     ...modules.filter(module => module.visibleInNavigation).map(module => ({ name: module.name, href: module.path })),
     { name: 'A Igreja', href: '/#identidade' },
+    { name: 'História', href: '/historia' },
     { name: 'Sermões', href: '/#sermoes' },
     { name: 'Contribua', href: '/#contribua' },
     { name: 'Contato', href: '/#contato' },
@@ -41,10 +42,11 @@ const Navbar: React.FC = () => {
 
   const isRelogioPage = location.pathname === '/relogio';
   const isMoldaNosPage = location.pathname === '/moldanos';
+  const isHistoryPage = location.pathname === '/historia';
 
   return (
     <nav
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled || isMobileMenuOpen || isRelogioPage || isMoldaNosPage
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled || isMobileMenuOpen || isRelogioPage || isMoldaNosPage || isHistoryPage
         ? 'bg-stone-900/95 backdrop-blur-md shadow-sm border-b border-white/5 py-3'
         : 'bg-transparent py-6'
         }`}

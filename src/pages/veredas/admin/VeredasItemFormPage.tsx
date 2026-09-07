@@ -5,6 +5,8 @@ import { Helmet } from 'react-helmet-async';
 import { BookAccessFields, BookAccessFormData, createEmptyBookAccess } from '../../../components/veredas/BookAccessFields';
 import { parseYoutubePlaylistUrl, parseYoutubeUrl } from '../../../lib/veredas/youtube';
 import { getStoredAdminUser } from '../../../lib/admin/session';
+import { PeopleSelector } from '../../../components/veredas/admin/PeopleSelector';
+import { CrossReferencesEditor, CrossReferenceEntry } from '../../../components/veredas/admin/CrossReferencesEditor';
 
 type CourseLessonFormData = {
   key: string;
@@ -36,6 +38,7 @@ type VeredasItemDraft = {
   status: string;
   destaque: boolean;
   categoriaIds: number[];
+  itensRelacionados?: CrossReferenceEntry[];
   bookData: {
     subtitulo: string; isbn10: string; isbn13: string; asin: string; editora: string;
     anoPublicacao: string; numeroPaginas: string; capaUrl: string; disponibilidade: string;
@@ -68,6 +71,8 @@ export const VeredasItemFormPage: React.FC = () => {
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [authorNames, setAuthorNames] = useState<string[]>([]);
+  const [suggestedSpeakers, setSuggestedSpeakers] = useState<string[]>([]);
+  const [itensRelacionados, setItensRelacionados] = useState<CrossReferenceEntry[]>([]);
   const [porqueIndicamos, setPorqueIndicamos] = useState('');
   const [ressalvas, setRessalvas] = useState('');
   const [nivel, setNivel] = useState('INTRODUTORIO');
@@ -132,6 +137,7 @@ export const VeredasItemFormPage: React.FC = () => {
         setTitulo(draft.titulo);
         setDescricao(draft.descricao || '');
         if (draft.authorNames) setAuthorNames(draft.authorNames);
+        if (draft.itensRelacionados) setItensRelacionados(draft.itensRelacionados);
         setPorqueIndicamos(draft.porqueIndicamos);
         setRessalvas(draft.ressalvas);
         setNivel(draft.nivel);
@@ -164,6 +170,15 @@ export const VeredasItemFormPage: React.FC = () => {
             setDestaque(Boolean(item.destaque));
             if (item.categorias) {
               setCategoriaIds(item.categorias.map((c: any) => c.categoriaId));
+            }
+            if (item.relacionadosOrigem) {
+              setItensRelacionados(
+                item.relacionadosOrigem.map((rel: any) => ({
+                  destinoId: rel.destinoId,
+                  rotulo: rel.rotulo || '',
+                  item: rel.destino,
+                }))
+              );
             }
             if (item.livro) {
               setAuthorNames((item.livro.autores || []).map((author: any) => author.pessoa?.nome).filter(Boolean));
@@ -205,6 +220,9 @@ export const VeredasItemFormPage: React.FC = () => {
                 thumbnailUrl: item.video.thumbnailUrl || '',
                 incorporavel: item.video.incorporavel !== undefined ? Boolean(item.video.incorporavel) : true,
               });
+              if (item.video.participantes?.length) {
+                setAuthorNames(item.video.participantes.map((p: any) => p.pessoa?.nome).filter(Boolean));
+              }
             }
             if (item.curso) {
               setCourseData({
@@ -223,6 +241,9 @@ export const VeredasItemFormPage: React.FC = () => {
                   key: `material-${material.id || index}`, titulo: material.titulo || '', url: material.url || '',
                 })),
               });
+              if (item.curso.participantes?.length) {
+                setAuthorNames(item.curso.participantes.map((p: any) => p.pessoa?.nome).filter(Boolean));
+              }
             }
           }
         })
@@ -247,6 +268,7 @@ export const VeredasItemFormPage: React.FC = () => {
         titulo,
         descricao,
         authorNames,
+        itensRelacionados,
         porqueIndicamos,
         ressalvas,
         nivel,
@@ -264,9 +286,9 @@ export const VeredasItemFormPage: React.FC = () => {
       } catch {
         // The form remains usable when storage is unavailable or full.
       }
-    }, 500);
+    }, 800);
     return () => window.clearTimeout(timer);
-  }, [authorNames, bookAccesses, bookData, categoriaIds, courseData, descricao, destaque, draftKey, draftReady, nivel, porqueIndicamos, ressalvas, status, tipo, titulo, videoData]);
+  }, [authorNames, bookAccesses, bookData, categoriaIds, courseData, descricao, destaque, draftKey, draftReady, itensRelacionados, nivel, porqueIndicamos, ressalvas, status, tipo, titulo, videoData]);
 
   useEffect(() => {
     if (!isFreeLibraryPreset || bookAccesses.length > 0) return;
@@ -294,7 +316,13 @@ export const VeredasItemFormPage: React.FC = () => {
           thumbnailUrl: data.thumbnailUrl,
         }));
         setTitulo((current) => current || data.title || '');
-        setSuccessMsg('Dados do vídeo preenchidos automaticamente.');
+        if (Array.isArray(data.suggestedSpeakers) && data.suggestedSpeakers.length > 0) {
+          setSuggestedSpeakers(data.suggestedSpeakers);
+          setAuthorNames((current) => (current.length === 0 ? data.suggestedSpeakers : current));
+          setSuccessMsg('Dados do vídeo e preletor identificados automaticamente.');
+        } else {
+          setSuccessMsg('Dados do vídeo preenchidos automaticamente.');
+        }
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Falha ao consultar o vídeo');
@@ -462,9 +490,14 @@ export const VeredasItemFormPage: React.FC = () => {
         status,
         destaque,
         categoriaIds,
+        itensRelacionados: itensRelacionados.map((r, idx) => ({
+          destinoId: r.destinoId,
+          rotulo: r.rotulo?.trim() || undefined,
+          ordem: idx,
+        })),
         livro: tipo === 'LIVRO' ? { ...bookData, authorNames, acessos: bookAccesses } : undefined,
-        video: tipo === 'VIDEO' ? videoData : undefined,
-        curso: (tipo === 'CURSO' || tipo === 'CONFERENCIA') ? courseData : undefined,
+        video: tipo === 'VIDEO' ? { ...videoData, pessoaNames: authorNames } : undefined,
+        curso: (tipo === 'CURSO' || tipo === 'CONFERENCIA') ? { ...courseData, pessoaNames: authorNames } : undefined,
       };
 
       const endpoint = isEditing ? `/api/veredas/admin/items/${id}` : '/api/veredas/admin/items';
@@ -740,8 +773,56 @@ export const VeredasItemFormPage: React.FC = () => {
               onChange={setCourseData}
               setTitle={setTitulo}
               isConference={tipo === 'CONFERENCIA'}
+              onDetectSpeaker={(speakers) => {
+                setSuggestedSpeakers(speakers);
+                setAuthorNames((c) => (c.length === 0 ? speakers : c));
+              }}
             />
           )}
+
+          {/* PARTICIPANTES / PRELETORES / AUTORES */}
+          <div className="bg-stone-900 border border-stone-800 rounded-xl p-6">
+            <PeopleSelector
+              label={
+                tipo === 'CONFERENCIA'
+                  ? 'Preletores / Oradores'
+                  : tipo === 'CURSO'
+                  ? 'Professores / Instrutores'
+                  : tipo === 'VIDEO'
+                  ? 'Expositor / Pregador'
+                  : 'Autores / Escritores'
+              }
+              description={
+                tipo === 'CONFERENCIA'
+                  ? 'Preletores oficiais da conferência, vinculados às plenárias.'
+                  : tipo === 'CURSO'
+                  ? 'Professores ou instrutores das aulas.'
+                  : tipo === 'VIDEO'
+                  ? 'Expositor bíblico ou preletor desta mensagem.'
+                  : 'Autores, tradutores ou organizadores da obra.'
+              }
+              people={authorNames}
+              onChange={setAuthorNames}
+              suggestedPeople={suggestedSpeakers}
+              placeholder={
+                tipo === 'CONFERENCIA'
+                  ? 'Digite o nome do preletor (ex: Terry L. Johnson)...'
+                  : tipo === 'VIDEO'
+                  ? 'Digite o nome do expositor (ex: Paul Washer)...'
+                  : 'Digite o nome e selecione da lista...'
+              }
+            />
+          </div>
+
+          {/* REFERÊNCIAS CRUZADAS */}
+          <CrossReferencesEditor
+            currentItemId={id ? Number(id) : undefined}
+            references={itensRelacionados}
+            onChange={setItensRelacionados}
+            currentTipo={tipo}
+            currentCategoriaIds={categoriaIds}
+            currentPeople={authorNames}
+          />
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-4">
@@ -952,6 +1033,7 @@ function CourseFormInternal({
   onChange,
   setTitle,
   isConference = false,
+  onDetectSpeaker,
 }: {
   data: {
     urlOriginal: string;
@@ -964,6 +1046,7 @@ function CourseFormInternal({
   onChange: React.Dispatch<React.SetStateAction<typeof data>>;
   setTitle: React.Dispatch<React.SetStateAction<string>>;
   isConference?: boolean;
+  onDetectSpeaker?: (speakers: string[]) => void;
 }) {
   const updateLesson = (index: number, patch: Partial<CourseLessonFormData>) => {
     onChange((current) => ({
@@ -1005,6 +1088,9 @@ function CourseFormInternal({
         thumbnailUrl: current.thumbnailUrl || result.thumbnailUrl || '',
       }));
       if (index === 0) setTitle((current) => current || result.title || '');
+      if (Array.isArray(result.suggestedSpeakers) && result.suggestedSpeakers.length > 0) {
+        onDetectSpeaker?.(result.suggestedSpeakers);
+      }
     } catch {
       /* os campos permanecem editáveis */
     }

@@ -5,6 +5,7 @@ import { VeredasNavbar } from '../../components/veredas/VeredasNavbar';
 import { VeredasFooter } from '../../components/veredas/VeredasFooter';
 import { SharePageButton } from '../../components/veredas/SharePageButton';
 import { RecommendationBlock } from '../../components/veredas/RecommendationBlock';
+import { CrossReferenceSection } from '../../components/veredas/CrossReferenceSection';
 import { Helmet } from 'react-helmet-async';
 
 export const VeredasVideoDetailPage: React.FC = () => {
@@ -171,6 +172,7 @@ export const VeredasVideoDetailPage: React.FC = () => {
           </section>
         )}
 
+        <CrossReferenceSection itemSlug={slug!} currentTipo="VIDEO" currentTitle={item.titulo} />
       </main>
 
       <VeredasFooter />

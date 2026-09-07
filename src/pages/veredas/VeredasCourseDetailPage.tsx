@@ -5,6 +5,8 @@ import { Helmet } from 'react-helmet-async';
 import { VeredasNavbar } from '../../components/veredas/VeredasNavbar';
 import { VeredasFooter } from '../../components/veredas/VeredasFooter';
 import { RecommendationBlock } from '../../components/veredas/RecommendationBlock';
+import { CrossReferenceSection } from '../../components/veredas/CrossReferenceSection';
+import { SharePageButton } from '../../components/veredas/SharePageButton';
 
 export const VeredasCourseDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -24,7 +26,14 @@ export const VeredasCourseDetailPage: React.FC = () => {
   return <div className="min-h-screen bg-stone-950 text-stone-100 flex flex-col">
     <Helmet><title>{item.titulo} — Curso Veredas IBO</title></Helmet><VeredasNavbar />
     <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full">
-      <Link to="/veredas/cursos" className="inline-flex items-center gap-1 text-xs text-stone-400 hover:text-amber-400"><ArrowLeft className="w-4 h-4" /> Voltar aos cursos</Link>
+      <div className="flex items-center justify-between gap-4">
+        <Link to="/veredas/cursos" className="inline-flex items-center gap-1 text-xs text-stone-400 hover:text-amber-400"><ArrowLeft className="w-4 h-4" /> Voltar aos cursos</Link>
+        <SharePageButton
+          title={item.titulo}
+          contentType="Curso"
+          imageUrl={item.curso?.thumbnailUrl || aula?.thumbnailUrl}
+        />
+      </div>
       <div className="mt-5 grid lg:grid-cols-[minmax(0,1fr)_22rem] gap-6">
         <section>
           <div className="aspect-video bg-black rounded-xl overflow-hidden border border-stone-800"><iframe key={aula.youtubeId} src={`https://www.youtube.com/embed/${aula.youtubeId}?rel=0`} title={aula.titulo} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen className="w-full h-full" /></div>
@@ -35,6 +44,7 @@ export const VeredasCourseDetailPage: React.FC = () => {
         </section>
         <aside className="bg-stone-900 border border-stone-800 rounded-xl h-fit lg:sticky lg:top-24 overflow-hidden"><div className="p-4 border-b border-stone-800"><h2 className="font-bold flex items-center gap-2"><ListVideo className="w-4 h-4 text-amber-500" /> Aulas do curso</h2><p className="text-xs text-stone-500 mt-1">{aulas.length} aulas na ordem recomendada</p></div><div className="max-h-[65vh] overflow-y-auto">{aulas.map((lesson: any, index: number) => <button key={lesson.id || lesson.youtubeId} onClick={() => selectLesson(index)} className={`w-full text-left p-4 border-b border-stone-800/70 flex gap-3 ${index === currentIndex ? 'bg-amber-950/40 text-amber-200' : 'hover:bg-stone-800'}`}><span className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-xs ${index === currentIndex ? 'bg-amber-500 text-stone-950' : 'bg-stone-800 text-stone-400'}`}>{index + 1}</span><span className="text-xs font-semibold leading-relaxed">{lesson.titulo}</span></button>)}</div></aside>
       </div>
+      <CrossReferenceSection itemSlug={slug!} currentTipo="CURSO" currentTitle={item.titulo} />
     </main><VeredasFooter />
   </div>;
 };

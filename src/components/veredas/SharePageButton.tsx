@@ -3,7 +3,7 @@ import { Check, Copy, Facebook, Mail, MessageCircle, MoreHorizontal, Send, Share
 
 interface SharePageButtonProps {
   title: string;
-  contentType?: 'Livro' | 'Vídeo';
+  contentType?: 'Livro' | 'Vídeo' | 'Conferência' | 'Curso' | string;
   imageUrl?: string | null;
 }
 
