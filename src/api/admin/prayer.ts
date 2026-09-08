@@ -26,8 +26,60 @@ function validatePrayerConfig(key: string, value: string): string | null {
   return null;
 }
 
+let adminPrayerTablesEnsured = false;
+async function ensurePrayerTables(prisma: PrismaClient) {
+  if (adminPrayerTablesEnsured) return;
+  try {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "PrayerSentinel" (
+        "id" SERIAL NOT NULL,
+        "dayOfWeek" INTEGER NOT NULL DEFAULT 1,
+        "dayOfMonth" INTEGER,
+        "name" TEXT NOT NULL,
+        "email" TEXT,
+        "phone" TEXT,
+        "cancelToken" TEXT,
+        "active" BOOLEAN NOT NULL DEFAULT true,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "cancelledAt" TIMESTAMP(3),
+        CONSTRAINT "PrayerSentinel_pkey" PRIMARY KEY ("id")
+      );
+    `);
+    await prisma.$executeRawUnsafe(`CREATE UNIQUE INDEX IF NOT EXISTS "PrayerSentinel_cancelToken_key" ON "PrayerSentinel"("cancelToken");`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrayerSentinel_dayOfWeek_active_idx" ON "PrayerSentinel"("dayOfWeek", "active");`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrayerSentinel_dayOfMonth_active_idx" ON "PrayerSentinel"("dayOfMonth", "active");`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrayerSentinel_email_active_idx" ON "PrayerSentinel"("email", "active");`);
+
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "PrayerHandover" (
+        "id" SERIAL NOT NULL,
+        "dayOfWeek" INTEGER NOT NULL DEFAULT 1,
+        "dayOfMonth" INTEGER,
+        "date" TEXT NOT NULL,
+        "authorName" TEXT NOT NULL,
+        "message" TEXT,
+        "verse" TEXT,
+        "completedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "PrayerHandover_pkey" PRIMARY KEY ("id")
+      );
+    `);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrayerHandover_date_dayOfWeek_idx" ON "PrayerHandover"("date", "dayOfWeek");`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrayerHandover_completedAt_idx" ON "PrayerHandover"("completedAt");`);
+
+    adminPrayerTablesEnsured = true;
+  } catch (e) {
+    console.error('[AdminPrayer] Auto-schema ensure error:', e);
+  }
+}
+
 export function createAdminPrayerRouter(prisma: PrismaClient) {
   const router = express.Router();
+  router.use(async (_req, _res, next) => {
+    if (!adminPrayerTablesEnsured) {
+      await ensurePrayerTables(prisma);
+    }
+    next();
+  });
   router.use(createAdminAuthMiddleware(prisma));
   router.use((req: AdminAuthenticatedRequest, res, next) => {
     if (!req.adminUser || !hasAdminPermission(req.adminUser.role, 'prayer:manage')) {

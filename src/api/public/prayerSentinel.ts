@@ -38,11 +38,94 @@ const DAY_NAMES = [
   'Sábado',
 ];
 
+let prayerTablesEnsured = false;
+async function ensurePrayerTables(prisma: PrismaClient) {
+  if (prayerTablesEnsured) return;
+  try {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "PrayerSentinel" (
+        "id" SERIAL NOT NULL,
+        "dayOfWeek" INTEGER NOT NULL DEFAULT 1,
+        "dayOfMonth" INTEGER,
+        "name" TEXT NOT NULL,
+        "email" TEXT,
+        "phone" TEXT,
+        "cancelToken" TEXT,
+        "active" BOOLEAN NOT NULL DEFAULT true,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "cancelledAt" TIMESTAMP(3),
+        CONSTRAINT "PrayerSentinel_pkey" PRIMARY KEY ("id")
+      );
+    `);
+    await prisma.$executeRawUnsafe(`CREATE UNIQUE INDEX IF NOT EXISTS "PrayerSentinel_cancelToken_key" ON "PrayerSentinel"("cancelToken");`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrayerSentinel_dayOfWeek_active_idx" ON "PrayerSentinel"("dayOfWeek", "active");`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrayerSentinel_dayOfMonth_active_idx" ON "PrayerSentinel"("dayOfMonth", "active");`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrayerSentinel_email_active_idx" ON "PrayerSentinel"("email", "active");`);
+
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "PrayerHandover" (
+        "id" SERIAL NOT NULL,
+        "dayOfWeek" INTEGER NOT NULL DEFAULT 1,
+        "dayOfMonth" INTEGER,
+        "date" TEXT NOT NULL,
+        "authorName" TEXT NOT NULL,
+        "message" TEXT,
+        "verse" TEXT,
+        "completedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "PrayerHandover_pkey" PRIMARY KEY ("id")
+      );
+    `);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrayerHandover_date_dayOfWeek_idx" ON "PrayerHandover"("date", "dayOfWeek");`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrayerHandover_completedAt_idx" ON "PrayerHandover"("completedAt");`);
+
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "PrayerTopic" (
+        "id" SERIAL NOT NULL,
+        "title" TEXT NOT NULL,
+        "description" TEXT,
+        "category" TEXT NOT NULL DEFAULT 'Geral',
+        "prayedCount" INTEGER NOT NULL DEFAULT 0,
+        "active" BOOLEAN NOT NULL DEFAULT true,
+        "order" INTEGER NOT NULL DEFAULT 0,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "PrayerTopic_pkey" PRIMARY KEY ("id")
+      );
+    `);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrayerTopic_active_order_idx" ON "PrayerTopic"("active", "order");`);
+
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "PrayerPraise" (
+        "id" SERIAL NOT NULL,
+        "title" TEXT NOT NULL,
+        "testimony" TEXT NOT NULL,
+        "authorName" TEXT,
+        "date" TEXT,
+        "active" BOOLEAN NOT NULL DEFAULT true,
+        "order" INTEGER NOT NULL DEFAULT 0,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "PrayerPraise_pkey" PRIMARY KEY ("id")
+      );
+    `);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrayerPraise_active_order_idx" ON "PrayerPraise"("active", "order");`);
+
+    prayerTablesEnsured = true;
+  } catch (e) {
+    console.error('[PrayerSentinel] Auto-schema ensure error:', e);
+  }
+}
+
 export function createPublicPrayerSentinelRouter(
   prisma: PrismaClient,
   getResend: () => Resend | null
 ) {
   const router = express.Router();
+  router.use(async (_req, _res, next) => {
+    if (!prayerTablesEnsured) {
+      await ensurePrayerTables(prisma);
+    }
+    next();
+  });
 
   // Helper para obter informações da data atual no fuso de Porto Velho
   const getChurchCurrentInfo = () => {
