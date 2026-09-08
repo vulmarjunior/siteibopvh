@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@prisma/client';
-import sermoesData from '../../data/sermoes.json';
+import { sermoesData } from '../../data/sermoes';
 
 export interface WeeklyReadingSelection {
   messageId: string;
@@ -15,7 +15,7 @@ export interface WeeklyReadingSelection {
 export function getFallbackWeeklyReadingFromJSON(now = new Date()): WeeklyReadingSelection | null {
   try {
     const todayStr = now.toISOString().slice(0, 10);
-    const sermonsWithReadings = (sermoesData as any[]).filter(
+    const sermonsWithReadings = (sermoesData as unknown as any[]).filter(
       (s) => s?.leituras?.tema && Array.isArray(s.leituras?.dias) && s.leituras.dias.length > 0
     );
 

@@ -35,3 +35,6 @@ EBFIMG/*.mp4
 
 # Local Netlify folder
 .netlify
+
+# Local scratch directory
+scratch/
