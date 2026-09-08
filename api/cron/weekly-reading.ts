@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from "node:http";
-import { default as runWeeklyReading } from "../../netlify/functions/weekly-reading";
+import { default as runWeeklyReading } from "../../netlify/functions/weekly-reading.js";
 
 function getHeader(req: IncomingMessage, name: string): string {
   const value = req.headers?.[name.toLowerCase()];

@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { Resend } from "resend";
-import { buildWeeklyReadingEmail } from "../../src/lib/email-templates/weekly-reading";
-import { getFallbackWeeklyReadingFromJSON, selectCurrentWeeklyReading } from "../../src/lib/editorial/weeklyReading";
+import { buildWeeklyReadingEmail } from "../../src/lib/email-templates/weekly-reading.js";
+import { getFallbackWeeklyReadingFromJSON, selectCurrentWeeklyReading } from "../../src/lib/editorial/weeklyReading.js";
 
 // Config: toda segunda-feira às 11h UTC = 7h Porto Velho
 export const config = {

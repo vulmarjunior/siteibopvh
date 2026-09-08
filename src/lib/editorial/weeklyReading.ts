@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@prisma/client';
-import { sermoesData } from '../../data/sermoes';
+import { sermoesData } from '../../data/sermoes.js';
 
 export interface WeeklyReadingSelection {
   messageId: string;
