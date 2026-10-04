@@ -8,7 +8,7 @@
   - Hero festivo com artes do evento, cards de data/local/horário e chamada para inscrição.
   - Programação completa (café compartilhado, momento de oração e reflexão com a Ir. Rojeane, dia livre com piscina, churrasco em família, brincadeiras, lanche e encerramento às 16h).
   - Seção "O que levar" com checklist, alerta de supervisão dos pais na área da piscina e card de ofertas para cobrir os custos da compra da carne do churrasco, com QR Code PIX, chave CNPJ copiável e orientação para identificar a natureza da contribuição ("Dia das Crianças — Carne").
-  - Localização com link direto para o Google Maps (Espaço de Eventos Casarão).
+  - Localização com link direto para o Google Maps (Espaço de Eventos Casarão) e botão de compartilhamento via WhatsApp com data, local, mapa e link de inscrições.
   - Formulário de inscrição com responsável (nome, WhatsApp e e-mail opcional), lista dinâmica de crianças (nome e idade) e demais familiares, checkboxes do que a família levará (café, acompanhamento e bebida) com campos de detalhe do que será trazido (ex.: pão, bolo, farofa, salada) e observações. O responsável é contabilizado automaticamente como participante (métricas, CSV/PDF e e-mails), sem precisar se listar novamente.
 - **Backend & Banco de Dados:**
   - Novos modelos `ChildrensDayRegistration` e `ChildrensDayMember` vinculados à edição `criancas-2026` do `SiteEdition`.
@@ -22,6 +22,7 @@
   - Módulo `criancas` registrado em `SiteModule` (ativo, operações abertas, fechamento manual em `/admin/modulos`).
   - Banner do carrossel principal da Home apontando para o hotsite (`public/images/criancas/arte-wide.png`).
   - Migrations aditivas em `prisma/migrations` e `supabase/migrations`, com auto-healing de schema em runtime (`ensureChildrensDaySchema`) no padrão do projeto: cria tabelas, registra módulo/edição e banner no primeiro acesso, sem depender de migration manual no deploy.
+  - Publicação validada em produção (`www.ibopvh.com.br`): artes no ar, banner ativo na Home, módulo/edição semeados no banco, API pública respondendo e rota administrativa protegida. Registro técnico completo em `dev-log.md`.
 
 ### 2026-09-04 - Jornada Histórica dos Batistas & Memorial IBO (1609 a 1959 e dias atuais)
 

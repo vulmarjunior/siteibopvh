@@ -1,7 +1,21 @@
 # 🤖 Contexto do Projeto — Guia para Agentes de IA
 
-> **Última atualização:** 2026-08-27
+> **Última atualização:** 2026-10-04
 > **Propósito:** Fornecer contexto completo para qualquer agente de codificação que trabalhe neste projeto, eliminando a necessidade de re-análise.
+
+---
+
+## Atualização operacional — 2026-10-04
+
+> **Hotsite Dia das Crianças (`/criancas`) — 🟢 ATIVO.** Inscrições por família (responsável + crianças + demais familiares + o que cada família levará) para a programação especial de **11 de outubro** (Espaço de Eventos Casarão, das 9h às 16h). Encerramento **manual** das inscrições em `/admin/modulos` (sem bloqueio por data no código; prazo de 08/10 é apenas comunicado).
+>
+> 1. **Arquitetura (espelha o EBF):** tabelas `ChildrensDayRegistration` e `ChildrensDayMember` (`CRIANCA | FAMILIAR`) vinculadas à edição `criancas-2026` de `SiteEdition`; API pública `POST /api/criancas/registrations`; API admin `/api/admin/criancas`; painel `/admin/criancas`; permissão `criancas:manage` (ADMIN_GERAL e OPERADOR).
+> 2. **Auto-healing de schema em runtime:** `src/api/childrens-schema.ts` cria tabelas/índices/RLS e semeia módulo, edição e banner (`HomeBannerSlide`) de forma idempotente na primeira requisição — obrigatório porque migrations não rodam no deploy. Middleware aplicado nos routers público/admin e em `/api/modules` e `/api/home-banners`.
+> 3. **Regras de negócio:** o responsável é contabilizado automaticamente como participante (métricas, CSV e PDF); campos de detalhe do que será levado (café da manhã e acompanhamento) vão para o admin, CSV, PDF e e-mail interno; e-mail de confirmação à família é opcional (só se informado).
+> 4. **Contribuição para a carne:** card no hotsite com QR Code PIX, chave CNPJ `04.771.507/0001-08` copiável, favorecido Igreja Batista Olaria e orientação para identificar a natureza ("Dia das Crianças — Carne").
+> 5. **Vercel (plano Hobby) — limite de 12 Serverless Functions:** o admin de Crianças é servido pelo mesmo entry do EBF (`api/admin-ebf-entry.ts`) com prefixo `?path=criancas/:path*`. **Antes de criar qualquer arquivo novo em `api/`, conte as funções (hoje: 12, incluindo `api/cron/*`).**
+> 6. **Domínios:** a produção real é `https://www.ibopvh.com.br` (e `ibopvh.com.br`); `ibopvh.vercel.app` pode responder um deployment antigo — **não use para validar produção**.
+> 7. **Registro técnico:** descobertas, decisões e armadilhas desta entrega estão em `dev-log.md` (raiz do repositório).
 
 ---
 ## Atualização operacional — 2026-08-27
@@ -150,6 +164,14 @@ siteibopvh/
 │   │   │   ├── PrayerStats.tsx
 │   │   │   └── ReservationModal.tsx
 │   │   │
+│   │   ├── criancas/             # 🟢 ATIVO — Hotsite Dia das Crianças (inscrições por família)
+│   │   │   ├── CriancasHero.tsx
+│   │   │   ├── CriancasProgramacao.tsx
+│   │   │   ├── CriancasOQueLevar.tsx   # Checklist + card de ofertas com PIX da carne
+│   │   │   ├── CriancasLocal.tsx
+│   │   │   ├── CriancasInscricao.tsx   # Formulário (responsável, crianças, familiares, logística)
+│   │   │   └── CriancasFooter.tsx
+│   │   │
 │   │   ├── moldanos/             # 🟡 DORMENTE — Conferência de Aniversário (template reusável)
 │   │   │   ├── MoldaNosHero.tsx
 │   │   │   ├── MoldaNosSobre.tsx
@@ -185,6 +207,10 @@ siteibopvh/
 │   │   ├── relogio/
 │   │   │   ├── RelogioPage.tsx   # Página pública do relógio
 │   │   │   └── AdminPage.tsx     # ⚠️ ARQUIVO GRANDE (33KB) — Painel admin completo
+│   │   ├── criancas/
+│   │   │   └── CriancasPage.tsx  # Hotsite público do Dia das Crianças
+│   │   ├── admin/
+│   │   │   └── AdminCriancasPage.tsx  # Painel de inscrições (Central Administrativa)
 │   │   ├── moldanos/
 │   │   │   └── MoldaNosPage.tsx
 │   │   ├── pascoa-page/
