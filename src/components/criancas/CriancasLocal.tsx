@@ -1,6 +1,8 @@
-import { ExternalLink, MapPin, Navigation } from 'lucide-react';
+import { ExternalLink, MapPin, MessageCircle, Navigation } from 'lucide-react';
 
 const MAPS_URL = 'https://maps.app.goo.gl/jUkjmX8ZE7poMEPn9';
+const SHARE_TEXT = `Dia das Crianças — Igreja Batista Olaria\n11 de outubro, das 9h às 16h\nEspaço de Eventos Casarão\nMapa: ${MAPS_URL}\nInscrições: https://www.ibopvh.com.br/criancas`;
+const WHATSAPP_SHARE_URL = `https://wa.me/?text=${encodeURIComponent(SHARE_TEXT)}`;
 
 export default function CriancasLocal() {
   return (
@@ -22,6 +24,14 @@ export default function CriancasLocal() {
               className="mt-6 inline-flex items-center gap-2 rounded-full bg-emerald-600 px-7 py-3.5 text-base font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-emerald-500"
             >
               <Navigation aria-hidden="true" className="h-5 w-5" /> Abrir no Google Maps <ExternalLink aria-hidden="true" className="h-4 w-4" />
+            </a>
+            <a
+              href={WHATSAPP_SHARE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#25D366] px-7 py-3.5 text-base font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:brightness-95 md:ml-3"
+            >
+              <MessageCircle aria-hidden="true" className="h-5 w-5" /> Compartilhar no WhatsApp
             </a>
           </div>
 
