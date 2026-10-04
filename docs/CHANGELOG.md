@@ -7,7 +7,7 @@
 - **Hotsite Público (`/criancas`):**
   - Hero festivo com artes do evento, cards de data/local/horário e chamada para inscrição.
   - Programação completa (café compartilhado, momento de oração e reflexão com a Ir. Rojeane, dia livre com piscina, churrasco em família, brincadeiras, lanche e encerramento às 16h).
-  - Seção "O que levar" com checklist, alerta de supervisão dos pais na área da piscina e card de ofertas para cobrir os custos da compra da carne do churrasco.
+  - Seção "O que levar" com checklist, alerta de supervisão dos pais na área da piscina e card de ofertas para cobrir os custos da compra da carne do churrasco, com QR Code PIX, chave CNPJ copiável e orientação para identificar a natureza da contribuição ("Dia das Crianças — Carne").
   - Localização com link direto para o Google Maps (Espaço de Eventos Casarão).
   - Formulário de inscrição com responsável (nome, WhatsApp e e-mail opcional), lista dinâmica de crianças (nome e idade) e demais familiares, checkboxes do que a família levará (café, acompanhamento e bebida) com campos de detalhe do que será trazido (ex.: pão, bolo, farofa, salada) e observações. O responsável é contabilizado automaticamente como participante (métricas, CSV/PDF e e-mails), sem precisar se listar novamente.
 - **Backend & Banco de Dados:**
