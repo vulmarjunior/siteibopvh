@@ -13,6 +13,7 @@
 - **Backend & Banco de Dados:**
   - Novos modelos `ChildrensDayRegistration` e `ChildrensDayMember` vinculados à edição `criancas-2026` do `SiteEdition`.
   - API pública `POST /api/criancas/registrations` com rate limit, validação, encerramento manual via módulo e e-mails transacionais (notificação interna e confirmação para a família) via Resend.
+  - API administrativa consolidada no serverless do EBF (`api/admin-ebf-entry.ts`) para respeitar o limite de 12 funções do plano Hobby da Vercel.
   - API administrativa `/api/admin/criancas` com listagem por edição, cancelamento com auditoria e exportação CSV.
 - **Central Administrativa (`/admin/criancas`):**
   - Painel com métricas (famílias, crianças, pessoas e itens de logística), busca, filtro por item, WhatsApp, cancelamento e relatórios PDF/CSV.
