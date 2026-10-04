@@ -13,6 +13,7 @@
     { "source": "/api/admin/series/:path*", "destination": "/api/admin-series-entry?path=:path*" },
     { "source": "/api/admin/prayer/:path*", "destination": "/api/admin-prayer-entry?path=:path*" },
     { "source": "/api/admin/ebf/:path*", "destination": "/api/admin-ebf-entry?path=:path*" },
+    { "source": "/api/admin/criancas/:path*", "destination": "/api/admin-criancas-entry?path=:path*" },
     { "source": "/api/admin/users/:path*", "destination": "/api/admin-users-entry?path=:path*" },
     { "source": "/api/admin/home-banners/:path*", "destination": "/api/admin-home-banners-entry?path=:path*" },
     {

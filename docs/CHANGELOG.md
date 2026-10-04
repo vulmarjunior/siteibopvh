@@ -2,6 +2,26 @@
 
 ## [Em Desenvolvimento]
 
+### 2026-10-04 - Hotsite "Dia das Crianças" (`/criancas`) com inscrições por família
+
+- **Hotsite Público (`/criancas`):**
+  - Hero festivo com artes do evento, cards de data/local/horário e chamada para inscrição.
+  - Programação completa (café compartilhado, momento de oração e reflexão com a Ir. Rojeane, dia livre com piscina, churrasco em família, brincadeiras, lanche e encerramento às 16h).
+  - Seção "O que levar" com checklist, alerta de supervisão dos pais na área da piscina e card de ofertas para cobrir os custos da compra da carne do churrasco.
+  - Localização com link direto para o Google Maps (Espaço de Eventos Casarão).
+  - Formulário de inscrição com responsável (nome, WhatsApp e e-mail opcional), lista dinâmica de crianças (nome e idade) e demais familiares, checkboxes do que a família levará (café, acompanhamento e bebida) com campos de detalhe do que será trazido (ex.: pão, bolo, farofa, salada) e observações. O responsável é contabilizado automaticamente como participante (métricas, CSV/PDF e e-mails), sem precisar se listar novamente.
+- **Backend & Banco de Dados:**
+  - Novos modelos `ChildrensDayRegistration` e `ChildrensDayMember` vinculados à edição `criancas-2026` do `SiteEdition`.
+  - API pública `POST /api/criancas/registrations` com rate limit, validação, encerramento manual via módulo e e-mails transacionais (notificação interna e confirmação para a família) via Resend.
+  - API administrativa `/api/admin/criancas` com listagem por edição, cancelamento com auditoria e exportação CSV.
+- **Central Administrativa (`/admin/criancas`):**
+  - Painel com métricas (famílias, crianças, pessoas e itens de logística), busca, filtro por item, WhatsApp, cancelamento e relatórios PDF/CSV.
+  - Nova permissão `criancas:manage` integrada a `ADMIN_GERAL` e `OPERADOR`, com item na Sidebar, Dashboard, Command Palette e navegação global.
+- **Módulo & Divulgação:**
+  - Módulo `criancas` registrado em `SiteModule` (ativo, operações abertas, fechamento manual em `/admin/modulos`).
+  - Banner do carrossel principal da Home apontando para o hotsite (`public/images/criancas/arte-wide.png`).
+  - Migrations aditivas em `prisma/migrations` e `supabase/migrations`, com auto-healing de schema em runtime (`ensureChildrensDaySchema`) no padrão do projeto: cria tabelas, registra módulo/edição e banner no primeiro acesso, sem depender de migration manual no deploy.
+
 ### 2026-09-04 - Jornada Histórica dos Batistas & Memorial IBO (1609 a 1959 e dias atuais)
 
 - **Página Pública Interativa (`/historia`):**

@@ -1,4 +1,4 @@
-import { BookOpen, CalendarClock, LayoutDashboard, Mail, Shield, Users } from 'lucide-react';
+import { Baby, BookOpen, CalendarClock, LayoutDashboard, Mail, Shield, Users } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { getStoredAdminUser } from '../../lib/admin/session';
 import { hasAdminPermission, type AdminPermission } from '../../lib/admin/permissions';
@@ -11,6 +11,7 @@ const items = [
   { label: 'Veredas', href: '/admin/veredas', icon: BookOpen, permission: 'veredas:manage', matches: (path: string) => path.startsWith('/admin/veredas') },
   { label: 'Relógio', href: '/admin/relogio', icon: Shield, permission: 'prayer:manage', matches: (path: string) => path.startsWith('/admin/relogio') },
   { label: 'EBF', href: '/admin/ebf', icon: Users, permission: 'ebf:manage', matches: (path: string) => path.startsWith('/admin/ebf') },
+  { label: 'Crianças', href: '/admin/criancas', icon: Baby, permission: 'criancas:manage', matches: (path: string) => path.startsWith('/admin/criancas') },
   { label: 'Usuários', href: '/admin/usuarios', icon: Users, permission: 'users:manage', matches: (path: string) => path.startsWith('/admin/usuarios') },
 ];
 

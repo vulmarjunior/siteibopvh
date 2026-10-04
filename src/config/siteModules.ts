@@ -2,7 +2,7 @@ export type SiteModuleStatus = 'DRAFT' | 'SCHEDULED' | 'ACTIVE' | 'ENDED' | 'ARC
 export type DirectAccessPolicy = 'AVAILABLE' | 'CLOSING_PAGE' | 'UNAVAILABLE';
 
 export interface SiteModuleConfig {
-  id: 'parousia' | 'veredas' | 'relogio' | 'pascoa' | 'moldanos' | 'ebf';
+  id: 'parousia' | 'veredas' | 'relogio' | 'pascoa' | 'moldanos' | 'ebf' | 'criancas';
   name: string;
   path: string;
   status: SiteModuleStatus;
@@ -19,6 +19,7 @@ export const SITE_MODULES = {
   pascoa: { id: 'pascoa', name: 'Páscoa e Tenebras', path: '/pascoa', status: 'ARCHIVED', visibleOnHome: false, visibleInNavigation: false, directAccess: 'CLOSING_PAGE', publicOperationsOpen: false },
   moldanos: { id: 'moldanos', name: 'Molda-nos', path: '/moldanos', status: 'ARCHIVED', visibleOnHome: false, visibleInNavigation: false, directAccess: 'CLOSING_PAGE', publicOperationsOpen: false },
   ebf: { id: 'ebf', name: 'EBF 2026 — Em Busca do Maior Tesouro', path: '/ebf', status: 'ENDED', visibleOnHome: false, visibleInNavigation: false, directAccess: 'CLOSING_PAGE', publicOperationsOpen: false },
+  criancas: { id: 'criancas', name: 'Dia das Crianças', path: '/criancas', status: 'ACTIVE', visibleOnHome: false, visibleInNavigation: false, directAccess: 'AVAILABLE', publicOperationsOpen: true },
 } as const satisfies Record<string, SiteModuleConfig>;
 
 export type SiteModuleId = keyof typeof SITE_MODULES;

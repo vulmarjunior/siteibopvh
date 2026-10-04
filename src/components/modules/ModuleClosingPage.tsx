@@ -19,6 +19,7 @@ const messages = {
     description: 'Esta edição da conferência foi encerrada. Agradecemos a participação da igreja e preservamos este hotsite para futuras edições.',
   },
   ebf: { eyebrow: 'Edição concluída', title: 'EBF 2026', description: 'As inscrições desta edição foram encerradas. Agradecemos às crianças, famílias e voluntários que participaram conosco.' },
+  criancas: { eyebrow: 'Evento concluído', title: 'Dia das Crianças', description: 'As inscrições desta edição foram encerradas. Agradecemos às famílias que celebraram conosco este dia especial.' },
   parousia: { eyebrow: 'Conteúdo indisponível', title: 'Da Ascensão à Parousia', description: 'Esta série não está disponível neste momento.' },
   veredas: { eyebrow: 'Conteúdo indisponível', title: 'Veredas IBO', description: 'A central de curadoria não está disponível neste momento.' },
   relogio: { eyebrow: 'Serviço indisponível', title: 'Relógio de Oração', description: 'Este serviço não está disponível neste momento.' },

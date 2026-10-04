@@ -134,6 +134,44 @@ model EbfRegistration {
   @@index([editionId, createdAt])
 }
 
+enum ChildrensDayMemberKind {
+  CRIANCA
+  FAMILIAR
+}
+
+model ChildrensDayRegistration {
+  id              Int                   @id @default(autoincrement())
+  editionId       String
+  edition         SiteEdition           @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  guardianName    String
+  phone           String
+  email           String?
+  bringsBreakfast Boolean               @default(false)
+  bringsSideDish  Boolean               @default(false)
+  bringsDrink     Boolean               @default(false)
+  breakfastItems  String?
+  sideDishItems   String?
+  notes           String?
+  createdAt       DateTime              @default(now())
+  cancelledAt     DateTime?
+  members         ChildrensDayMember[]
+
+  @@index([createdAt])
+  @@index([editionId, createdAt])
+}
+
+model ChildrensDayMember {
+  id             Int                     @id @default(autoincrement())
+  registrationId Int
+  registration   ChildrensDayRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  kind           ChildrensDayMemberKind
+  name           String
+  age            Int
+  createdAt      DateTime                @default(now())
+
+  @@index([registrationId, kind])
+}
+
 model ReadingSubscriber {
   id             Int        @id @default(autoincrement())
   email          String     @unique
@@ -192,6 +230,7 @@ model SiteEdition {
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
   ebfRegistrations EbfRegistration[]
+  childrensDayRegistrations ChildrensDayRegistration[]
 
   @@unique([moduleId, slug])
   @@index([moduleId, status])

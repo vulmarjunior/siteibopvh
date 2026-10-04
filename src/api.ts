@@ -15,11 +15,14 @@ import { createAdminSeriesRouter } from "./api/admin/series.js";
 import { createAdminSeriesEmailRouter } from "./api/admin/seriesEmail.js";
 import { createAdminPrayerRouter } from "./api/admin/prayer.js";
 import { createAdminEbfRouter } from "./api/admin/ebf.js";
+import { createAdminChildrensRouter } from "./api/admin/childrens.js";
 import { createAdminUsersRouter } from "./api/admin/users.js";
 import { createAdminHomeBannersRouter, createPublicHomeBannersRouter } from "./api/admin/homeBanners.js";
 import { createAdminHistoryRouter } from "./api/admin/history.js";
 import { createPublicHistoryRouter } from "./api/public/history.js";
 import { createPublicEbfRouter } from "./api/public/ebf.js";
+import { createPublicChildrensRouter } from "./api/public/childrens.js";
+import { ensureChildrensDaySchema } from "./api/childrens-schema.js";
 import { createPublicParousiaRouter } from "./api/public/parousia.js";
 import { createPublicPrayerSentinelRouter } from "./api/public/prayerSentinel.js";
 import { consumeRateLimit } from "./lib/server/rateLimit.js";
@@ -63,16 +66,22 @@ function getResend() {
 }
 
 export const apiRouter = express.Router();
+apiRouter.use(["/modules", "/home-banners"], async (_req, _res, next) => {
+  await ensureChildrensDaySchema(prisma);
+  next();
+});
 apiRouter.use("/admin/auth", createAdminAuthRouter(prisma));
 apiRouter.use("/admin/modules", createAdminModulesRouter(prisma));
 apiRouter.use("/admin/series", createAdminSeriesRouter(prisma));
 apiRouter.use("/admin/series-email", createAdminSeriesEmailRouter(prisma));
 apiRouter.use("/admin/prayer", createAdminPrayerRouter(prisma));
 apiRouter.use("/admin/ebf", createAdminEbfRouter(prisma));
+apiRouter.use("/admin/criancas", createAdminChildrensRouter(prisma));
 apiRouter.use("/admin/users", createAdminUsersRouter(prisma));
 apiRouter.use("/admin/home-banners", createAdminHomeBannersRouter(prisma));
 apiRouter.use("/admin/history", createAdminHistoryRouter(prisma));
 apiRouter.use("/ebf", createPublicEbfRouter(prisma, getResend));
+apiRouter.use("/criancas", createPublicChildrensRouter(prisma, getResend));
 apiRouter.use("/parousia", createPublicParousiaRouter(prisma, getResend));
 apiRouter.use("/relogio/sentinelas", createPublicPrayerSentinelRouter(prisma, getResend));
 apiRouter.use("/modules", createPublicModulesRouter(prisma));

@@ -34,6 +34,7 @@ Portal institucional de uma igreja batista, composto por:
 4. **Hotsite Páscoa** (`/pascoa`) — 🟡 **DORMENTE** — Evento sazonal de Páscoa (programação Trevas + Ressurreição). Arquivos preservados para reuso anual.
 5. **Hotsite Molda-nos** (`/moldanos`) — 🟡 **DORMENTE** — Conferência de aniversário 57 anos (2026). Arquivos preservados como template para conferências futuras.
 6. **Hotsite EBF 2026** (`/ebf`) — 🟢 **ATIVO** — Inscrições para a Escola Bíblica de Férias, com persistência no Supabase, envio via Resend e painel administrativo em `/ebf/admin`.
+7. **Hotsite Dia das Crianças** (`/criancas`) — 🟢 **ATIVO** — Inscrições por família (crianças e demais familiares) para a programação especial de 11 de outubro, com painel administrativo em `/admin/criancas`.
 
 ---
 
@@ -247,6 +248,8 @@ siteibopvh/
 | `/moldanos` | `MoldaNosPage` | 🟡 Dormente | Hotsite conferência de aniversário (sazonal) |
 | `/ebf` | `EbfPage` | 🟢 Ativo | Hotsite e formulário de inscrições da EBF 2026 |
 | `/ebf/admin` | `EbfAdminPage` | 🔒 Administrativo | Gestão, filtros e exportações CSV/PDF das inscrições |
+| `/criancas` | `CriancasPage` | 🟢 Ativo | Hotsite e inscrições da programação Dia das Crianças |
+| `/admin/criancas` | `AdminCriancasPage` | 🔒 Administrativo | Gestão, filtros e exportações CSV/PDF das inscrições por família |
 
 > **Nota:** As rotas dormentes ainda existem no `App.tsx` e são acessíveis por URL direta, mas não possuem links de navegação visíveis (Navbar/Hero) na versão atual.
 
@@ -264,6 +267,7 @@ O portal segue um padrão de **hotsites sazonais** ligados ao calendário litúr
 | **Páscoa** | `/pascoa` | 🟡 Dormente | Abr/2026 | Reativado anualmente na Semana Santa, com atualização de datas e programação |
 | **Molda-nos** | `/moldanos` | 🟡 Dormente | Mai/2026 | Template para conferências de aniversário futuras (atualizar ano, tema, preletor, programação) |
 | **EBF 2026** | `/ebf` | 🟢 Ativo | Jul/2026 | Inscrições e organização das crianças por faixa etária/cor |
+| **Dia das Crianças** | `/criancas` | 🟢 Ativo | Out/2026 | Inscrições por família para a programação especial; reutilizável anualmente com nova edição no banco |
 
 ### O que significa "Dormente"?
 - ✅ A rota ainda existe no `App.tsx` (acessível por URL direta)
@@ -525,6 +529,7 @@ model PrayerTheme {
 
 | Data | Mudança |
 |------|---------|
+| 2026-10-04 | Hotsite Dia das Crianças (`/criancas`): inscrições por família, painel `/admin/criancas`, módulo `criancas` e banner na Home |
 | 2026-07-28 | Atualização do Hotsite Parousia: Vídeo e Thumbnail do Sermão 05 ("Quando o Deserto se Torna Hostil") |
 | 2026-07-18 | Notificação semanal de leitura Parousia (subscribe, unsubscribe, e-mail automático no ato da inscrição) |
 | 2026-07-18 | Análise completa do hotsite Parousia + correções de código + plano de notificação semanal |

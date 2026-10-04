@@ -25,6 +25,7 @@ const routeTitles: Record<string, string> = {
   '/admin/banners': 'Banners da Home',
   '/admin/relogio': 'Relógio de Oração',
   '/admin/ebf': 'Histórico da EBF',
+  '/admin/criancas': 'Inscrições Dia das Crianças',
   '/admin/modulos': 'Módulos do Portal',
   '/admin/usuarios': 'Usuários & Permissões',
   '/admin/definir-senha': 'Redefinir Senha',

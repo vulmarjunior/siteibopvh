@@ -4,7 +4,7 @@ import { isPublicOperationOpen, SITE_MODULES } from '../siteModules';
 describe('siteModules', () => {
   it('mantém apenas os módulos aprovados como ativos', () => {
     const active = Object.values(SITE_MODULES).filter((module) => module.status === 'ACTIVE').map((module) => module.id);
-    expect(active).toEqual(['parousia', 'veredas', 'relogio']);
+    expect(active).toEqual(['parousia', 'veredas', 'relogio', 'criancas']);
   });
 
   it('não divulga módulos encerrados ou arquivados', () => {

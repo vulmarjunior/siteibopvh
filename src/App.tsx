@@ -10,6 +10,8 @@ const AdminPrayerPage = lazy(() => import('./pages/admin/AdminPrayerPage'));
 const ParousiaPage = lazy(() => import('./pages/parousia/ParousiaPage').then(module => ({ default: module.ParousiaPage })));
 const EbfPage = lazy(() => import('./pages/ebf/EbfPage'));
 const AdminEbfPage = lazy(() => import('./pages/admin/AdminEbfPage'));
+const CriancasPage = lazy(() => import('./pages/criancas/CriancasPage'));
+const AdminCriancasPage = lazy(() => import('./pages/admin/AdminCriancasPage'));
 const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage'));
 const AdminSetPasswordPage = lazy(() => import('./pages/admin/AdminSetPasswordPage'));
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'));
@@ -54,6 +56,8 @@ const App: React.FC = () => (
         <Route path="/moldanos" element={<ModuleRoute moduleId="moldanos"><ModuleClosingPage moduleId="moldanos" /></ModuleRoute>} />
         <Route path="/ebf" element={<ModuleRoute moduleId="ebf"><EbfPage /></ModuleRoute>} />
         <Route path="/ebf/admin" element={<Navigate to="/admin/ebf" replace />} />
+        <Route path="/criancas" element={<ModuleRoute moduleId="criancas"><CriancasPage /></ModuleRoute>} />
+        <Route path="/criancas/admin" element={<Navigate to="/admin/criancas" replace />} />
         <Route path="/historia" element={<HistoryPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/definir-senha" element={<AdminSetPasswordPage />} />
@@ -67,6 +71,7 @@ const App: React.FC = () => (
           <Route path="/admin/emails" element={<AdminSeriesEmailPage />} />
           <Route path="/admin/relogio" element={<AdminPrayerPage />} />
           <Route path="/admin/ebf" element={<AdminEbfPage />} />
+          <Route path="/admin/criancas" element={<AdminCriancasPage />} />
           <Route path="/admin/usuarios" element={<AdminUsersPage />} />
           <Route path="/admin/banners" element={<AdminHomeBannersPage />} />
           <Route path="/admin/veredas" element={<VeredasDashboardPage />} />

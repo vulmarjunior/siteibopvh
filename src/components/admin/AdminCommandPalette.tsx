@@ -9,6 +9,7 @@ import {
   Mail,
   Shield,
   Users,
+  Baby,
   ExternalLink,
   PlusCircle,
   X,
@@ -50,6 +51,7 @@ export default function AdminCommandPalette({ isOpen, onClose }: AdminCommandPal
       { id: 'p-banners', title: 'Banners da Home', category: 'Páginas', icon: Image, href: '/admin/banners', permission: 'banners:manage', keywords: 'carrossel destaque capa imagens' },
       { id: 'p-relogio', title: 'Relógio de Oração', category: 'Páginas', icon: Shield, href: '/admin/relogio', permission: 'prayer:manage', keywords: 'intercessão escalas reservas 24h' },
       { id: 'p-ebf', title: 'Histórico da EBF', category: 'Páginas', icon: Users, href: '/admin/ebf', permission: 'ebf:manage', keywords: 'escola bíblica férias crianças edições' },
+      { id: 'p-criancas', title: 'Inscrições Dia das Crianças', category: 'Páginas', icon: Baby, href: '/admin/criancas', permission: 'criancas:manage', keywords: 'dia das crianças evento famílias inscrições churrasco' },
       { id: 'p-modulos', title: 'Módulos do Portal', category: 'Páginas', icon: LayoutDashboard, href: '/admin/modulos', permission: 'modules:manage', keywords: 'campanhas ativação status' },
       { id: 'p-users', title: 'Usuários & Permissões', category: 'Páginas', icon: Users, href: '/admin/usuarios', permission: 'users:manage', keywords: 'administradores senhas papéis' },
 
