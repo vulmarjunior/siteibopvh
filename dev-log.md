@@ -2,7 +2,7 @@
 
 > Documentação viva de descobertas técnicas. Atualizada automaticamente durante o desenvolvimento.
 > **Stack**: React 18 + TypeScript + Vite 5 + Tailwind v4 + Express 5 + Prisma 5 + PostgreSQL (Supabase) + Resend + Vercel/Netlify
-> **Última atualização**: 2026-10-04
+> **Última atualização**: 2026-10-09
 
 ---
 
@@ -72,6 +72,13 @@
 - **Contexto**: facilitar a divulgação do evento pelas próprias famílias.
 - **Solução**: botão "Compartilhar no WhatsApp" no card de localização (`CriancasLocal.tsx`) usando `https://wa.me/?text=${encodeURIComponent(...)}` com nome do evento, data/hora, local, link do Google Maps e link de inscrições (`https://www.ibopvh.com.br/criancas`).
 - **Observações**: não exige número de destino (abre o seletor de contatos do WhatsApp).
+
+#### Inscrição sem crianças (adultos que vão sozinhos)
+- **Status**: ✅ Confirmado
+- **Data**: 2026-10-09
+- **Contexto**: formulário e API exigiam ao menos uma criança, impedindo o cadastro de adultos que participam sem filhos.
+- **Solução**: removida a exigência em `validateChildrensRegistration` (`src/api/public/childrens.ts`) e em `parseMembers` (`CriancasInscricao.tsx`); seção "Crianças (opcional)" com texto de ajuda; e-mails (notificação e confirmação) e tela de sucesso passam a tratar "participação individual". Mensagem de erro do `POST /api/criancas/registrations` ajustada.
+- **Observações**: nenhuma migração necessária — `ChildrensDayMember` já aceita zero linhas e o responsável já era contado como participante (+1). Demais regras (telefone, idades, teto de participantes) inalteradas; `childrens.test.ts` atualizado (9 testes).
 
 ---
 

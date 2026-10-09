@@ -18,9 +18,18 @@ describe('validateChildrensRegistration', () => {
     expect(result?.bringsBreakfast).toBe(false);
   });
 
-  it('exige ao menos uma criança', () => {
-    expect(validateChildrensRegistration({ ...validPayload, children: [] })).toBeNull();
-    expect(validateChildrensRegistration({ ...validPayload, children: undefined })).toBeNull();
+  it('aceita inscrição sem crianças (ex.: apenas familiares adultos)', () => {
+    const result = validateChildrensRegistration({ ...validPayload, children: [] });
+    expect(result).not.toBeNull();
+    expect(result?.children).toEqual([]);
+    expect(validateChildrensRegistration({ ...validPayload, children: undefined })?.children).toEqual([]);
+  });
+
+  it('aceita adulto sozinho, sem crianças e sem familiares', () => {
+    const result = validateChildrensRegistration({ guardianName: 'Maria Souza', phone: '(69) 99999-9999' });
+    expect(result).not.toBeNull();
+    expect(result?.children).toEqual([]);
+    expect(result?.familyMembers).toEqual([]);
   });
 
   it('rejeita idades fora do limite', () => {

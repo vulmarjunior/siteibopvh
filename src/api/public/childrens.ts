@@ -73,7 +73,7 @@ export function validateChildrensRegistration(body: ChildrensRegistrationPayload
   if (guardianName.length < 3 || guardianName.length > 120) return null;
   if (phone.length < 10 || phone.length > 11) return null;
   if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 160)) return null;
-  if (!children || children.length === 0) return null;
+  if (!children) return null;
   if (!familyMembers) return null;
   if (children.length + familyMembers.length > MAX_TOTAL_PEOPLE) return null;
 
@@ -101,8 +101,7 @@ function buildNotificationHtml(editionName: string, data: ValidatedChildrensRegi
     <p><b>Telefone:</b> ${escapeHtml(data.phone)}</p>
     ${data.email ? `<p><b>E-mail:</b> ${escapeHtml(data.email)}</p>` : ''}
     <p><b>Total de participantes:</b> ${totalPeople}</p>
-    <h3>Crianças</h3>
-    <ul>${memberRows(data.children)}</ul>
+    ${data.children.length > 0 ? `<h3>Crianças</h3><ul>${memberRows(data.children)}</ul>` : '<p><i>Sem crianças — participação individual.</i></p>'}
     ${data.familyMembers.length > 0 ? `<h3>Demais familiares</h3><ul>${memberRows(data.familyMembers)}</ul>` : ''}
     <p><b>Levará café da manhã:</b> ${data.bringsBreakfast ? 'Sim' : 'Não'}${data.breakfastItems ? ` — ${escapeHtml(data.breakfastItems)}` : ''}</p>
     <p><b>Levará acompanhamento:</b> ${data.bringsSideDish ? 'Sim' : 'Não'}${data.sideDishItems ? ` — ${escapeHtml(data.sideDishItems)}` : ''}</p>
@@ -116,6 +115,7 @@ function buildFamilyConfirmationHtml(data: ValidatedChildrensRegistration): stri
   const childrenList = data.children.map((child) => `<li>${escapeHtml(child.name)} — ${child.age} ano(s)</li>`).join('');
   const familyList = data.familyMembers.length > 0 ? data.familyMembers.map((member) => `<li>${escapeHtml(member.name)} — ${member.age} ano(s)</li>`).join('') : '';
   const totalPeople = 1 + data.children.length + data.familyMembers.length;
+  const hasDependents = data.children.length > 0 || data.familyMembers.length > 0;
   return `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden; background-color: #fff;">
       <div style="background-color: #f59e0b; padding: 35px 20px; text-align: center;">
@@ -124,13 +124,12 @@ function buildFamilyConfirmationHtml(data: ValidatedChildrensRegistration): stri
       </div>
       <div style="padding: 35px 30px; line-height: 1.6;">
         <p style="font-size: 18px;">Olá, <strong>${firstName}</strong>!</p>
-        <p>Recebemos a inscrição da sua família. Será uma alegria celebrar este dia com vocês.</p>
+        <p>${hasDependents ? 'Recebemos a inscrição da sua família. Será uma alegria celebrar este dia com vocês.' : 'Recebemos a sua inscrição. Será uma alegria celebrar este dia com você.'}</p>
         <div style="margin-top: 25px; border-top: 2px solid #f59e0b; padding-top: 20px;">
-          <h3 style="margin-bottom: 10px;">Sua família inscrita</h3>
-          <p style="margin: 5px 0;"><strong>Crianças:</strong></p>
-          <ul style="margin-top: 0;">${childrenList}</ul>
+          <h3 style="margin-bottom: 10px;">${hasDependents ? 'Sua família inscrita' : 'Sua inscrição'}</h3>
+          ${data.children.length > 0 ? `<p style="margin: 5px 0;"><strong>Crianças:</strong></p><ul style="margin-top: 0;">${childrenList}</ul>` : ''}
           ${familyList ? `<p style="margin: 5px 0;"><strong>Demais familiares:</strong></p><ul style="margin-top: 0;">${familyList}</ul>` : ''}
-          <p style="margin-top: 10px; font-size: 14px; color: #666;">Incluindo você, responsável, serão <strong>${totalPeople} pessoa(s)</strong> da sua família no evento.</p>
+          <p style="margin-top: 10px; font-size: 14px; color: #666;">${hasDependents ? `Incluindo você, responsável, serão <strong>${totalPeople} pessoa(s)</strong> da sua família no evento.` : 'Você está inscrito(a) como participante do evento.'}</p>
         </div>
         <div style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;">
           <h3 style="margin-bottom: 10px;">Programação</h3>
@@ -171,7 +170,7 @@ export function createPublicChildrensRouter(prisma: PrismaClient, getResend: () 
     if (!(await isModulePublicOperationOpen(prisma, MODULE_ID))) return res.status(410).json({ error: 'As inscrições do Dia das Crianças estão encerradas.' });
 
     const data = validateChildrensRegistration(req.body ?? {});
-    if (!data) return res.status(400).json({ error: 'Revise os dados informados. Informe ao menos uma criança e confira nome, idade e telefone.' });
+    if (!data) return res.status(400).json({ error: 'Revise os dados informados. Confira nome, idade e telefone.' });
 
     try {
       const edition = await prisma.siteEdition.findFirst({ where: { moduleId: MODULE_ID, status: 'ACTIVE' }, orderBy: [{ year: 'desc' }, { createdAt: 'desc' }], select: { id: true, name: true } });

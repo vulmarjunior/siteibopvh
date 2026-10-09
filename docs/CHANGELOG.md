@@ -2,6 +2,19 @@
 
 ## [Em Desenvolvimento]
 
+### 2026-10-09 - Dia das Crianças: inscrição sem crianças (adultos que vão sozinhos)
+
+- **Formulário Público (`/criancas`):**
+  - Crianças deixam de ser obrigatórias: seção "Crianças (opcional)" aceita lista vazia, com orientação de que quem vai sozinho(a) ou apenas com adultos basta informar os dados como responsável.
+  - Tela de sucesso e resumo adaptados: o bloco "Crianças" só aparece quando há crianças; inscrição sem membros exibe o card "Participação individual".
+  - Título e textos da seção ajustados para tom neutro ("Faça sua inscrição").
+- **Backend & Validação:**
+  - `validateChildrensRegistration` não exige mais ao menos uma criança; mantém validação de nome, telefone, idades e teto de participantes.
+  - E-mails de notificação interna e de confirmação omitem o bloco "Crianças" quando vazio e usam texto de participação individual.
+  - Mensagem de erro do `POST /api/criancas/registrations` ajustada.
+- **Testes:** novos casos "aceita inscrição sem crianças" e "aceita adulto sozinho"; suíte com 134 testes passando.
+- **Sem mudança de banco:** o modelo existente (`ChildrensDayMember` com zero linhas) já suportava o cenário, e o responsável já era contabilizado como participante.
+
 ### 2026-10-04 - Hotsite "Dia das Crianças" (`/criancas`) com inscrições por família
 
 - **Hotsite Público (`/criancas`):**

@@ -31,7 +31,6 @@ function parseMembers(rows: MemberDraft[], kind: 'children' | 'familyMembers'): 
     if (!Number.isInteger(age) || age < 0 || age > ageLimit) return 'Confira as idades informadas.';
     members.push({ name, age });
   }
-  if (kind === 'children' && members.length === 0) return 'Informe ao menos uma criança para a inscrição.';
   return members;
 }
 
@@ -132,10 +131,11 @@ export default function CriancasInscricao() {
       <div className="mx-auto max-w-4xl">
         <div className="text-center">
           <p className="text-sm font-black uppercase tracking-[0.24em] text-sky-700">Inscrições</p>
-          <h2 className="mt-2 font-serif text-4xl font-bold text-stone-900 md:text-5xl">Inscreva sua família</h2>
+          <h2 className="mt-2 font-serif text-4xl font-bold text-stone-900 md:text-5xl">Faça sua inscrição</h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-stone-600">
             As inscrições deverão ser realizadas até o dia <strong>08 de outubro</strong>. Não deixe para a última hora!
             A confirmação é importante para organizarmos toda a programação e alimentação do evento.
+            Vai sozinho(a) ou só com adultos? Sem problema — basta informar seus dados como responsável.
           </p>
         </div>
 
@@ -146,17 +146,25 @@ export default function CriancasInscricao() {
             </span>
             <h3 className="mt-5 font-serif text-3xl font-bold text-stone-900">Inscrição confirmada!</h3>
             <p className="mt-3 text-lg text-stone-600">
-              Obrigado, <strong>{summary.guardianName.split(' ')[0]}</strong>! Recebemos a inscrição da sua família.
+              Obrigado, <strong>{summary.guardianName.split(' ')[0]}</strong>! Recebemos a sua inscrição.
               {email.trim() ? ' Enviamos os detalhes para o seu e-mail.' : ''}
             </p>
 
             <div className="mx-auto mt-6 max-w-xl space-y-4 text-left">
-              <div className="rounded-3xl bg-emerald-50 p-5">
-                <p className="flex items-center gap-2 font-black text-emerald-900"><Baby aria-hidden="true" className="h-5 w-5" /> Crianças</p>
-                <ul className="mt-2 space-y-1 text-emerald-900">
-                  {summary.children.map((child) => <li key={`${child.name}-${child.age}`}>{child.name} — {child.age} ano(s)</li>)}
-                </ul>
-              </div>
+              {summary.children.length > 0 && (
+                <div className="rounded-3xl bg-emerald-50 p-5">
+                  <p className="flex items-center gap-2 font-black text-emerald-900"><Baby aria-hidden="true" className="h-5 w-5" /> Crianças</p>
+                  <ul className="mt-2 space-y-1 text-emerald-900">
+                    {summary.children.map((child) => <li key={`${child.name}-${child.age}`}>{child.name} — {child.age} ano(s)</li>)}
+                  </ul>
+                </div>
+              )}
+              {summary.children.length === 0 && summary.familyMembers.length === 0 && (
+                <div className="rounded-3xl bg-emerald-50 p-5 text-emerald-900">
+                  <p className="font-black">Participação individual</p>
+                  <p className="mt-1 text-sm">Você está inscrito(a) como participante do evento.</p>
+                </div>
+              )}
               {summary.familyMembers.length > 0 && (
                 <div className="rounded-3xl bg-sky-50 p-5">
                   <p className="flex items-center gap-2 font-black text-sky-900"><Users aria-hidden="true" className="h-5 w-5" /> Demais familiares</p>
@@ -167,7 +175,7 @@ export default function CriancasInscricao() {
               )}
               {summary.brings.length > 0 && (
                 <div className="rounded-3xl bg-amber-50 p-5">
-                  <p className="flex items-center gap-2 font-black text-amber-900"><Croissant aria-hidden="true" className="h-5 w-5" /> O que a família levará</p>
+                  <p className="flex items-center gap-2 font-black text-amber-900"><Croissant aria-hidden="true" className="h-5 w-5" /> O que será levado</p>
                   <ul className="mt-2 space-y-1 text-amber-900">
                     {summary.brings.map((item) => <li key={item}>{item}</li>)}
                   </ul>
@@ -217,27 +225,26 @@ export default function CriancasInscricao() {
             <fieldset className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <legend className="flex items-center gap-2 text-lg font-black text-stone-900">
-                  <Baby aria-hidden="true" className="h-5 w-5 text-rose-500" /> Crianças
+                  <Baby aria-hidden="true" className="h-5 w-5 text-rose-500" /> Crianças (opcional)
                 </legend>
                 <button type="button" onClick={() => addMember('children')} disabled={children.length >= 10} className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-4 py-2 text-sm font-bold text-rose-700 transition hover:bg-rose-200 disabled:opacity-40">
                   <Plus aria-hidden="true" className="h-4 w-4" /> Adicionar criança
                 </button>
               </div>
+              <p className="text-sm text-stone-500">Opcional. Se você vai sozinho(a) ou apenas com outros adultos, deixe esta seção em branco.</p>
               {children.map((child, index) => (
                 <div key={index} className="grid gap-3 rounded-3xl bg-rose-50 p-4 md:grid-cols-[1fr_120px_44px]">
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-wide text-rose-700">Nome da criança *</span>
-                    <input value={child.name} onChange={(event) => updateMember('children', index, { name: event.target.value })} required className="mt-1 w-full rounded-2xl border-2 border-rose-200 p-3 outline-none transition focus:border-rose-400" placeholder="Nome completo" />
+                    <span className="text-xs font-bold uppercase tracking-wide text-rose-700">Nome da criança</span>
+                    <input value={child.name} onChange={(event) => updateMember('children', index, { name: event.target.value })} className="mt-1 w-full rounded-2xl border-2 border-rose-200 p-3 outline-none transition focus:border-rose-400" placeholder="Nome completo" />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-bold uppercase tracking-wide text-rose-700">Idade *</span>
-                    <input type="number" min={0} max={17} value={child.age} onChange={(event) => updateMember('children', index, { age: event.target.value })} required className="mt-1 w-full rounded-2xl border-2 border-rose-200 p-3 outline-none transition focus:border-rose-400" placeholder="0" />
+                    <span className="text-xs font-bold uppercase tracking-wide text-rose-700">Idade</span>
+                    <input type="number" min={0} max={17} value={child.age} onChange={(event) => updateMember('children', index, { age: event.target.value })} className="mt-1 w-full rounded-2xl border-2 border-rose-200 p-3 outline-none transition focus:border-rose-400" placeholder="0" />
                   </label>
-                  {children.length > 1 ? (
-                    <button type="button" onClick={() => removeMember('children', index)} aria-label="Remover criança" className="mt-6 grid h-11 w-11 place-items-center rounded-2xl bg-white text-rose-500 shadow transition hover:bg-rose-100">
-                      <Trash2 aria-hidden="true" className="h-4 w-4" />
-                    </button>
-                  ) : <span className="hidden md:block" />}
+                  <button type="button" onClick={() => removeMember('children', index)} aria-label="Remover criança" className="mt-6 grid h-11 w-11 place-items-center rounded-2xl bg-white text-rose-500 shadow transition hover:bg-rose-100">
+                    <Trash2 aria-hidden="true" className="h-4 w-4" />
+                  </button>
                 </div>
               ))}
             </fieldset>
