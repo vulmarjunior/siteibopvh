@@ -4,7 +4,11 @@ Fonte oficial das pendências deste projeto.
 
 ## Em aberto
 
-Nenhuma pendência registrada.
+- **2026-10-25 — Avaliar migração do portal para a VPS (Coolify), incluindo banco
+  no PostgreSQL da VPS.** Comparativo em
+  [AVALIACAO_MIGRACAO_VPS.md](AVALIACAO_MIGRACAO_VPS.md). Decisão pendente; não é
+  pré-requisito do módulo EBD Digital. Envolve segurança da VPS, Auth/Storage do
+  Supabase, backups e capacidade.
 
 ## Concluídas
 
