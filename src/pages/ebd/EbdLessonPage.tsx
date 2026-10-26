@@ -4,17 +4,22 @@ import { Helmet } from 'react-helmet-async';
 import {
   ArrowLeft,
   ArrowRight,
+  Bookmark,
   BookOpen,
+  CheckCircle2,
+  Circle,
   Download,
   FileText,
   List,
   Lock,
   RefreshCw,
+  RotateCcw,
 } from 'lucide-react';
 import { EbdFooter, EbdHeader } from '../../components/ebd/EbdChrome';
 import { EbdReaderControls } from '../../components/ebd/EbdReaderControls';
 import '../../components/ebd/ebd-reader.css';
 import { useEbdReaderSettings } from '../../lib/ebd/useEbdReaderSettings.js';
+import { useEbdLessonProgress } from '../../lib/ebd/useEbdLessonProgress.js';
 import {
   formatFileSize,
   formatPageRange,
@@ -42,6 +47,16 @@ export default function EbdLessonPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+
+  const {
+    isRead,
+    hasEntry,
+    resumePercent,
+    canResume,
+    resumeReading,
+    toggleRead,
+    clearProgress,
+  } = useEbdLessonProgress(slug, Boolean(lesson));
 
   useEffect(() => {
     if (!slug) {
@@ -208,6 +223,49 @@ export default function EbdLessonPage() {
               canIncrease={canIncrease}
               canDecrease={canDecrease}
             />
+
+            <section aria-label="Seu progresso nesta lição" className="ebd-card ebd-no-print mt-4 p-3 sm:p-4">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <button
+                  type="button"
+                  className="ebd-btn"
+                  aria-pressed={isRead}
+                  onClick={toggleRead}
+                >
+                  {isRead ? (
+                    <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Circle className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  {isRead ? (
+                    <>
+                      Lida
+                      <span className="sr-only"> — clique para desmarcar</span>
+                    </>
+                  ) : (
+                    'Marcar como lida'
+                  )}
+                </button>
+
+                {canResume ? (
+                  <button type="button" className="ebd-btn" onClick={resumeReading}>
+                    <Bookmark className="h-4 w-4" aria-hidden="true" />
+                    Retomar de {resumePercent}%
+                  </button>
+                ) : null}
+
+                {hasEntry ? (
+                  <button type="button" className="ebd-btn" onClick={clearProgress}>
+                    <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                    Limpar progresso desta lição
+                  </button>
+                ) : null}
+
+                <p className="text-xs leading-relaxed ebd-muted">
+                  O progresso fica salvo apenas neste navegador.
+                </p>
+              </div>
+            </section>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start">
               <article

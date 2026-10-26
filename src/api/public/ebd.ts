@@ -12,6 +12,7 @@ import {
   normalizeStringArray,
   pdfDownloadPath,
 } from '../../lib/ebd/content.js';
+import { searchLessons, type EbdSearchableLesson } from '../../lib/ebd/search.js';
 import type {
   EbdLessonDetail,
   EbdLessonSummary,
@@ -30,6 +31,26 @@ const lessonSummarySelect = {
 } satisfies Prisma.EbdLessonSelect;
 
 type LessonSummaryRow = Prisma.EbdLessonGetPayload<{ select: typeof lessonSummarySelect }>;
+
+const searchLessonSelect = {
+  ...lessonSummarySelect,
+  introduction: true,
+  sections: true,
+  questions: true,
+  dailyReadings: true,
+} satisfies Prisma.EbdLessonSelect;
+
+type SearchLessonRow = Prisma.EbdLessonGetPayload<{ select: typeof searchLessonSelect }>;
+
+function toSearchableLesson(lesson: SearchLessonRow): EbdSearchableLesson {
+  return {
+    ...toLessonSummary(lesson),
+    introduction: normalizeStringArray(lesson.introduction),
+    sections: normalizeSections(lesson.sections),
+    questions: normalizeQuestions(lesson.questions),
+    dailyReadings: normalizeDailyReadings(lesson.dailyReadings),
+  };
+}
 
 function toLessonSummary(lesson: LessonSummaryRow): EbdLessonSummary {
   return {
@@ -107,6 +128,99 @@ export function createPublicEbdRouter(prisma: PrismaClient) {
     setPublicCache(res);
     res.json({
       quarters: quarters.filter((quarter) => quarter.lessons.length > 0).map(toQuarterSummary),
+    });
+  });
+
+  router.get('/search', async (req, res) => {
+    const query = String(req.query.q ?? '').trim();
+    if (query.length < 2 || query.length > 80) {
+      res.status(400).json({ error: 'Digite uma busca entre 2 e 80 caracteres.' });
+      return;
+    }
+
+    const yearParam = typeof req.query.year === 'string' ? req.query.year : undefined;
+    const quarterParam = typeof req.query.quarter === 'string' ? req.query.quarter : undefined;
+    const className = typeof req.query.class === 'string' ? req.query.class.trim() : '';
+
+    if ((yearParam && !quarterParam) || (!yearParam && quarterParam)) {
+      res.status(400).json({ error: 'Informe ano e trimestre juntos.' });
+      return;
+    }
+
+    type SearchQuarterRow = Prisma.EbdQuarterGetPayload<{
+      include: { lessons: { select: typeof searchLessonSelect } };
+    }>;
+    let record: SearchQuarterRow | null = null;
+
+    if (yearParam && quarterParam) {
+      const year = parseInteger(yearParam);
+      const quarter = parseInteger(quarterParam);
+      if (
+        year === null ||
+        year < 1900 ||
+        year > 2100 ||
+        quarter === null ||
+        quarter < 1 ||
+        quarter > 4
+      ) {
+        res.status(400).json({ error: 'Trimestre inválido.' });
+        return;
+      }
+
+      record = await prisma.ebdQuarter.findFirst({
+        where: {
+          year,
+          quarter,
+          status: 'PUBLISHED',
+          ...(className ? { className } : {}),
+        },
+        orderBy: { className: 'asc' },
+        include: {
+          lessons: {
+            where: { status: 'PUBLISHED' },
+            orderBy: { number: 'asc' },
+            select: searchLessonSelect,
+          },
+        },
+      });
+    } else {
+      record = await prisma.ebdQuarter.findFirst({
+        where: {
+          status: 'PUBLISHED',
+          lessons: { some: { status: 'PUBLISHED' } },
+        },
+        orderBy: [{ year: 'desc' }, { quarter: 'desc' }, { className: 'asc' }],
+        include: {
+          lessons: {
+            where: { status: 'PUBLISHED' },
+            orderBy: { number: 'asc' },
+            select: searchLessonSelect,
+          },
+        },
+      });
+    }
+
+    if (!record || record.lessons.length === 0) {
+      res.status(404).json({ error: 'Nenhum trimestre publicado para busca.' });
+      return;
+    }
+
+    const results = searchLessons(record.lessons.map(toSearchableLesson), query);
+
+    setPublicCache(res);
+    res.json({
+      query,
+      quarter: {
+        id: record.id,
+        slug: record.slug,
+        year: record.year,
+        quarter: record.quarter,
+        className: record.className,
+        title: record.title,
+        publisher: record.publisher,
+        lessonCount: record.lessons.length,
+      },
+      results,
     });
   });
 

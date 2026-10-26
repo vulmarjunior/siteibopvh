@@ -93,3 +93,41 @@ export interface EbdQuartersResponse {
 export interface EbdLessonResponse {
   lesson: EbdLessonDetail;
 }
+
+export interface EbdSearchSnippet {
+  before: string;
+  match: string;
+  after: string;
+}
+
+export interface EbdSearchResult {
+  lesson: EbdLessonSummary;
+  matches: number;
+  snippets: EbdSearchSnippet[];
+}
+
+export interface EbdSearchQuarter {
+  id: string;
+  slug: string;
+  year: number;
+  quarter: number;
+  className: string;
+  title: string;
+  publisher: string;
+  lessonCount: number;
+}
+
+export interface EbdSearchResponse {
+  query: string;
+  quarter: EbdSearchQuarter;
+  results: EbdSearchResult[];
+}
+
+export interface EbdProgressEntry {
+  read: boolean;
+  scrollPercent: number;
+  updatedAt: string;
+}
+
+export type EbdProgressStore = Record<string, EbdProgressEntry>;
+
