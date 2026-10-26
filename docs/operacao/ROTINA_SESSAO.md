@@ -8,15 +8,15 @@
    possível. Nunca usar stash, reset, rebase, descarte, commit ou push por este
    gatilho.
 4. Consultar AI Memory somente quando habilitado; neste projeto está desativado.
-5. Informar Git, pauta, contexto, bloqueios e próximo passo. Não implementar
-   apenas pelo gatilho.
+5. Informar Git, pauta, contexto, bloqueios, plano ativo e entrega em execução,
+   e próximo passo. Não implementar apenas pelo gatilho.
 
 ## `siteibo off`
 
 1. Revisar apenas o trabalho efetivamente realizado e as validações executadas.
 2. Atualizar cada fato em sua fonte: `docs/CHANGELOG.md`,
-   `docs/MASTER_PLAN.md`, `docs/PENDENCIAS.md` e `docs/CONTINUIDADE.md`, sem
-   duplicação.
+   `docs/MASTER_PLAN.md`, `docs/PENDENCIAS.md`, `docs/CONTINUIDADE.md` e o
+   diário do plano ativo, sem duplicação.
 3. Não criar release, alterar versão ou duplicar registro por mero encerramento.
 4. Conferir diff e Git sem commit, push ou deploy automáticos.
 5. Informar concluído, pendente, validações, arquivos alterados, estado do Git e
