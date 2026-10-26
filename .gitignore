@@ -38,3 +38,6 @@ EBFIMG/*.mp4
 
 # Local scratch directory
 scratch/
+
+# Materiais de origem da editora (PDFs e texto integral não versionados)
+materiais/

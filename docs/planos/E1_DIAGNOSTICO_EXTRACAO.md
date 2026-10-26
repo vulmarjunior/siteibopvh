@@ -31,9 +31,11 @@ Foram extraídas as 14 páginas de conteúdo das duas lições — PDF 18–31, 
 - `pypdf` 6.16.0;
 - `pdftotext` (Poppler 25.07.0), com `-layout`.
 
-A extração foi feita fora do portal, em pasta temporária. O script de diagnóstico
-versionado é [`E1/extrair_amostra.py`](E1/extrair_amostra.py); ele não contém o
-PDF nem o texto da revista.
+O PDF de origem está em
+`materiais/ebd/2022/1T/adultos/PalavraeVida-1T2022-Digital.pdf`, pasta local
+ignorada pelo Git. A extração foi feita fora do portal, em pasta temporária. O
+script de diagnóstico versionado é [`E1/extrair_amostra.py`](E1/extrair_amostra.py);
+ele não contém o PDF nem o texto da revista.
 
 ## 3. Comparação das ferramentas
 

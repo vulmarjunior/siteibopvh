@@ -19,16 +19,18 @@ ajustar o tamanho da fonte; leitores de tela encontram dificuldade na diagramaç
 em colunas. O resultado é leitura desconfortável e pouco uso do material durante
 a semana.
 
-A igreja já possui autorização da editora para publicação digital e o portal
-institucional é o lugar natural para hospedar essa leitura — hoje ele não tem
-nada relacionado à EBD.
+A autorização da editora foi confirmada pelo usuário em 26/10/2026 para uso
+**não comercial e interno à igreja**, com publicação digital no portal. O portal
+institucional é o lugar natural para essa leitura — hoje ele não tem nada
+relacionado à EBD — e a área `/ebd` não deve ser indexada em buscadores.
 
 ## 2. Objetivo
 
 Publicar as lições da revista da EBD (turma Adultos, um trimestre por vez) como
 leitura digital responsiva em texto reflow, com busca, ajuste de fonte, modo
 noturno e compatibilidade com leitor de tela, a partir do PDF fornecido pela
-editora, com revisão humana obrigatória antes da publicação.
+editora, com revisão humana obrigatória antes da publicação, em área não
+indexada e para uso interno não comercial.
 
 ## 3. Não-objetivos (fora de escopo)
 
@@ -42,8 +44,13 @@ editora, com revisão humana obrigatória antes da publicação.
 - Não reproduzir capa, expediente, editorial, propaganda ou ficha técnica da edição.
 - Não executar extração de PDF dentro do portal no MVP; a extração é local e o
   portal apenas importa o resultado.
-- Não criar conta de aluno no MVP: a leitura é pública.
+- Não criar conta de aluno no MVP: o acesso é por URL, sem login, e a área não é
+  indexada.
 - Não alterar a identidade visual do portal fora do leitor da revista.
+- Não usar o conteúdo para fins comerciais, promoção ou redistribuição; o uso
+  autorizado é interno à igreja.
+- Não indexar a área `/ebd` em buscadores nem incluir suas páginas no sitemap.
+- Não versionar o documento de autorização da editora nem o PDF de origem.
 
 ## 4. Usuários e casos de uso
 
@@ -52,14 +59,16 @@ editora, com revisão humana obrigatória antes da publicação.
 | Aluno | Ler a lição no celular, marcar como lida e retomar de onde parou | PDF com zoom e rolagem horizontal |
 | Professor | Consultar tópicos, textos bíblicos e perguntas para preparar a aula | PDF |
 | Admin/editor (responsável pelo projeto) | Publicar o trimestre a partir do PDF, revisando a extração | Não existe |
-| Visitante | Conhecer o material da EBD | PDF público avulso |
+| Visitante | Acessar o material por link direto, sem login | PDF público avulso |
 
 ## 5. Requisitos
 
-### Premissas de trabalho (em debate)
+### Premissas de trabalho
 
 - Módulo dentro do portal (`siteibopvh`), rota `/ebd`, mesma stack, banco e deploy.
-- Leitura pública, sem login de aluno.
+- Leitura pública, sem login de aluno, em área não indexada.
+- Uso interno e não comercial, com autorização da editora confirmada em
+  26/10/2026.
 - Texto reflow (não flipbook), preservando imagens como figuras.
 - Pipeline: extração local + importação no admin + revisão humana + publicação.
 - Extração feita na máquina local, fora do portal, com ferramenta dedicada e
@@ -73,6 +82,21 @@ editora, com revisão humana obrigatória antes da publicação.
 - Revisão editorial feita pelo próprio responsável pelo projeto antes de publicar.
 - Conteúdo de editora **com autorização** registrada (referência documental fora do repositório).
 - Nova permissão administrativa: `ebd:manage`.
+- O PDF de origem fica em `materiais/ebd/<ano>/<trimestre>/<turma>/`, pasta local
+  ignorada pelo Git; o portal recebe o PDF no Storage.
+
+### Restrições de uso e indexação
+
+- Uso autorizado: não comercial e interno à igreja. Não usar o conteúdo em
+  produtos, campanhas, promoções ou redistribuição.
+- A área `/ebd` deve responder com `X-Robots-Tag: noindex, nofollow` e meta
+  robots equivalente. `robots.txt` não substitui o `noindex`; se for usado,
+  documentar o conflito com o rastreamento.
+- Excluir `/ebd` do `sitemap.xml` e não gerar dados estruturados de artigo.
+- O `noindex` não é controle de acesso: se for necessário restringir a leitura a
+  membros da igreja, isso exige autenticação e decisão separada, fora do MVP.
+- O documento da autorização não é versionado; registrar apenas a referência e a
+  data.
 
 ### Funcionais
 
@@ -98,8 +122,11 @@ editora, com revisão humana obrigatória antes da publicação.
 - RNF5 — O portal não processa PDF: a extração ocorre fora dele; revisão humana é obrigatória antes de publicar.
 - RNF6 — Sem dados pessoais de alunos no MVP; sem credenciais ou tokens no cliente.
 - RNF7 — Rastreabilidade: quem publicou, quando e qual versão do conteúdo.
-- RNF8 — SEO: metadados por lição, sitemap e dados estruturados de artigo.
-- RNF9 — Autorização da editora referenciada antes da publicação; nenhum documento sensível versionado.
+- RNF8 — Não indexação: a área `/ebd` responde com `noindex, nofollow` (meta e
+  `X-Robots-Tag`), fica fora do sitemap e não usa dados estruturados de artigo; o
+  restante do portal permanece indexável.
+- RNF9 — Autorização da editora confirmada em 26/10/2026 para uso não comercial e
+  interno; o documento não é versionado e a referência fica fora do repositório.
 - RNF10 — PDFs não trafegam pela função serverless: upload direto ao Storage por URL assinada, respeitando o limite de 4,5 MB por request do Vercel.
 
 ### Fluxo de extração local, envio do PDF e publicação
@@ -134,10 +161,10 @@ Estados do trimestre: `rascunho` → `em revisão` → `publicado` → `arquivad
 | ID | Entrega | Critério de aceite (verificável) | Status | Evidência |
 |---|---|---|---|---|
 | E1 | Diagnóstico dos PDFs e extração local | 2 lições extraídas localmente com título, seções e perguntas reconhecidos; relatório comparando ferramentas candidatas (pdfjs-dist no Node, PyMuPDF/pdfplumber, marker/docling) com taxa de acerto e esforço de revisão; esquema de importação definido; PDFs de origem com texto extraível ou plano B definido | implementado | [E1_DIAGNOSTICO_EXTRACAO.md](E1_DIAGNOSTICO_EXTRACAO.md) |
-| E2 | Modelo de dados e leitura pública | RF1, RF2, RF4, RF6 e RF10 funcionando com amostra real do trimestre; checklist WCAG 2.1 AA aplicado; sem rolagem horizontal em 360px | planejado | |
+| E2 | Modelo de dados e leitura pública | RF1, RF2, RF4, RF6 e RF10 funcionando com amostra real do trimestre; checklist WCAG 2.1 AA aplicado; sem rolagem horizontal em 360px; página com `noindex` desde a primeira versão | planejado | |
 | E3 | Busca e progresso local | RF3 e RF5 funcionando; busca retorna lição e trecho; progresso persiste entre sessões e pode ser limpo | planejado | |
 | E4 | Importação e publicação no admin | RF7, RF8, RF11 e RF12 com permissão `ebd:manage`; importação de PDF + JSON de uma lição real em ambiente de teste; hash divergente recusado; upload direto ao Storage por URL assinada (PDF acima de 4,5 MB funciona); versão anterior preservada; rascunho inacessível no público; auditoria registrada | planejado | |
-| E5 | Homologação e publicação do trimestre | Trimestre da turma Adultos completo no ar; aceite do responsável registrado; autorização da editora referenciada; RF9 e RNF8 verificados | planejado | |
+| E5 | Homologação e publicação do trimestre | Trimestre da turma Adultos completo no ar; aceite do responsável registrado; autorização da editora referenciada; RF9 e RNF8 verificados (`noindex` em meta/header, fora do sitemap) | planejado | |
 
 **Vocabulário de status:** `planejado` → `em execução` → `implementado` → `testado` → `homologado` → `publicado`. Também `bloqueado` e `abandonado`.
 
@@ -147,7 +174,7 @@ Estados do trimestre: `rascunho` → `em revisão` → `publicado` → `arquivad
 
 **Estado em 2026-10-25:** planejamento pausado até o envio da edição que será efetivamente usada. As amostras analisadas (Gálatas, Hebreus e Cânticos do Servo) serviram apenas para diagnóstico de extração e comparação de templates; nenhuma delas define o MVP. Quando a edição real chegar, o diagnóstico será repetido nela e o escopo será fechado.
 
-**Edição real recebida (2026-10-26):** `PalavraeVida-1T2022-Digital.pdf` — Revista de Jovens e Adultos da Convenção Batista Fluminense, Ano 18, nº 72, **1T2022**; 119 páginas; 4,85 MB; 13 lições (p. 16–113); texto extraível com `pdfplumber`; SHA-256 `5b359ca876e682a25e29b14af0aa2f24b0cea3a7389be635d22f39da38fec204`. O template é anterior ao das amostras de 2024; a E1 deve ser repetida nesta edição e o escopo fechado nela. A autorização da editora precisa ser confirmada para esta edição antes da E5.
+**Edição real recebida (2026-10-26):** `PalavraeVida-1T2022-Digital.pdf` — Revista de Jovens e Adultos da Convenção Batista Fluminense, Ano 18, nº 72, **1T2022**; 119 páginas; 4,85 MB; 13 lições (p. 16–113); texto extraível com `pdfplumber`; SHA-256 `5b359ca876e682a25e29b14af0aa2f24b0cea3a7389be635d22f39da38fec204`. O arquivo de origem está em `materiais/ebd/2022/1T/adultos/PalavraeVida-1T2022-Digital.pdf`, pasta local ignorada pelo Git; o caminho absoluto varia por máquina. Em outra máquina, recriar a estrutura e copiar o PDF, conferindo o hash. O template é anterior ao das amostras de 2024; a E1 deve ser repetida nesta edição e o escopo fechado nela. A autorização da editora foi confirmada em 26/10/2026 para uso não comercial e interno; a referência documental fica fora do repositório.
 
 ## 7. Dependências e riscos
 
@@ -155,7 +182,9 @@ Estados do trimestre: `rascunho` → `em revisão` → `publicado` → `arquivad
 |---|---|---|---|
 | PDF da editora com texto extraível | Dependência | Extração falha se for digitalizado | E1 verifica amostra; plano B: OCR ou digitação assistida |
 | Dependência da máquina local para extrair | Risco | Pipeline não reproduzível por terceiros | Ferramenta versionada no repositório e esquema documentado; no MVP o revisor é o próprio responsável |
-| Autorização da editora | Dependência | Publicação irregular sem ela | Gate na E5; registrar apenas a referência, sem dados sensíveis |
+| Autorização da editora | Dependência | Publicação irregular sem ela | Confirmada em 26/10/2026 para uso não comercial e interno; referência fora do repositório; gate na E5 |
+| Indexação indevida da área `/ebd` | Risco | Exposição em buscadores fora do escopo autorizado | `noindex, nofollow` em meta/header, fora do sitemap e sem dados estruturados; verificar na E2 e na E5 |
+| Uso comercial ou redistribuição | Risco | Viola a autorização da editora | Restringir ao uso interno; não usar em campanhas, produtos ou redistribuição; registrar a referência |
 | Limite de 12 funções serverless | Restrição | API nova não sobe | Reusar entries existentes com `?path=`, como no módulo Crianças |
 | Decisão de infraestrutura do portal (Vercel/Supabase vs VPS) | Dependência externa | Pode mudar deploy, banco e storage | EBD não depende da decisão; o desenho atual contorna os limites do Vercel; comparativo em `docs/AVALIACAO_MIGRACAO_VPS.md` |
 | Layout variável entre lições e trimestres | Risco | Revisão manual alta | Parser tolerante + editor de revisão; medir esforço na E1 |
@@ -171,7 +200,8 @@ Estados do trimestre: `rascunho` → `em revisão` → `publicado` → `arquivad
 2. **Implementação** — por entrega, em branch própria.
 3. **Teste** — CI verde e teste manual quando aplicável.
 4. **Homologação** — aceite do usuário.
-5. **Publicação** — autorização separada; deploy não é homologação.
+5. **Publicação** — autorização separada; confirmar autorização da editora e
+   `noindex` antes de publicar; deploy não é homologação.
 
 ## 9. Diário de execução (append-only)
 

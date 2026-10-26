@@ -11,9 +11,12 @@ Fonte oficial das pendências deste projeto.
   Supabase, backups e capacidade.
 - **2026-10-25 — EBD Digital: plano aprovado em 26/10/2026 e E1 concluída na
   edição real 1T2022 (`PalavraeVida-1T2022-Digital.pdf`).** Próximo passo: E2 —
-  modelo de dados e leitura pública. A edição é 1T2022, com template anterior ao
-  das amostras de 2024; confirmar a autorização da editora para esta edição
-  antes da E5. Não é pré-requisito da decisão sobre a VPS. Plano em
+  modelo de dados e leitura pública. A autorização da editora foi confirmada em
+  26/10/2026 para uso não comercial e interno; a área `/ebd` deve nascer com
+  `noindex` em meta/header e fora do sitemap. O PDF de origem está em
+  `materiais/ebd/2022/1T/adultos/` (local, ignorado pelo Git). A edição é 1T2022,
+  com template anterior ao das amostras de 2024. Não é pré-requisito da decisão
+  sobre a VPS. Plano em
   [planos/PLANO_EBD_DIGITAL.md](planos/PLANO_EBD_DIGITAL.md) e diagnóstico em
   [planos/E1_DIAGNOSTICO_EXTRACAO.md](planos/E1_DIAGNOSTICO_EXTRACAO.md).
 
