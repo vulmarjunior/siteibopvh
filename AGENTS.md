@@ -5,7 +5,7 @@
 ## Entrada progressiva
 
 1. Leia `agente.md` para contexto técnico, estrutura e stack.
-2. Leia `docs/MASTER_PLAN.md` e `docs/PENDENCIAS.md`.
+2. Leia `docs/MASTER_PLAN.md`, `docs/PENDENCIAS.md` e `docs/planos/INDEX.md`.
 3. Confira Git local e remoto sem sobrescrever trabalho existente.
 4. Consulte `docs/CHANGELOG.md`, `docs/CONTINUIDADE.md` e o código somente
    quando a pauta exigir.
@@ -16,6 +16,17 @@
 Manter o portal institucional da Igreja Batista Olaria. O agente pode
 implementar na sessão do projeto, mas não executa deploy, migration, alteração
 de banco, DNS ou credenciais sem autorização explícita e específica.
+
+## Planejamento e execução
+
+`docs/planos/` guarda os planos ativos. Antes de implementar uma entrega:
+
+1. leia o plano aprovado relacionado à pauta em `docs/planos/INDEX.md`;
+2. declare qual entrega (por exemplo, E2) vai executar;
+3. não implemente fora do plano sem autorização explícita;
+4. ao encerrar, atualize o status e o diário do plano com a evidência.
+
+O plano é a fonte da intenção; commits, PRs, CI e deploy são a evidência.
 
 ## Gatilhos
 
