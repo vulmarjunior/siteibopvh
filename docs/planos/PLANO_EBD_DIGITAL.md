@@ -2,7 +2,7 @@
 
 > **Projeto:** siteibopvh (módulo `ebd`)
 > **Status:** proposto
-> **Estado:** aguardando a edição real da revista para definir o template do MVP (2026-10-25)
+> **Estado:** edição real recebida em 26/10/2026 (`PalavraeVida-1T2022-Digital.pdf`, 1T2022); E1 pendente para fechar o template
 > **Homologação:** pendente
 > **Aprovado por:** pendente
 > **Planejado por:** OIKOS
@@ -146,6 +146,8 @@ Estados do trimestre: `rascunho` → `em revisão` → `publicado` → `arquivad
 **Diagnóstico dos exemplares (2026-10-25):** Revista Palavra & Vida — Jovens e Adultos. Edição 82 (Gálatas): 140 páginas, 13 lições (p. 22–137), com "Conclusão" em todas. Edição de Hebreus: 136 páginas, 13 lições (p. 17–133), sem "Conclusão". Ambas: formato 1080×1920, texto extraível com `pdfplumber`, abertura em duas colunas, "Leitura Diária", "Objetivo" e "Para pensar e agir" em todas as lições; sem figuras de conteúdo no corpo. Edição 2011.4 (Cânticos do Servo): 84 páginas, 13 lições (p. 30–82), template antigo de impresso — duas colunas no corpo, "Texto Bíblico", "Data do Estudo", títulos com caracteres duplicados e barras laterais rotacionadas; serve como teste de estresse, e o tratamento exigido será dimensionado se essa geração entrar no escopo. Não há propaganda entre as lições; o material descartado está na abertura e no fechamento. A E1 confirma ferramenta e esquema na edição real; as duas edições de 2024 servem de referência de template.
 
 **Estado em 2026-10-25:** planejamento pausado até o envio da edição que será efetivamente usada. As amostras analisadas (Gálatas, Hebreus e Cânticos do Servo) serviram apenas para diagnóstico de extração e comparação de templates; nenhuma delas define o MVP. Quando a edição real chegar, o diagnóstico será repetido nela e o escopo será fechado.
+
+**Edição real recebida (2026-10-26):** `PalavraeVida-1T2022-Digital.pdf` — Revista de Jovens e Adultos da Convenção Batista Fluminense, Ano 18, nº 72, **1T2022**; 119 páginas; 4,85 MB; 13 lições (p. 16–113); texto extraível com `pdfplumber`; SHA-256 `5b359ca876e682a25e29b14af0aa2f24b0cea3a7389be635d22f39da38fec204`. O template é anterior ao das amostras de 2024; a E1 deve ser repetida nesta edição e o escopo fechado nela. A autorização da editora precisa ser confirmada para esta edição antes da E5.
 
 ## 7. Dependências e riscos
 
