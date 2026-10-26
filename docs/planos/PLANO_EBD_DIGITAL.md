@@ -1,10 +1,10 @@
 # EBD Digital — PRD e plano de execução
 
 > **Projeto:** siteibopvh (módulo `ebd`)
-> **Status:** proposto
-> **Estado:** edição real recebida em 26/10/2026 (`PalavraeVida-1T2022-Digital.pdf`, 1T2022); E1 pendente para fechar o template
+> **Status:** em execução
+> **Estado:** E1 concluída na edição real 1T2022 em 26/10/2026; E2 pendente
 > **Homologação:** pendente
-> **Aprovado por:** pendente
+> **Aprovado por:** Vulmar Junior em 2026-10-26
 > **Planejado por:** OIKOS
 > **Executor:** agente do projeto `siteibopvh`
 > **Documento:** fonte da intenção; o fato é verificado no GitHub (commits, PRs, CI, deploy)
@@ -133,7 +133,7 @@ Estados do trimestre: `rascunho` → `em revisão` → `publicado` → `arquivad
 
 | ID | Entrega | Critério de aceite (verificável) | Status | Evidência |
 |---|---|---|---|---|
-| E1 | Diagnóstico dos PDFs e extração local | 2 lições extraídas localmente com título, seções e perguntas reconhecidos; relatório comparando ferramentas candidatas (pdfjs-dist no Node, PyMuPDF/pdfplumber, marker/docling) com taxa de acerto e esforço de revisão; esquema de importação definido; PDFs de origem com texto extraível ou plano B definido | planejado | |
+| E1 | Diagnóstico dos PDFs e extração local | 2 lições extraídas localmente com título, seções e perguntas reconhecidos; relatório comparando ferramentas candidatas (pdfjs-dist no Node, PyMuPDF/pdfplumber, marker/docling) com taxa de acerto e esforço de revisão; esquema de importação definido; PDFs de origem com texto extraível ou plano B definido | implementado | [E1_DIAGNOSTICO_EXTRACAO.md](E1_DIAGNOSTICO_EXTRACAO.md) |
 | E2 | Modelo de dados e leitura pública | RF1, RF2, RF4, RF6 e RF10 funcionando com amostra real do trimestre; checklist WCAG 2.1 AA aplicado; sem rolagem horizontal em 360px | planejado | |
 | E3 | Busca e progresso local | RF3 e RF5 funcionando; busca retorna lição e trecho; progresso persiste entre sessões e pode ser limpo | planejado | |
 | E4 | Importação e publicação no admin | RF7, RF8, RF11 e RF12 com permissão `ebd:manage`; importação de PDF + JSON de uma lição real em ambiente de teste; hash divergente recusado; upload direto ao Storage por URL assinada (PDF acima de 4,5 MB funciona); versão anterior preservada; rascunho inacessível no público; auditoria registrada | planejado | |
@@ -177,7 +177,7 @@ Estados do trimestre: `rascunho` → `em revisão` → `publicado` → `arquivad
 
 | Data | Entrega | O que foi feito | Evidência | Desvio |
 |---|---|---|---|---|
-| | | | | |
+| 2026-10-26 | E1 | Diagnóstico de extração na edição real 1T2022: 2 lições extraídas, 3 ferramentas comparadas e esquema v1.0.0 proposto | [E1_DIAGNOSTICO_EXTRACAO.md](E1_DIAGNOSTICO_EXTRACAO.md); script `E1/extrair_amostra.py`; SHA-256 do PDF | `pdfjs-dist`, PyMuPDF, marker/docling e OCR não testados nesta fase |
 
 ## 10. Verificações do OIKOS (append-only)
 
