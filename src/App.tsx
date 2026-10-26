@@ -25,6 +25,8 @@ const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminHomeBannersPage = lazy(() => import('./pages/admin/AdminHomeBannersPage'));
 const AdminHistoryPage = lazy(() => import('./pages/admin/AdminHistoryPage'));
 const HistoryPage = lazy(() => import('./pages/history/HistoryPage'));
+const EbdHomePage = lazy(() => import('./pages/ebd/EbdHomePage'));
+const EbdLessonPage = lazy(() => import('./pages/ebd/EbdLessonPage'));
 
 // Veredas IBO (Curadoria) Lazy Components
 const VeredasHomePage = lazy(() => import('./pages/veredas/VeredasHomePage').then(m => ({ default: m.VeredasHomePage })));
@@ -59,6 +61,8 @@ const App: React.FC = () => (
         <Route path="/criancas" element={<ModuleRoute moduleId="criancas"><CriancasPage /></ModuleRoute>} />
         <Route path="/criancas/admin" element={<Navigate to="/admin/criancas" replace />} />
         <Route path="/historia" element={<HistoryPage />} />
+        <Route path="/ebd" element={<EbdHomePage />} />
+        <Route path="/ebd/licao/:slug" element={<EbdLessonPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/definir-senha" element={<AdminSetPasswordPage />} />
         <Route element={<AdminProtectedRoute />}>

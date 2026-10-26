@@ -25,6 +25,7 @@ import { createPublicChildrensRouter } from "./api/public/childrens.js";
 import { ensureChildrensDaySchema } from "./api/childrens-schema.js";
 import { createPublicParousiaRouter } from "./api/public/parousia.js";
 import { createPublicPrayerSentinelRouter } from "./api/public/prayerSentinel.js";
+import { createPublicEbdRouter } from "./api/public/ebd.js";
 import { consumeRateLimit } from "./lib/server/rateLimit.js";
 
 dayjs.extend(utc);
@@ -82,6 +83,7 @@ apiRouter.use("/admin/home-banners", createAdminHomeBannersRouter(prisma));
 apiRouter.use("/admin/history", createAdminHistoryRouter(prisma));
 apiRouter.use("/ebf", createPublicEbfRouter(prisma, getResend));
 apiRouter.use("/criancas", createPublicChildrensRouter(prisma, getResend));
+apiRouter.use("/ebd", createPublicEbdRouter(prisma));
 apiRouter.use("/parousia", createPublicParousiaRouter(prisma, getResend));
 apiRouter.use("/relogio/sentinelas", createPublicPrayerSentinelRouter(prisma, getResend));
 apiRouter.use("/modules", createPublicModulesRouter(prisma));
