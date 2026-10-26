@@ -2,8 +2,8 @@
 
 > **Projeto:** siteibopvh (módulo `ebd`)
 > **Status:** em execução
-> **Estado:** E2 implementada em 26/10/2026 na branch `feat/ebd-e2-modelo-leitura` (commit `fd74136`); homologação pendente; E3–E5 pendentes
-> **Homologação:** pendente
+> **Estado:** E2 homologada em 26/10/2026; E3 em execução; E4–E5 pendentes
+> **Homologação:** E2 aprovada pelo responsável em 26/10/2026
 > **Aprovado por:** Vulmar Junior em 2026-10-26
 > **Planejado por:** OIKOS
 > **Executor:** agente do projeto `siteibopvh`
@@ -161,7 +161,7 @@ Estados do trimestre: `rascunho` → `em revisão` → `publicado` → `arquivad
 | ID | Entrega | Critério de aceite (verificável) | Status | Evidência |
 |---|---|---|---|---|
 | E1 | Diagnóstico dos PDFs e extração local | 2 lições extraídas localmente com título, seções e perguntas reconhecidos; relatório comparando ferramentas candidatas (pdfjs-dist no Node, PyMuPDF/pdfplumber, marker/docling) com taxa de acerto e esforço de revisão; esquema de importação definido; PDFs de origem com texto extraível ou plano B definido | implementado | [E1_DIAGNOSTICO_EXTRACAO.md](E1_DIAGNOSTICO_EXTRACAO.md) |
-| E2 | Modelo de dados e leitura pública | RF1, RF2, RF4, RF6 e RF10 funcionando com amostra real do trimestre; checklist WCAG 2.1 AA aplicado; sem rolagem horizontal em 360px; página com `noindex` desde a primeira versão | implementado | Branch `feat/ebd-e2-modelo-leitura`, commit `fd74136`; [E2_CHECKLIST_WCAG.md](E2_CHECKLIST_WCAG.md); validação local com a 1T2022 (2 lições) em PostgreSQL de teste; Lighthouse 1,00 nas duas páginas; 320/360 px sem rolagem horizontal |
+| E2 | Modelo de dados e leitura pública | RF1, RF2, RF4, RF6 e RF10 funcionando com amostra real do trimestre; checklist WCAG 2.1 AA aplicado; sem rolagem horizontal em 360px; página com `noindex` desde a primeira versão | homologado | Branch `feat/ebd-e2-modelo-leitura`, commits `fd74136` e `7a6074c`; [E2_CHECKLIST_WCAG.md](E2_CHECKLIST_WCAG.md); aceite do responsável em 26/10/2026 |
 | E3 | Busca e progresso local | RF3 e RF5 funcionando; busca retorna lição e trecho; progresso persiste entre sessões e pode ser limpo | planejado | |
 | E4 | Importação e publicação no admin | RF7, RF8, RF11 e RF12 com permissão `ebd:manage`; importação de PDF + JSON de uma lição real em ambiente de teste; hash divergente recusado; upload direto ao Storage por URL assinada (PDF acima de 4,5 MB funciona); versão anterior preservada; rascunho inacessível no público; auditoria registrada | planejado | |
 | E5 | Homologação e publicação do trimestre | Trimestre da turma Adultos completo no ar; aceite do responsável registrado; autorização da editora referenciada; RF9 e RNF8 verificados (`noindex` em meta/header, fora do sitemap) | planejado | |
@@ -209,6 +209,7 @@ Estados do trimestre: `rascunho` → `em revisão` → `publicado` → `arquivad
 |---|---|---|---|---|
 | 2026-10-26 | E1 | Diagnóstico de extração na edição real 1T2022: 2 lições extraídas, 3 ferramentas comparadas e esquema v1.0.0 proposto | [E1_DIAGNOSTICO_EXTRACAO.md](E1_DIAGNOSTICO_EXTRACAO.md); script `E1/extrair_amostra.py`; SHA-256 do PDF | `pdfjs-dist`, PyMuPDF, marker/docling e OCR não testados nesta fase |
 | 2026-10-26 | E2 | Modelo `EbdQuarter`/`EbdLesson`/`EbdPdfAsset` com auto-healing em runtime; API pública (`/api/ebd/quarters`, `/api/ebd/lessons/:slug`, PDF); páginas `/ebd` e `/ebd/licao/:slug` com RF1, RF2, RF4, RF6 e RF10; `noindex` em meta e header; amostra real 1T2022 (lições 1 e 2) | Branch `feat/ebd-e2-modelo-leitura`, commit `fd74136`; [E2_CHECKLIST_WCAG.md](E2_CHECKLIST_WCAG.md); 147 testes, lint e build verdes; Lighthouse 1,00 nas duas páginas; 320/360 px sem rolagem horizontal; PDF local servido com 4,85 MB | Sem deploy/push; amostra, PDF e seed restritos ao ambiente local; importação administrativa fica na E4 e a publicação real na E5 |
+| 2026-10-26 | E2 | Homologação do responsável e validação da navegação local | Aceite em 26/10/2026; duas lições listadas e aberta a Lição 1 no ambiente local com banco de teste | — |
 
 ## 10. Verificações do OIKOS (append-only)
 
