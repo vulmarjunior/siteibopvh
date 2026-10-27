@@ -6,7 +6,7 @@ Atualizado em 2026-10-27.
 
 - Repositório: `https://github.com/vulmarjunior/siteibopvh`
 - Branch de continuidade: `main` (produção)
-- Branch em andamento: `feat/ebd-e5-ciclos` — E2, E3 e E4 homologadas e em produção; **E5 (ciclos e calendário) implementada, PR aberto e sem merge**; E6 pendente
+- Branch em andamento: `main` — E2, E3 e E4 homologadas e em produção; **E5 (ciclos e calendário) mergeada e publicada em 27/10/2026 (commit `a66add8`), com homologação em produção em andamento**; E6 pendente
 - Hospedagem: Vercel, projeto `ibopvh`
 - Produção: `https://ibopvh.com.br`
 - Alias Vercel: `https://ibopvh.vercel.app`
@@ -20,7 +20,7 @@ Atualizado em 2026-10-27.
 ```bash
 git clone https://github.com/vulmarjunior/siteibopvh.git
 cd siteibopvh
-git checkout feat/ebd-e5-ciclos
+git checkout main
 npm install
 npx prisma generate
 ```
@@ -52,24 +52,26 @@ npm run build
 
 ## EBD Digital
 
-- **Status:** E2, E3 e E4 homologadas em 26/10/2026 e em produção; **E5 (ciclos de estudo e calendário) implementada em 27/10/2026 — PR aberto, sem merge e sem deploy**; **E6 (publicação do ciclo) pendente**.
+- **Status:** E2, E3 e E4 homologadas em 26/10/2026 e em produção; **E5 (ciclos de estudo e calendário) mergeada e publicada em 27/10/2026 — homologação em produção em andamento**; **E6 (publicação do ciclo) pendente**.
+- **Produção:** a E5 está no ar em `https://ibopvh.com.br` (PR [#21](https://github.com/vulmarjunior/siteibopvh/pull/21), squash `a66add8`). O reset do schema foi aplicado no primeiro acesso: `/api/ebd/cycles` responde `{"cycles":[]}`, `/api/ebd/quarters` responde 404 e não havia conteúdo antigo a preservar. A homologação manual (bucket real, upload, importação, agenda, publicação e Lighthouse) está em andamento pelo responsável.
 - **Modelo (Rev. 2 do plano):** a **edição** (`EbdEdition`, a revista) é separada do **ciclo de estudo** (`EbdCycle`, o uso). O ciclo tem turma, data de início, dia da semana, revisão da âncora e status; cada lição tem uma posição e uma exceção (`RULE`, `RESCHEDULED`, `NO_MEETING`) em `EbdCycleLesson`. Ver [planos/REVISAO_2_CICLOS.md](planos/REVISAO_2_CICLOS.md).
 - **Calendário:** `computeEbdSchedule` (`src/lib/ebd/schedule.ts`) é a única fonte das datas, em dias civis (`DATE`, sem fuso). Ajustar uma lição não move as seguintes; `NO_MEETING` desloca a lição e as seguintes em uma semana; reancorar preserva os ajustes manuais e os sinaliza como divergência; duas lições na mesma data são sinalizadas. `scheduledOn` grava só a data manual de `RESCHEDULED` — `RULE`/`NO_MEETING` ficam nulos para não guardar dado derivado.
 - **Slugs permanentes:** edição `{ano}-{trimestre}t-{turma}`, lição `{edição}-licao-NN`, ciclo `{turma}-{data-da-lição-1}` (sufixo em colisão; nunca regerado).
-- **Migração:** `prisma/migrations/20261027120000_ebd_editions_cycles` aplica **reset** do modelo anterior (`EbdQuarter`, `EbdLesson`, `EbdPdfAsset`), autorizado porque produção não tem conteúdo EBD. Não há migração de dados. O auto-schema de runtime (`src/api/ebd-schema.ts`) detecta `EbdLesson.quarterId` e faz o mesmo reset uma vez.
+- **Migração:** `prisma/migrations/20261027120000_ebd_editions_cycles` aplica **reset** do modelo anterior (`EbdQuarter`, `EbdLesson`, `EbdPdfAsset`), autorizado porque produção não tinha conteúdo EBD. Não há migração de dados. O auto-schema de runtime (`src/api/ebd-schema.ts`) detecta `EbdLesson.quarterId` e faz o mesmo reset uma vez; **o reset já foi aplicado em produção em 27/10/2026**.
 - **Rotas públicas:** `/ebd` (ciclos, período de uso, busca e progresso) e `/ebd/licao/:slug` (leitor com data do encontro, índice do ciclo e proveniência no rodapé). APIs: `/api/ebd/cycles`, `/api/ebd/cycles/:slug`, `/api/ebd/lessons/:slug`, `/api/ebd/search?cycle=<slug>` e PDF em `/api/ebd/editions/:id/pdf`.
 - **Admin:** `/admin/ebd` (edições), `/admin/ebd/:editionId` (PDF, importação, ciclos e lições), `/admin/ebd/ciclo/:cycleId` (agenda, `Reancorar o ciclo a partir desta data`, `Ajustar somente esta lição`, publicação do ciclo) e `/admin/ebd/licoes/:lessonId`, com permissão `ebd:manage`.
 - **Preservado:** leitura reflow, fonte/tema, busca com trechos, progresso local por slug de lição, upload assinado, versionamento do PDF, validação de hash/tamanho e auditoria em `CuradoriaAuditoria`. `/ebd` continua `noindex` e fora do sitemap.
 - **Amostra:** o banco local tinha 2 lições (L1/L2); o PDF tem **13**. A E6 precisa revisar e publicar o ciclo completo.
 - **Extração:** `scripts/ebd/extract-quarter.py` (versionado) gera o JSON draft das 13 lições; instruções em `scripts/ebd/README.md`. O JSON completo gerado nesta máquina é local e ignorado.
-- **Pendências por ambiente (E5):** validação manual do admin, aplicação da migração em banco real e Lighthouse **não executados** — faltam `DATABASE_URL` no `.env.local`, autenticação local do admin e bucket real. Sem esses itens, a E5 não deve ser mergeada como homologada.
+- **Pendências por ambiente (E5):** validação manual do admin em produção, bucket `ebd` real e Lighthouse **ainda não concluídos**. O schema já está aplicado; o que falta é exercitar o fluxo com login real e Storage configurado. Rodar o roteiro [planos/E5_HOMOLOGACAO.md](planos/E5_HOMOLOGACAO.md) antes de considerar a E5 homologada.
 
 ## Última validação
 
 - **196 testes** aprovados em 28 arquivos (`npm test` / Vitest), incluindo 16 do calendário.
-- `npx tsc --noEmit`, lint e build TypeScript/Vite aprovados em 27/10/2026 (branch `feat/ebd-e5-ciclos`).
+- `npx tsc --noEmit`, lint e build TypeScript/Vite aprovados em 27/10/2026.
+- **Deploy da E5 em 27/10/2026:** CI da `main` verde; `/api/ebd/cycles` 200 com lista vazia, `/api/ebd/quarters` 404, `/api/ebd/admin/editions` 401 sem sessão, `/ebd` e APIs com `noindex`.
 - EBD: 2 lições de amostra e extrator completo da 1T2022 (13 lições) validados em 26/10/2026; Lighthouse 1,00 nas páginas públicas e fluxo de upload/importação/publicação validados localmente na E4.
-- **Não revalidado na E5:** migração em banco real, fluxo manual do admin e Lighthouse (ver pendências por ambiente acima).
+- **Ainda não revalidado na E5:** fluxo manual do admin em produção, upload no bucket real e Lighthouse (ver pendências acima).
 - Central Administrativa com layout 2.0 ativo em produção na `main` (Sidebar em 4 pilares, Header com Breadcrumbs, Command Palette `Ctrl+K` e Dashboard Executivo de KPIs).
 
 

@@ -4,23 +4,29 @@
 > **Entrega:** E4 — importação e publicação no admin
 > **Data:** 2026-10-26
 > **Escopo:** bucket `ebd`, upload assinado do PDF, importação do JSON, revisão e publicação.
+>
+> **Atualizado na E5 (27/10/2026):** as rotas passaram a ser por **edição**
+> (`/editions/:id/...`) e a publicação passou a ser por **ciclo**. O modelo
+> `EbdQuarter` foi substituído por `EbdEdition`/`EbdCycle`/`EbdCycleLesson`
+> (ver [REVISAO_2_CICLOS.md](REVISAO_2_CICLOS.md)). O histórico da E4
+> permanece como registro do que foi validado no modelo anterior.
 
 ## 1. Fluxo implementado
 
-1. O admin cria o trimestre em `/admin/ebd` (ano, trimestre, turma, editora, título).
+1. O admin cria a **edição** em `/admin/ebd` (ano, trimestre editorial, turma, editora, título, nº e volume).
 2. Seleciona o PDF e o navegador calcula o **SHA-256** e o tamanho.
-3. `POST /api/ebd/admin/quarters/:id/pdf-upload` reserva a próxima versão e devolve:
+3. `POST /api/ebd/admin/editions/:id/pdf-upload` reserva a próxima versão e devolve:
    - **Supabase:** URL assinada de upload + token;
    - **Local (desenvolvimento):** URL local assinada por HMAC.
 4. O navegador envia o PDF **direto** ao destino (sem passar pela função serverless).
-5. `POST /api/ebd/admin/quarters/:id/pdf-assets` confirma a versão, verifica o objeto no Storage (ou o arquivo local) e cria `EbdPdfAsset`.
+5. `POST /api/ebd/admin/editions/:id/pdf-assets` confirma a versão, verifica o objeto no Storage (ou o arquivo local) e cria `EbdPdfAsset`.
 6. O admin importa o JSON extraído localmente; o servidor valida o esquema v1.0.0 e compara:
    - `source.sha256` com o hash do PDF selecionado;
    - `source.size_bytes` com o tamanho do PDF.
    - Divergência retorna **409** e nada é importado.
-7. A importação cria/atualiza as lições como **rascunho**, marca o trimestre como **em revisão** e arquiva lições que não fazem parte do novo JSON.
-8. O admin revisa cada lição em `/admin/ebd/licoes/:id`, com prévia do texto e o PDF original lado a lado, corrige e publica a lição ou o trimestre.
-9. Toda ação relevante é registrada em `CuradoriaAuditoria` (upload, importação, edição, publicação, despublicação, arquivamento).
+7. A importação cria/atualiza as lições como **rascunho**, marca a edição como **em revisão** e arquiva lições que não fazem parte do novo JSON.
+8. O admin revisa cada lição em `/admin/ebd/licoes/:id`, com prévia do texto e o PDF original lado a lado, corrige e publica a lição; a **publicação do ciclo** (`/admin/ebd/ciclo/:cycleId`) publica as lições válidas em conjunto.
+9. Toda ação relevante é registrada em `CuradoriaAuditoria` (upload, importação, edição, ajuste de agenda, reancoragem, publicação, despublicação, arquivamento).
 
 ## 2. Supabase Storage em produção
 
@@ -56,10 +62,13 @@ VITE_SUPABASE_ANON_KEY=dev-anon-key
 
 - Permissão: **`ebd:manage`**.
 - Concedida por padrão a **ADMIN_GERAL** e **EDITOR**; não é concedida a CURADOR_VEREDAS nem a OPERADOR.
-- UI: `/admin/ebd`, `/admin/ebd/:quarterId` e `/admin/ebd/licoes/:lessonId`.
+- UI: `/admin/ebd`, `/admin/ebd/:editionId`, `/admin/ebd/ciclo/:cycleId` e `/admin/ebd/licoes/:lessonId`.
 - API: `/api/ebd/admin/...`, atendida pelo entry `/api/index` — **nenhuma função serverless nova**.
 
-## 5. Validação local realizada
+## 5. Validação local realizada (E4 — modelo anterior)
+
+> Registro histórico do modelo por trimestre; a E5 substituiu `EbdQuarter` por
+> `EbdEdition`/`EbdCycle` e a publicação passou a ser por ciclo.
 
 - PDF real de **4.850.159 bytes** (acima de 4,5 MB) enviado pelo fluxo assinado local; versão 2 criada e versão 1 preservada.
 - Importação do JSON real 1T2022: 2 lições em rascunho, trimestre em revisão.
@@ -71,11 +80,11 @@ VITE_SUPABASE_ANON_KEY=dev-anon-key
 
 ## 6. Pendência de ambiente
 
-O caminho Supabase Storage está implementado, mas **não foi exercitado contra um bucket real** porque o `.env.local` de produção está com a conexão Supabase inválida (`tenant/user ... not found`). A validação contra o bucket `ebd` real deve ocorrer na homologação da E4/E5, antes da publicação do trimestre.
+O caminho Supabase Storage está implementado, mas **ainda não foi exercitado contra um bucket real**. A E5 foi publicada em produção em 27/10/2026 com o schema novo; a homologação do upload depende de o bucket `ebd` e as credenciais Supabase estarem configurados na Vercel. Enquanto isso, o upload em produção falha com “Supabase Storage não configurado para upload do PDF.” — é configuração de ambiente, não código.
 
-## 7. Extração completa do trimestre
+## 7. Extração completa do trimestre (E1 e E6)
 
-Para a E5, o extrator versionado gera o JSON draft das 13 lições:
+O extrator versionado gera o JSON draft das 13 lições:
 
 ```bash
 python scripts/ebd/extract-quarter.py \

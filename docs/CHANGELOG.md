@@ -2,7 +2,7 @@
 
 ## [Em Desenvolvimento]
 
-### 2026-10-27 - EBD Digital: E5 — ciclos de estudo e calendário (branch `feat/ebd-e5-ciclos`)
+### 2026-10-27 - EBD Digital: E5 - ciclos de estudo e calendário (PR #21, publicado)
 
 - **Modelo (Rev. 2):** `EbdQuarter` deixa de existir. A **edição** (`EbdEdition`) é a revista (editora, ano, trimestre editorial, nº, volume, turma, PDF e hash); o **ciclo** (`EbdCycle`) é o uso (turma, `startsOn`, dia da semana, status, slug permanente); a **agenda** (`EbdCycleLesson`) guarda a posição da lição e a exceção (`RULE`, `RESCHEDULED`, `NO_MEETING`).
 - **Calendário:** nova função pura `computeEbdSchedule` (`src/lib/ebd/schedule.ts`) calcula as datas a partir da âncora e das exceções, em datas civis sem fuso. Ajustar uma lição não move as seguintes; `NO_MEETING` desloca a lição e as seguintes em uma semana; reancorar preserva os ajustes e os sinaliza como divergência; duas lições na mesma data são sinalizadas.
@@ -13,7 +13,9 @@
 - **UI admin:** `/admin/ebd` (edições), `/admin/ebd/:editionId` (PDF, importação, ciclos e lições) e `/admin/ebd/ciclo/:cycleId` (agenda com as 13 datas, “Reancorar o ciclo a partir desta data” e “Ajustar somente esta lição”).
 - **UI pública:** o rótulo passa a ser o **período de uso** (ex.: “Setembro a dezembro de 2027”), com a data de cada encontro no índice e no leitor e a proveniência editorial no rodapé. `/ebd` continua `noindex` e fora do sitemap.
 - **Preservado:** leitura reflow, fonte/tema, busca com trechos, progresso local, upload assinado, versionamento do PDF, validação de hash e auditoria.
-- **Validação:** 196 testes em 28 arquivos, lint e build verdes. **Pendências por ambiente:** validação manual do admin, migração em banco real e Lighthouse não executados (sem `DATABASE_URL` no `.env.local`, sem autenticação local do admin e sem bucket real). Sem merge e sem deploy.
+- **Validação:** 196 testes em 28 arquivos, lint e build verdes.
+- **Publicação:** merge squash do PR #21 (`a66add8`) e deploy automático da Vercel em 27/10/2026, autorizados pelo responsável para homologação em produção. O reset do schema foi aplicado no primeiro acesso; `/api/ebd/cycles` responde lista vazia, `/api/ebd/quarters` responde 404 e não havia conteúdo antigo a preservar.
+- **Homologação em produção:** em andamento. Pendentes o teste manual do admin, o upload no bucket `ebd` real e o Lighthouse.
 
 ### 2026-10-26 - EBD Digital: E2, E3 e E4 homologadas (branch `feat/ebd-e4-admin-importacao`)
 

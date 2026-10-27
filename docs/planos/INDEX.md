@@ -2,7 +2,7 @@
 
 | Plano | Tema | Status | Homologação | Atualizado em | Executor |
 |---|---|---|---|---|---|
-| [PLANO_EBD_DIGITAL.md](PLANO_EBD_DIGITAL.md) | Revista digital da EBD (módulo `ebd`) | em execução — E4 homologada; E5 implementada no PR [#21](https://github.com/vulmarjunior/siteibopvh/pull/21) | E2, E3 e E4 aprovadas em 26/10/2026 | 2026-10-27 | agente do projeto |
+| [PLANO_EBD_DIGITAL.md](PLANO_EBD_DIGITAL.md) | Revista digital da EBD (módulo `ebd`) | em execução — E4 homologada; E5 publicada (commit `a66add8`), homologação em produção em andamento | E2, E3 e E4 aprovadas em 26/10/2026 | 2026-10-27 | agente do projeto |
 | [E5_HOMOLOGACAO.md](E5_HOMOLOGACAO.md) | Roteiro de homologação manual da E5 (ciclos e calendário) | aguardando ambiente | — | 2026-10-27 | agente do projeto |
 
 ## Legados
