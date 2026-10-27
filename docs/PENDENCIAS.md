@@ -4,11 +4,6 @@ Fonte oficial das pendências deste projeto.
 
 ## Em aberto
 
-- **2026-10-25 — Avaliar migração do portal para a VPS (Coolify), incluindo banco
-  no PostgreSQL da VPS.** Comparativo em
-  [AVALIACAO_MIGRACAO_VPS.md](AVALIACAO_MIGRACAO_VPS.md). Decisão pendente; não é
-  pré-requisito do módulo EBD Digital. Envolve segurança da VPS, Auth/Storage do
-  Supabase, backups e capacidade.
 - **2026-10-27 — EBD Digital: E5 publicada em produção, homologação em andamento.**
   E1 concluída na edição real 1T2022; E2, E3 e E4 homologadas em 26/10/2026 e em
   produção. A Revisão 2 (aprovada em 27/10/2026) separou a **edição** (revista)
@@ -36,7 +31,20 @@ Fonte oficial das pendências deste projeto.
   checklist da E2 em [planos/E2_CHECKLIST_WCAG.md](planos/E2_CHECKLIST_WCAG.md) e
   configuração de Storage em
   [planos/E4_STORAGE_SETUP.md](planos/E4_STORAGE_SETUP.md).
+  **Decisões da proveniência tomadas em 27/10/2026 (Rev. 3):** a edição nasce
+  do JSON; metadados editáveis antes do primeiro asset; período editorial
+  generalizado depois da homologação, antes de links públicos; edição órfã
+  removida por limpeza controlada; divergência exibida como nota informativa,
+  sem bloquear. Próximo passo: o executor implementa as decisões 1, 2 e 5,
+  limpa a órfã (4) em janela autorizada e conclui a homologação; a
+  generalização (3) fica para a próxima iteração. Detalhes em
+  [planos/E5_PROVENIENCIA_EDITORIAL.md](planos/E5_PROVENIENCIA_EDITORIAL.md).
 
 ## Concluídas
 
-Nenhuma pendência concluída registrada.
+- **2026-10-25 → decidida em 2026-10-27 — Migração do portal para a VPS
+  (Coolify).** Decidido manter **Vercel + Supabase** (opção A do comparativo
+  [AVALIACAO_MIGRACAO_VPS.md](AVALIACAO_MIGRACAO_VPS.md)). Reavaliar o Vercel
+  Pro se o teto de 12 funções virar bloqueio real; migração para a VPS somente
+  como projeto separado, após segurança, backups com restauração testada, LGPD
+  e rollback. Não é pré-requisito do EBD Digital.

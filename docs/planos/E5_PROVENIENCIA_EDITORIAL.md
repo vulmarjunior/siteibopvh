@@ -1,6 +1,6 @@
 # E5 — Proveniência editorial x identidade da edição
 
-> **Status:** análise registrada em 27/10/2026; nenhum código alterado; E5 **não homologada**.
+> **Status:** análise registrada em 27/10/2026; **decisões tomadas em 27/10/2026 (Rev. 3)**; nenhum código alterado; E5 **não homologada**.
 > **Origem:** homologação em produção do PR [#21](https://github.com/vulmarjunior/siteibopvh/pull/21)
 > (squash `a66add8`), ao importar o JSON da 1T2022.
 > **Para:** próximo agente que retomar a E5/E6.
@@ -267,3 +267,48 @@ ciclo, para provar a separação.
 - `docs/PENDENCIAS.md` — pendências abertas.
 - `src/api/admin/ebd.ts`, `src/lib/ebd/import.ts`, `src/lib/ebd/storage.ts`,
   `src/lib/ebd/content.ts`, `prisma/schema.prisma`.
+
+## 16. Rev. 3 — decisões tomadas em 27/10/2026
+
+As cinco decisões da §10 foram resolvidas pelo responsável, com o OIKOS.
+Nenhuma implementação foi feita; esta revisão registra a direção para o
+executor.
+
+### 16.1 Decisões
+
+1. **A edição nasce do JSON** (opção B). O admin parte do JSON; a edição é
+   criada com `edition.*` e o PDF é anexado depois. Elimina a divergência por
+   construção e corrige slug, caminho e proveniência desde o início.
+2. **Metadados editáveis antes do primeiro asset; imutáveis depois** (opção C).
+   Enquanto a edição não tiver PDF, lições ou ciclos, ano/trimestre/turma podem
+   ser corrigidos; depois disso, a edição é imutável.
+3. **Período editorial generalizado depois da homologação, antes de links
+   públicos** (opção D). A E5 homologa com o modelo atual (1T2022 cabe);
+   `editorialPeriod`, ano/trimestre opcionais, slug/caminho desacoplados e JSON
+   v1.1 (aceitando v1.0.0) entram em seguida.
+4. **Edição órfã: limpeza controlada.** Como não há lições nem ciclos, remover a
+   edição errada e o PDF do bucket por script administrativo, com verificação
+   antes/depois. Não criar rota de exclusão nesta entrega.
+5. **Divergência exibida como nota informativa, sem bloqueio.** Quando os
+   valores do JSON e da edição diferirem, o admin mostra os dois lado a lado com
+   nota neutra; o import segue. Não é portão nem conferência.
+
+### 16.2 Consequências para o executor
+
+- O bloqueio de `year`/`quarter`/`class` no import deixa de existir no fluxo
+  novo; esquema, hash e tamanho continuam como bloqueios.
+- A criação da edição passa a ler o JSON antes do upload; o PDF é anexado à
+  edição criada.
+- A limpeza da órfã exige janela e autorização própria; não faz parte do deploy
+  do código.
+- A generalização do período não entra nesta entrega; deve ser planejada como
+  próxima iteração, antes de remover o `noindex` ou compartilhar links.
+- Os critérios de aceite da §11 continuam valendo; o item "admin exibe a
+  proveniência real" passa a incluir a nota informativa.
+
+### 16.3 Fora de escopo desta revisão
+
+- Migração para a VPS — decidida em 27/10/2026: manter **Vercel + Supabase**;
+  reavaliar o Vercel Pro se o teto de 12 funções virar bloqueio; VPS somente
+  como projeto separado, após segurança, backups, LGPD e rollback.
+- Alterar o contrato JSON v1.0.0 nesta entrega.
