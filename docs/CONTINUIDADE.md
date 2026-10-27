@@ -6,7 +6,7 @@ Atualizado em 2026-10-26.
 
 - Repositório: `https://github.com/vulmarjunior/siteibopvh`
 - Branch de continuidade: `main` (produção)
-- Branch em andamento: `feat/ebd-e4-admin-importacao` — E2, E3 e E4 homologadas; **E5 pendente**
+- Branch em andamento: `feat/ebd-e4-admin-importacao` — E2, E3 e E4 homologadas; **E5 aprovada (não implementada) e E6 pendente**
 - Hospedagem: Vercel, projeto `ibopvh`
 - Produção: `https://ibopvh.com.br`
 - Alias Vercel: `https://ibopvh.vercel.app`
@@ -27,7 +27,7 @@ npx prisma generate
 
 Crie `.env.local` a partir de `.env.example`. Os valores secretos não ficam no GitHub; obtenha-os nos projetos Vercel/Supabase/Resend. Para a EBD, o bucket `ebd` do Supabase Storage e as variáveis `SUPABASE_SERVICE_ROLE_KEY`/`VITE_SUPABASE_*` precisam estar configurados — ver `docs/planos/E4_STORAGE_SETUP.md`.
 
-O PDF de origem **não é versionado**. Para retomar a E5, copie `PalavraeVida-1T2022-Digital.pdf` para `materiais/ebd/2022/1T/adultos/` e confira o SHA-256 `5b359ca876e682a25e29b14af0aa2f24b0cea3a7389be635d22f39da38fec204`. O JSON de amostra das Lições 1 e 2 também é local e ignorado pelo Git.
+O PDF de origem **não é versionado**. Para retomar a E6, copie `PalavraeVida-1T2022-Digital.pdf` para `materiais/ebd/2022/1T/adultos/` e confira o SHA-256 `5b359ca876e682a25e29b14af0aa2f24b0cea3a7389be635d22f39da38fec204`. O JSON de amostra das Lições 1 e 2 também é local e ignorado pelo Git.
 
 Validação local:
 
@@ -50,15 +50,17 @@ npm run build
 
 ## EBD Digital
 
-- **Status:** E2, E3 e E4 homologadas em 26/10/2026; **E5 (publicação do trimestre) não iniciada**.
+- **Status:** E2, E3 e E4 homologadas em 26/10/2026; **E5 (ciclos de estudo e calendário) aprovada em 27/10/2026 e não implementada**; **E6 (publicação do ciclo) pendente**.
+- **Modelo (Rev. 2 do plano):** a **edição** (a revista) é separada do **ciclo de estudo** (o uso). O ciclo tem data de início, uma lição por dia da semana escolhido e exceções explícitas (reagendada ou sem encontro); a data de cada lição é calculada pela regra, e o rótulo público é o período de uso. Ver [planos/REVISAO_2_CICLOS.md](planos/REVISAO_2_CICLOS.md).
+- **Mudança pendente de implementação:** o schema atual ainda usa `EbdQuarter` como identidade da edição e não tem data por lição; a E5 substitui esse modelo.
 - **Branch:** `feat/ebd-e4-admin-importacao` (empilhada sobre E2/E3; não mergeada em `main`).
 - **Rotas públicas:** `/ebd` (índice e busca) e `/ebd/licao/:slug` (leitor).
 - **Admin:** `/admin/ebd`, `/admin/ebd/:quarterId` e `/admin/ebd/licoes/:lessonId`, com permissão `ebd:manage`.
 - **Leitura:** texto reflow, fonte ajustável, tema claro/escuro/sistema, download do PDF, navegação, índice, busca com trechos e progresso local.
 - **Admin:** upload assinado do PDF, versionamento, importação do JSON com hash/tamanho, revisão com prévia e PDF, publicação/despublicação e auditoria.
-- **Amostra:** o ambiente local tem 2 lições importadas (L1/L2), mas o PDF tem **13 lições**. A E5 precisa extrair, revisar e importar as 13 antes de publicar.
+- **Amostra:** o ambiente local tem 2 lições importadas (L1/L2), mas o PDF tem **13 lições**. A E6 precisa extrair, revisar e importar as 13 antes de publicar.
 - **Extração completa:** `scripts/ebd/extract-quarter.py` (versionado) gera o JSON draft das 13 lições a partir do PDF; instruções em `scripts/ebd/README.md`. O JSON completo gerado nesta máquina é local e ignorado; na outra máquina, regenerar a partir do PDF.
-- **Pré-requisito da E5:** bucket `ebd` real no Supabase Storage e credenciais válidas; o `.env.local` de produção desta máquina está com a conexão Supabase inválida.
+- **Pré-requisito da E6:** bucket `ebd` real no Supabase Storage e credenciais válidas; o `.env.local` de produção desta máquina está com a conexão Supabase inválida.
 - **Sem deploy:** a branch não foi mergeada; produção continua sem o módulo EBD.
 
 ## Última validação

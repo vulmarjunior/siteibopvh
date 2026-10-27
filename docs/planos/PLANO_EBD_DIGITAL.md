@@ -2,12 +2,24 @@
 
 > **Projeto:** siteibopvh (módulo `ebd`)
 > **Status:** em execução
-> **Estado:** E2, E3 e E4 homologadas em 26/10/2026; E5 pendente (não iniciada)
-> **Homologação:** E2, E3 e E4 aprovadas pelo responsável em 26/10/2026; E5 pendente
-> **Aprovado por:** Vulmar Junior em 2026-10-26
+> **Revisão:** 2 — aprovada em 27/10/2026 (ver [histórico de revisões](#histórico-de-revisões))
+> **Estado:** E2, E3 e E4 homologadas em 26/10/2026; E5 (ciclos e calendário) aprovada e não implementada; E6 (publicação) pendente
+> **Homologação:** E2, E3 e E4 aprovadas pelo responsável em 26/10/2026; E5 e E6 pendentes
+> **Aprovado por:** Vulmar Junior em 2026-10-26 (Rev. 1) e em 2026-10-27 (Rev. 2)
 > **Planejado por:** OIKOS
 > **Executor:** agente do projeto `siteibopvh`
 > **Documento:** fonte da intenção; o fato é verificado no GitHub (commits, PRs, CI, deploy)
+
+### Histórico de revisões
+
+| Rev. | Data | Mudança | Aprovação |
+|---|---|---|---|
+| 1 | 2026-10-26 | Plano original: edição, extração local, leitura pública, admin, publicação | Vulmar Junior |
+| 2 | 2026-10-27 | Separa **edição** (revista) de **ciclo de estudo** (uso); o calendário passa a ter data por lição, com regra e exceções explícitas; a publicação deixa de ser E5 e passa a E6 | Vulmar Junior |
+
+A Rev. 2 nasce da [REVISAO_2_CICLOS.md](REVISAO_2_CICLOS.md): a revista traz o
+próprio trimestre editorial (`1T2022`), mas a igreja estuda suas lições em outro
+período, uma por domingo, sem calendário fixo.
 
 ## 1. Problema
 
@@ -24,13 +36,27 @@ A autorização da editora foi confirmada pelo usuário em 26/10/2026 para uso
 institucional é o lugar natural para essa leitura — hoje ele não tem nada
 relacionado à EBD — e a área `/ebd` não deve ser indexada em buscadores.
 
+### O bloco de lições não é o trimestre da editora
+
+A revista informa a própria edição — no caso, `1T2022`, Ano 18, nº 72 — e esse
+dado é proveniência legítima. Ele **não** define quando as lições serão estudadas.
+A igreja usa o material em período escolhido, com uma lição por domingo a partir
+de uma data de início, sem vínculo com os trimestres do calendário civil, e pode
+reaproveitar a mesma edição em mais de uma turma ou em mais de um período.
+
+Por isso o bloco de lições é um **ciclo de estudo**: ele tem data de início,
+agenda própria e identificação pública por período. A edição (a revista) é outra
+entidade, imutável, que o ciclo referencia. Sem essa separação, o aluno vê uma
+data que não corresponde ao período em que está estudando e o sistema não tem
+onde guardar a data de cada encontro.
+
 ## 2. Objetivo
 
-Publicar as lições da revista da EBD (turma Adultos, um trimestre por vez) como
-leitura digital responsiva em texto reflow, com busca, ajuste de fonte, modo
-noturno e compatibilidade com leitor de tela, a partir do PDF fornecido pela
-editora, com revisão humana obrigatória antes da publicação, em área não
-indexada e para uso interno não comercial.
+Publicar as lições da revista da EBD (turma Adultos, um **ciclo de estudo** por
+vez, com data própria para cada lição) como leitura digital responsiva em texto
+reflow, com busca, ajuste de fonte, modo noturno e compatibilidade com leitor de
+tela, a partir do PDF fornecido pela editora, com revisão humana obrigatória
+antes da publicação, em área não indexada e para uso interno não comercial.
 
 ## 3. Não-objetivos (fora de escopo)
 
@@ -75,7 +101,8 @@ indexada e para uso interno não comercial.
   versionada no repositório; o portal não processa PDF.
 - PDF enviado direto do navegador ao Supabase Storage por URL assinada; a função
   serverless recebe apenas metadados e o JSON estruturado.
-- MVP: turma **Adultos**, **1 trimestre** (13 lições).
+- MVP: turma **Adultos**, **1 ciclo de estudo** com 13 lições, uma por domingo, a
+  partir de data de início escolhida no admin.
 - Escopo de conteúdo: apenas as lições; capa, expediente, editorial,
   apresentação, sumário, ficha técnica, contracapa e propaganda ficam fora.
 - A editora entrega a revista em PDF trimestral; há várias edições disponíveis, mas a publicação é um trimestre por vez.
@@ -112,6 +139,10 @@ indexada e para uso interno não comercial.
 - RF10 — Navegação anterior/próxima e índice do trimestre.
 - RF11 — Versionar o PDF original: novo envio cria nova versão e preserva a anterior para auditoria, sem sobrescrever silenciosamente.
 - RF12 — Validar o hash SHA-256 entre o PDF enviado e o JSON importado, recusando importações divergentes.
+- RF13 — Criar o ciclo de estudo informando a edição, a turma e a **data de início**; o sistema calcula e exibe as datas de todas as lições antes de salvar.
+- RF14 — Reancorar o ciclo (nova data de início ou novo dia da semana), recalculando a agenda a partir da regra, sem apagar as exceções já registradas.
+- RF15 — Ajustar a data de uma lição isolada, ou marcar o encontro como **sem encontro** (feriado, recesso, congresso), deslocando as lições seguintes.
+- RF16 — Exibir a data de cada lição na página de leitura e no índice do ciclo, e o **período de uso** derivado da primeira e da última data como identificação pública.
 
 ### Não funcionais
 
@@ -128,6 +159,7 @@ indexada e para uso interno não comercial.
 - RNF9 — Autorização da editora confirmada em 26/10/2026 para uso não comercial e
   interno; o documento não é versionado e a referência fica fora do repositório.
 - RNF10 — PDFs não trafegam pela função serverless: upload direto ao Storage por URL assinada, respeitando o limite de 4,5 MB por request do Vercel.
+- RNF11 — Datas de lição são **datas civis** (tipo `DATE`), nunca timestamp: a conversão de fuso não pode deslocar um domingo de encontro.
 
 ### Fluxo de extração local, envio do PDF e publicação
 
@@ -137,24 +169,27 @@ indexada e para uso interno não comercial.
 2. A ferramenta gera um JSON conforme esquema versionado (lições, seções,
    perguntas, referências, figuras), com o hash SHA-256 do PDF e um relatório de
    qualidade (blocos reconhecidos, páginas pendentes).
-3. No admin, o editor com `ebd:manage` cadastra o trimestre (ano, trimestre 1–4,
-   turma, editora/edição) e envia o PDF por URL assinada, direto ao bucket `ebd`
-   do Supabase Storage, em caminho versionado
+3. No admin, o editor com `ebd:manage` cadastra a **edição** (ano, trimestre
+   editorial 1–4, turma, editora/edição) e envia o PDF por URL assinada, direto
+   ao bucket `ebd` do Supabase Storage, em caminho versionado
    (`ebd/<ano>/<trimestre>/<turma>/revista-v<N>.pdf`), sem passar pela função
    serverless. Validações: magic bytes `%PDF`, máximo de 50 MB, hash SHA-256;
    novo envio nunca sobrescreve a versão anterior.
-4. O editor importa o JSON no admin; o servidor valida o esquema e o hash contra
-   o PDF enviado, recusando importações divergentes, e cria o trimestre e as 13
-   lições em status `draft`.
-5. Revisão humana por lição, com prévia lado a lado do PDF original; correções de
+4. O editor cria o **ciclo de estudo** vinculado à edição, informando turma e data
+   de início; o sistema calcula as datas das 13 lições e as exibe antes de salvar.
+   A mesma edição pode sustentar mais de um ciclo ou turma.
+5. O editor importa o JSON no admin; o servidor valida o esquema e o hash contra
+   o PDF enviado, recusando importações divergentes, e cria as 13 lições em
+   status `draft`, vinculadas ao ciclo.
+6. Revisão humana por lição, com prévia lado a lado do PDF original; correções de
    extração são salvas.
-6. Publicação por lição ou do trimestre inteiro, com autor, data e versão;
+7. Publicação por lição ou do ciclo inteiro, com autor, data e versão;
    despublicação também disponível. Rascunho nunca é servido ao público.
-7. O link "baixar PDF original" aponta para o objeto no Storage; a leitura
+8. O link "baixar PDF original" aponta para o objeto no Storage; a leitura
    pública consulta apenas lições publicadas.
 
-Estados do trimestre: `rascunho` → `em revisão` → `publicado` → `arquivado`
-(quando uma nova edição substitui).
+Estados do ciclo: `rascunho` → `em revisão` → `publicado` → `arquivado` (quando um
+novo ciclo substitui).
 
 ## 6. Entregas
 
@@ -163,8 +198,9 @@ Estados do trimestre: `rascunho` → `em revisão` → `publicado` → `arquivad
 | E1 | Diagnóstico dos PDFs e extração local | 2 lições extraídas localmente com título, seções e perguntas reconhecidos; relatório comparando ferramentas candidatas (pdfjs-dist no Node, PyMuPDF/pdfplumber, marker/docling) com taxa de acerto e esforço de revisão; esquema de importação definido; PDFs de origem com texto extraível ou plano B definido | implementado | [E1_DIAGNOSTICO_EXTRACAO.md](E1_DIAGNOSTICO_EXTRACAO.md) |
 | E2 | Modelo de dados e leitura pública | RF1, RF2, RF4, RF6 e RF10 funcionando com amostra real do trimestre; checklist WCAG 2.1 AA aplicado; sem rolagem horizontal em 360px; página com `noindex` desde a primeira versão | homologado | Branch `feat/ebd-e2-modelo-leitura`, commits `fd74136` e `7a6074c`; [E2_CHECKLIST_WCAG.md](E2_CHECKLIST_WCAG.md); aceite do responsável em 26/10/2026 |
 | E3 | Busca e progresso local | RF3 e RF5 funcionando; busca retorna lição e trecho; progresso persiste entre sessões e pode ser limpo | homologado | Branch `feat/ebd-e3-busca-progresso`, commits `3b1fafd` e `f3eefbd`; busca com trechos e progresso local validados; aceite do responsável em 26/10/2026 |
-| E4 | Importação e publicação no admin | RF7, RF8, RF11 e RF12 com permissão `ebd:manage`; importação de PDF + JSON de uma lição real em ambiente de teste; hash divergente recusado; upload direto ao Storage por URL assinada (PDF acima de 4,5 MB funciona); versão anterior preservada; rascunho inacessível no público; auditoria registrada | homologado | Branch `feat/ebd-e4-admin-importacao`, commits `1264dee`, `425048c` e `d4812ee`; [E4_STORAGE_SETUP.md](E4_STORAGE_SETUP.md); admin, upload assinado, importação, revisão, publicação/despublicação, versionamento e auditoria validados localmente; 179 testes, lint e build verdes; Lighthouse 1,00 nas páginas públicas; aceite do responsável em 26/10/2026. O bucket `ebd` real deve ser exercitado na E5 |
-| E5 | Homologação e publicação do trimestre | Trimestre da turma Adultos completo no ar; aceite do responsável registrado; autorização da editora referenciada; RF9 e RNF8 verificados (`noindex` em meta/header, fora do sitemap) | planejado | Preparação: [`scripts/ebd/extract-quarter.py`](../../scripts/ebd/extract-quarter.py) validado na 1T2022; JSON draft local com 13 lições gerado; publicação ainda pendente |
+| E4 | Importação e publicação no admin | RF7, RF8, RF11 e RF12 com permissão `ebd:manage`; importação de PDF + JSON de uma lição real em ambiente de teste; hash divergente recusado; upload direto ao Storage por URL assinada (PDF acima de 4,5 MB funciona); versão anterior preservada; rascunho inacessível no público; auditoria registrada | homologado | Branch `feat/ebd-e4-admin-importacao`, commits `1264dee`, `425048c` e `d4812ee`; [E4_STORAGE_SETUP.md](E4_STORAGE_SETUP.md); admin, upload assinado, importação, revisão, publicação/despublicação, versionamento e auditoria validados localmente; 179 testes, lint e build verdes; Lighthouse 1,00 nas páginas públicas; aceite do responsável em 26/10/2026. O bucket `ebd` real deve ser exercitado na E6 |
+| E5 | Ciclos de estudo e calendário | RF13 a RF16: edição separada do ciclo; data de início define as datas; ajuste isolado não é sobrescrito por reancoragem; domingo sem encontro desloca as seguintes; mesma edição reutilizável em ciclos e turmas distintos; rótulo público por período de uso; datas gravadas como `DATE` (RNF11) | planejado (aprovado na Rev. 2) | [REVISAO_2_CICLOS.md](REVISAO_2_CICLOS.md), aprovada em 27/10/2026; implementação pendente |
+| E6 | Homologação e publicação do ciclo | Ciclo da turma Adultos completo no ar com as datas de encontro; aceite do responsável registrado; autorização da editora referenciada; RF9 e RNF8 verificados (`noindex` em meta/header, fora do sitemap); bucket `ebd` real exercitado | planejado | Preparação: [`scripts/ebd/extract-quarter.py`](../../scripts/ebd/extract-quarter.py) validado na 1T2022; JSON draft local com 13 lições gerado; publicação ainda pendente |
 
 **Vocabulário de status:** `planejado` → `em execução` → `implementado` → `testado` → `homologado` → `publicado`. Também `bloqueado` e `abandonado`.
 
@@ -191,7 +227,8 @@ Estados do trimestre: `rascunho` → `em revisão` → `publicado` → `arquivad
 | Variação de template entre edições | Risco | Parser quebra em edição nova | E1 valida na edição real; seções opcionais no esquema; perfis de template; edições antigas (ex.: 2011) exigem colunas, rotação e dedup, com escopo definido pela edição escolhida |
 | Tamanho dos PDFs e imagens | Risco | Lentidão, custo e falha de envio | Supabase Storage (limite de 50 MB por arquivo no plano Free), compressão e cache |
 | Responsável pela revisão editorial | Dependência operacional | Fila de publicação trava | Definido: o responsável pelo projeto revisa antes de publicar |
-| Acessibilidade real | Risco | Requisito central falha | Teste manual com NVDA e TalkBack na E5 |
+| Acessibilidade real | Risco | Requisito central falha | Teste manual com NVDA e TalkBack na E6 |
+| Calendário real da igreja (feriado, recesso, congresso, Santa Ceia) | Risco | A fila de lições desalinha e o aluno vê data errada | Exceção `NO_MEETING` desde a E5; deslocamento automático das seguintes |
 | Fidelidade doutrinária | Risco | Revisão altera o texto | Diff contra o PDF original na revisão |
 
 ## 8. Gates
@@ -215,9 +252,10 @@ Estados do trimestre: `rascunho` → `em revisão` → `publicado` → `arquivad
 | 2026-10-26 | E4 | Admin `/admin/ebd` com criação de trimestre, upload assinado do PDF, importação do JSON com validação de hash e tamanho, revisão com prévia e PDF, publicação/despublicação de lição e trimestre, versionamento do PDF e auditoria; permissão `ebd:manage` | Branch `feat/ebd-e4-admin-importacao`, commit `1264dee`; [E4_STORAGE_SETUP.md](E4_STORAGE_SETUP.md); 179 testes, lint e build verdes; PDF real de 4.850.159 bytes enviado como v2 (v1 preservada); hash divergente recusado com 409; rascunho fora do público; publicação/despublicação e auditoria validados; Lighthouse 1,00 nas páginas públicas | Caminho Supabase Storage implementado, mas não exercitado em bucket real por falta de credenciais válidas no `.env.local`; validação real fica para a homologação/E5 |
 | 2026-10-26 | E4 | Homologação do responsável | Aceite em 26/10/2026; E5 não iniciada por decisão do responsável | — |
 | 2026-10-26 | E5 (preparação) | Extrator completo versionado e validado na 1T2022; JSON draft local com as 13 lições gerado | `scripts/ebd/extract-quarter.py`; 13 lições válidas no esquema v1.0.0, com 3–4 seções, perguntas e 7 leituras diárias; instruções em `scripts/ebd/README.md` | Texto/PDF não versionados; nenhuma importação ou publicação nesta etapa; revisão humana pendente |
+| 2026-10-27 | E5 (planejamento) | Revisão 2 aprovada: edição separada de ciclo de estudo; calendário com regra mais exceções; E5 redefinida para ciclos e calendário e publicação renumerada para E6 | [REVISAO_2_CICLOS.md](REVISAO_2_CICLOS.md); emenda neste plano | Nenhum código alterado nesta etapa; implementação segue no executor |
 
 ## 10. Verificações do OIKOS (append-only)
 
 | Data | Aderência | Observação |
 |---|---|---|
-| | | |
+| 2026-10-27 | não avaliada | Revisão 2 aprovada: o modelo separa **edição** de **ciclo de estudo**; o calendário passa a ter data por lição (regra + exceções); a entrega de publicação deixa de ser E5 e passa a E6, com a E5 reservada ao calendário |
