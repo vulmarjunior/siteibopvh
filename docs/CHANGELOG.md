@@ -16,6 +16,7 @@
 - **Validação:** 196 testes em 28 arquivos, lint e build verdes.
 - **Publicação:** merge squash do PR #21 (`a66add8`) e deploy automático da Vercel em 27/10/2026, autorizados pelo responsável para homologação em produção. O reset do schema foi aplicado no primeiro acesso; `/api/ebd/cycles` responde lista vazia, `/api/ebd/quarters` responde 404 e não havia conteúdo antigo a preservar.
 - **Homologação em produção:** em andamento. Pendentes o teste manual do admin, o upload no bucket `ebd` real e o Lighthouse.
+- **Correção de contraste (PR #22):** o layout do admin aplica `text-stone-100` no wrapper; as telas da EBD usam fundo claro e herdavam texto quase branco sobre os cartões brancos. Títulos, rótulos, parágrafos e valores de formulário ficavam ilegíveis. As quatro telas (`/admin/ebd`, edição, ciclo e lição) passaram a definir `text-stone-900` na raiz; cabeçalho escuro e botões permanecem com `text-white` explícito. Sem mudança de lógica.
 
 ### 2026-10-26 - EBD Digital: E2, E3 e E4 homologadas (branch `feat/ebd-e4-admin-importacao`)
 
