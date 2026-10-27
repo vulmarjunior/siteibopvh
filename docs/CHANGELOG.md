@@ -2,6 +2,19 @@
 
 ## [Em Desenvolvimento]
 
+### 2026-10-27 - EBD Digital: E5 — ciclos de estudo e calendário (branch `feat/ebd-e5-ciclos`)
+
+- **Modelo (Rev. 2):** `EbdQuarter` deixa de existir. A **edição** (`EbdEdition`) é a revista (editora, ano, trimestre editorial, nº, volume, turma, PDF e hash); o **ciclo** (`EbdCycle`) é o uso (turma, `startsOn`, dia da semana, status, slug permanente); a **agenda** (`EbdCycleLesson`) guarda a posição da lição e a exceção (`RULE`, `RESCHEDULED`, `NO_MEETING`).
+- **Calendário:** nova função pura `computeEbdSchedule` (`src/lib/ebd/schedule.ts`) calcula as datas a partir da âncora e das exceções, em datas civis sem fuso. Ajustar uma lição não move as seguintes; `NO_MEETING` desloca a lição e as seguintes em uma semana; reancorar preserva os ajustes e os sinaliza como divergência; duas lições na mesma data são sinalizadas.
+- **Migração:** nova migração `20261027120000_ebd_editions_cycles` e reset do modelo anterior. Sem migração de dados — produção não tem conteúdo EBD e o banco local tinha apenas a amostra de 2 lições. O auto-schema de runtime detecta o modelo antigo e aplica o mesmo reset uma vez.
+- **Importação:** o JSON v1.0.0 **não muda**; `edition.*` e `source.*` passam a preencher proveniência. Slugs permanentes: edição `{ano}-{trimestre}t-{turma}`, lição `{edição}-licao-NN` e ciclo `{turma}-{data-da-lição-1}` (com sufixo em colisão; nunca regerado).
+- **API admin:** criação de edição e de ciclo, prévia das datas antes de salvar, reancoragem, ajuste por lição/sem encontro, publicação/despublicação/arquivamento por ciclo, auditoria. A publicação passa a ser do ciclo (as lições válidas são publicadas em conjunto).
+- **API pública:** `/api/ebd/cycles`, `/api/ebd/cycles/:slug`, `/api/ebd/lessons/:slug`, `/api/ebd/search?cycle=<slug>` e PDF em `/api/ebd/editions/:id/pdf`. Cada lição devolve `scheduledOn` calculado.
+- **UI admin:** `/admin/ebd` (edições), `/admin/ebd/:editionId` (PDF, importação, ciclos e lições) e `/admin/ebd/ciclo/:cycleId` (agenda com as 13 datas, “Reancorar o ciclo a partir desta data” e “Ajustar somente esta lição”).
+- **UI pública:** o rótulo passa a ser o **período de uso** (ex.: “Setembro a dezembro de 2027”), com a data de cada encontro no índice e no leitor e a proveniência editorial no rodapé. `/ebd` continua `noindex` e fora do sitemap.
+- **Preservado:** leitura reflow, fonte/tema, busca com trechos, progresso local, upload assinado, versionamento do PDF, validação de hash e auditoria.
+- **Validação:** 196 testes em 28 arquivos, lint e build verdes. **Pendências por ambiente:** validação manual do admin, migração em banco real e Lighthouse não executados (sem `DATABASE_URL` no `.env.local`, sem autenticação local do admin e sem bucket real). Sem merge e sem deploy.
+
 ### 2026-10-26 - EBD Digital: E2, E3 e E4 homologadas (branch `feat/ebd-e4-admin-importacao`)
 
 - **Leitura pública (`/ebd` e `/ebd/licao/:slug`):** modelo `EbdQuarter`/`EbdLesson`/`EbdPdfAsset`, leitura em texto reflow, fonte ajustável, tema claro/escuro/sistema, download do PDF, navegação anterior/próxima, índice, `noindex` em meta e header e busca por texto com trechos.

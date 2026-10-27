@@ -1,12 +1,12 @@
 # Continuidade do projeto
 
-Atualizado em 2026-10-26.
+Atualizado em 2026-10-27.
 
 ## Estado atual
 
 - Repositório: `https://github.com/vulmarjunior/siteibopvh`
 - Branch de continuidade: `main` (produção)
-- Branch em andamento: `feat/ebd-e4-admin-importacao` — E2, E3 e E4 homologadas; **E5 aprovada (não implementada) e E6 pendente**
+- Branch em andamento: `feat/ebd-e5-ciclos` — E2, E3 e E4 homologadas e em produção; **E5 (ciclos e calendário) implementada, PR aberto e sem merge**; E6 pendente
 - Hospedagem: Vercel, projeto `ibopvh`
 - Produção: `https://ibopvh.com.br`
 - Alias Vercel: `https://ibopvh.vercel.app`
@@ -20,14 +20,16 @@ Atualizado em 2026-10-26.
 ```bash
 git clone https://github.com/vulmarjunior/siteibopvh.git
 cd siteibopvh
-git checkout feat/ebd-e4-admin-importacao
+git checkout feat/ebd-e5-ciclos
 npm install
 npx prisma generate
 ```
 
 Crie `.env.local` a partir de `.env.example`. Os valores secretos não ficam no GitHub; obtenha-os nos projetos Vercel/Supabase/Resend. Para a EBD, o bucket `ebd` do Supabase Storage e as variáveis `SUPABASE_SERVICE_ROLE_KEY`/`VITE_SUPABASE_*` precisam estar configurados — ver `docs/planos/E4_STORAGE_SETUP.md`.
 
-O PDF de origem **não é versionado**. Para retomar a E6, copie `PalavraeVida-1T2022-Digital.pdf` para `materiais/ebd/2022/1T/adultos/` e confira o SHA-256 `5b359ca876e682a25e29b14af0aa2f24b0cea3a7389be635d22f39da38fec204`. O JSON de amostra das Lições 1 e 2 também é local e ignorado pelo Git.
+O banco local desta máquina usa Postgres na porta `55432`; o `.env.local` atual está **sem `DATABASE_URL`**, então migração, importação e validação manual do admin não rodam aqui. Não invente credenciais nem aponte para produção: peça ao responsável o valor local ou use o projeto Supabase de desenvolvimento.
+
+O PDF de origem **não é versionado**. Para retomar, copie `PalavraeVida-1T2022-Digital.pdf` para `materiais/ebd/2022/1T/adultos/` e confira o SHA-256 `5b359ca876e682a25e29b14af0aa2f24b0cea3a7389be635d22f39da38fec204`. O JSON completo das 13 lições é local e ignorado pelo Git.
 
 Validação local:
 
@@ -50,25 +52,24 @@ npm run build
 
 ## EBD Digital
 
-- **Status:** E2, E3 e E4 homologadas em 26/10/2026; **E5 (ciclos de estudo e calendário) aprovada em 27/10/2026 e não implementada**; **E6 (publicação do ciclo) pendente**.
-- **Modelo (Rev. 2 do plano):** a **edição** (a revista) é separada do **ciclo de estudo** (o uso). O ciclo tem data de início, uma lição por dia da semana escolhido e exceções explícitas (reagendada ou sem encontro); a data de cada lição é calculada pela regra, e o rótulo público é o período de uso. Ver [planos/REVISAO_2_CICLOS.md](planos/REVISAO_2_CICLOS.md).
-- **Mudança pendente de implementação:** o schema atual ainda usa `EbdQuarter` como identidade da edição e não tem data por lição; a E5 substitui esse modelo.
-- **Branch:** `feat/ebd-e4-admin-importacao` (empilhada sobre E2/E3; não mergeada em `main`).
-- **Rotas públicas:** `/ebd` (índice e busca) e `/ebd/licao/:slug` (leitor).
-- **Admin:** `/admin/ebd`, `/admin/ebd/:quarterId` e `/admin/ebd/licoes/:lessonId`, com permissão `ebd:manage`.
-- **Leitura:** texto reflow, fonte ajustável, tema claro/escuro/sistema, download do PDF, navegação, índice, busca com trechos e progresso local.
-- **Admin:** upload assinado do PDF, versionamento, importação do JSON com hash/tamanho, revisão com prévia e PDF, publicação/despublicação e auditoria.
-- **Amostra:** o ambiente local tem 2 lições importadas (L1/L2), mas o PDF tem **13 lições**. A E6 precisa extrair, revisar e importar as 13 antes de publicar.
-- **Extração completa:** `scripts/ebd/extract-quarter.py` (versionado) gera o JSON draft das 13 lições a partir do PDF; instruções em `scripts/ebd/README.md`. O JSON completo gerado nesta máquina é local e ignorado; na outra máquina, regenerar a partir do PDF.
-- **Pré-requisito da E6:** bucket `ebd` real no Supabase Storage e credenciais válidas; o `.env.local` de produção desta máquina está com a conexão Supabase inválida.
-- **Sem deploy:** a branch não foi mergeada; produção continua sem o módulo EBD.
+- **Status:** E2, E3 e E4 homologadas em 26/10/2026 e em produção; **E5 (ciclos de estudo e calendário) implementada em 27/10/2026 — PR aberto, sem merge e sem deploy**; **E6 (publicação do ciclo) pendente**.
+- **Modelo (Rev. 2 do plano):** a **edição** (`EbdEdition`, a revista) é separada do **ciclo de estudo** (`EbdCycle`, o uso). O ciclo tem turma, data de início, dia da semana, revisão da âncora e status; cada lição tem uma posição e uma exceção (`RULE`, `RESCHEDULED`, `NO_MEETING`) em `EbdCycleLesson`. Ver [planos/REVISAO_2_CICLOS.md](planos/REVISAO_2_CICLOS.md).
+- **Calendário:** `computeEbdSchedule` (`src/lib/ebd/schedule.ts`) é a única fonte das datas, em dias civis (`DATE`, sem fuso). Ajustar uma lição não move as seguintes; `NO_MEETING` desloca a lição e as seguintes em uma semana; reancorar preserva os ajustes manuais e os sinaliza como divergência; duas lições na mesma data são sinalizadas. `scheduledOn` grava só a data manual de `RESCHEDULED` — `RULE`/`NO_MEETING` ficam nulos para não guardar dado derivado.
+- **Slugs permanentes:** edição `{ano}-{trimestre}t-{turma}`, lição `{edição}-licao-NN`, ciclo `{turma}-{data-da-lição-1}` (sufixo em colisão; nunca regerado).
+- **Migração:** `prisma/migrations/20261027120000_ebd_editions_cycles` aplica **reset** do modelo anterior (`EbdQuarter`, `EbdLesson`, `EbdPdfAsset`), autorizado porque produção não tem conteúdo EBD. Não há migração de dados. O auto-schema de runtime (`src/api/ebd-schema.ts`) detecta `EbdLesson.quarterId` e faz o mesmo reset uma vez.
+- **Rotas públicas:** `/ebd` (ciclos, período de uso, busca e progresso) e `/ebd/licao/:slug` (leitor com data do encontro, índice do ciclo e proveniência no rodapé). APIs: `/api/ebd/cycles`, `/api/ebd/cycles/:slug`, `/api/ebd/lessons/:slug`, `/api/ebd/search?cycle=<slug>` e PDF em `/api/ebd/editions/:id/pdf`.
+- **Admin:** `/admin/ebd` (edições), `/admin/ebd/:editionId` (PDF, importação, ciclos e lições), `/admin/ebd/ciclo/:cycleId` (agenda, `Reancorar o ciclo a partir desta data`, `Ajustar somente esta lição`, publicação do ciclo) e `/admin/ebd/licoes/:lessonId`, com permissão `ebd:manage`.
+- **Preservado:** leitura reflow, fonte/tema, busca com trechos, progresso local por slug de lição, upload assinado, versionamento do PDF, validação de hash/tamanho e auditoria em `CuradoriaAuditoria`. `/ebd` continua `noindex` e fora do sitemap.
+- **Amostra:** o banco local tinha 2 lições (L1/L2); o PDF tem **13**. A E6 precisa revisar e publicar o ciclo completo.
+- **Extração:** `scripts/ebd/extract-quarter.py` (versionado) gera o JSON draft das 13 lições; instruções em `scripts/ebd/README.md`. O JSON completo gerado nesta máquina é local e ignorado.
+- **Pendências por ambiente (E5):** validação manual do admin, aplicação da migração em banco real e Lighthouse **não executados** — faltam `DATABASE_URL` no `.env.local`, autenticação local do admin e bucket real. Sem esses itens, a E5 não deve ser mergeada como homologada.
 
 ## Última validação
 
-- **179 testes** aprovados em 27 arquivos (`npm test` / Vitest).
-- Lint e build TypeScript/Vite aprovados.
-- EBD: Lighthouse 1,00 nas páginas públicas; upload de PDF de 4.850.159 bytes, importação, rascunho oculto, publicação/despublicação, versionamento e auditoria validados localmente.
-- EBD: extrator completo `scripts/ebd/extract-quarter.py` validado na 1T2022, gerando **13 lições** no esquema v1.0.0.
+- **196 testes** aprovados em 28 arquivos (`npm test` / Vitest), incluindo 16 do calendário.
+- `npx tsc --noEmit`, lint e build TypeScript/Vite aprovados em 27/10/2026 (branch `feat/ebd-e5-ciclos`).
+- EBD: 2 lições de amostra e extrator completo da 1T2022 (13 lições) validados em 26/10/2026; Lighthouse 1,00 nas páginas públicas e fluxo de upload/importação/publicação validados localmente na E4.
+- **Não revalidado na E5:** migração em banco real, fluxo manual do admin e Lighthouse (ver pendências por ambiente acima).
 - Central Administrativa com layout 2.0 ativo em produção na `main` (Sidebar em 4 pilares, Header com Breadcrumbs, Command Palette `Ctrl+K` e Dashboard Executivo de KPIs).
 
 
