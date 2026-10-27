@@ -13,12 +13,13 @@ export type AdminPermission =
   | 'prayer:personal-requests'
   | 'ebf:manage'
   | 'criancas:manage'
+  | 'ebd:manage'
   | 'users:manage'
   | 'history:manage';
 
 const ROLE_PERMISSIONS: Record<AdminRole, readonly AdminPermission[]> = {
-  ADMIN_GERAL: ['admin:access', 'modules:manage', 'banners:manage', 'series:edit', 'series:publish', 'series:delete', 'email:manage', 'veredas:manage', 'prayer:manage', 'prayer:personal-requests', 'ebf:manage', 'criancas:manage', 'users:manage', 'history:manage'],
-  EDITOR: ['admin:access', 'banners:manage', 'series:edit', 'history:manage'],
+  ADMIN_GERAL: ['admin:access', 'modules:manage', 'banners:manage', 'series:edit', 'series:publish', 'series:delete', 'email:manage', 'veredas:manage', 'prayer:manage', 'prayer:personal-requests', 'ebf:manage', 'criancas:manage', 'ebd:manage', 'users:manage', 'history:manage'],
+  EDITOR: ['admin:access', 'banners:manage', 'series:edit', 'ebd:manage', 'history:manage'],
   CURADOR_VEREDAS: ['admin:access', 'veredas:manage'],
   OPERADOR: ['admin:access', 'prayer:manage', 'ebf:manage', 'criancas:manage'],
 };

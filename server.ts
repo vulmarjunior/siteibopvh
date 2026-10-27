@@ -9,6 +9,14 @@ async function startServer() {
 
   app.use(express.json({ limit: '1mb' }));
 
+  // Área interna da EBD: não indexar (HTML e API). O meta robots é aplicado nas páginas.
+  app.use((req, res, next) => {
+    if (req.path === '/ebd' || req.path.startsWith('/ebd/')) {
+      res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+    }
+    next();
+  });
+
   // API routes FIRST
   app.use("/api", apiRouter);
 

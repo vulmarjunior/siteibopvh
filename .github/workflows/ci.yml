@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Testes, lint e build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # O package-lock.json foi gerado no Windows e nao contem os pacotes
+      # opcionais @esbuild/* de outras plataformas, o que quebra `npm ci` no
+      # runner Linux. Enquanto o lock nao for regenerado em Linux, usamos
+      # `npm install`, que respeita as versoes travadas e completa os opcionais.
+      - name: Instalar dependencias
+        run: npm install --no-audit --no-fund
+
+      - name: Gerar Prisma Client
+        run: npx prisma generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Testes
+        run: npm test
+
+      - name: Build
+        run: npm run build

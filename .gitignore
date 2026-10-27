@@ -41,3 +41,7 @@ scratch/
 
 # Materiais de origem da editora (PDFs e texto integral não versionados)
 materiais/
+
+# Python
+__pycache__/
+*.py[cod]

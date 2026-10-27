@@ -19,3 +19,14 @@ describe('admin permissions', () => {
   });
 });
 
+describe('permissão ebd:manage', () => {
+  it('é concedida ao administrador geral e ao editor', () => {
+    expect(hasAdminPermission('ADMIN_GERAL', 'ebd:manage')).toBe(true);
+    expect(hasAdminPermission('EDITOR', 'ebd:manage')).toBe(true);
+  });
+
+  it('não é concedida por padrão ao curador de Veredas nem ao operador', () => {
+    expect(hasAdminPermission('CURADOR_VEREDAS', 'ebd:manage')).toBe(false);
+    expect(hasAdminPermission('OPERADOR', 'ebd:manage')).toBe(false);
+  });
+});

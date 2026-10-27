@@ -167,3 +167,14 @@ python docs/planos/E1/extrair_amostra.py \
 
 O script gera `licoes.txt` (texto para revisão local) e `estatisticas.json`
 (contagens e hash), sem gravar o PDF no repositório.
+
+## 9. Extração do trimestre completo (preparação da E5)
+
+A ferramenta versionada para as 13 lições é
+[`scripts/ebd/extract-quarter.py`](../../scripts/ebd/extract-quarter.py). Ela lê o
+Sumário e as páginas de título, gera o JSON no esquema v1.0.0 com status
+`draft` e imprime um relatório por lição. O PDF e o JSON completo permanecem
+fora do Git. Instruções em [`scripts/ebd/README.md`](../../scripts/ebd/README.md).
+
+Validação na edição 1T2022: **13 lições**, p. 16–113, todas com 3–4 seções,
+perguntas e 7 leituras diárias.

@@ -2,7 +2,7 @@
 
 | Plano | Tema | Status | Homologação | Atualizado em | Executor |
 |---|---|---|---|---|---|
-| [PLANO_EBD_DIGITAL.md](PLANO_EBD_DIGITAL.md) | Revista digital da EBD (módulo `ebd`) | em execução — E1 concluída; E2 pendente | pendente | 2026-10-26 | agente do projeto |
+| [PLANO_EBD_DIGITAL.md](PLANO_EBD_DIGITAL.md) | Revista digital da EBD (módulo `ebd`) | em execução — E4 homologada; E5 pendente | E2, E3 e E4 aprovadas em 26/10/2026 | 2026-10-26 | agente do projeto |
 
 ## Legados
 

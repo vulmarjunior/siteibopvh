@@ -24,7 +24,12 @@ const AdminProtectedRoute = lazy(() => import('./components/admin/AdminProtected
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminHomeBannersPage = lazy(() => import('./pages/admin/AdminHomeBannersPage'));
 const AdminHistoryPage = lazy(() => import('./pages/admin/AdminHistoryPage'));
+const AdminEbdPage = lazy(() => import('./pages/admin/AdminEbdPage'));
+const AdminEbdQuarterPage = lazy(() => import('./pages/admin/AdminEbdQuarterPage'));
+const AdminEbdLessonPage = lazy(() => import('./pages/admin/AdminEbdLessonPage'));
 const HistoryPage = lazy(() => import('./pages/history/HistoryPage'));
+const EbdHomePage = lazy(() => import('./pages/ebd/EbdHomePage'));
+const EbdLessonPage = lazy(() => import('./pages/ebd/EbdLessonPage'));
 
 // Veredas IBO (Curadoria) Lazy Components
 const VeredasHomePage = lazy(() => import('./pages/veredas/VeredasHomePage').then(m => ({ default: m.VeredasHomePage })));
@@ -59,6 +64,8 @@ const App: React.FC = () => (
         <Route path="/criancas" element={<ModuleRoute moduleId="criancas"><CriancasPage /></ModuleRoute>} />
         <Route path="/criancas/admin" element={<Navigate to="/admin/criancas" replace />} />
         <Route path="/historia" element={<HistoryPage />} />
+        <Route path="/ebd" element={<EbdHomePage />} />
+        <Route path="/ebd/licao/:slug" element={<EbdLessonPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/definir-senha" element={<AdminSetPasswordPage />} />
         <Route element={<AdminProtectedRoute />}>
@@ -72,6 +79,9 @@ const App: React.FC = () => (
           <Route path="/admin/relogio" element={<AdminPrayerPage />} />
           <Route path="/admin/ebf" element={<AdminEbfPage />} />
           <Route path="/admin/criancas" element={<AdminCriancasPage />} />
+          <Route path="/admin/ebd" element={<AdminEbdPage />} />
+          <Route path="/admin/ebd/licoes/:lessonId" element={<AdminEbdLessonPage />} />
+          <Route path="/admin/ebd/:quarterId" element={<AdminEbdQuarterPage />} />
           <Route path="/admin/usuarios" element={<AdminUsersPage />} />
           <Route path="/admin/banners" element={<AdminHomeBannersPage />} />
           <Route path="/admin/veredas" element={<VeredasDashboardPage />} />

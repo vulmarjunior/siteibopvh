@@ -890,3 +890,87 @@ model ChurchHistoryItem {
   @@index([active])
 }
 
+// ==========================================
+// MÓDULO EBD DIGITAL
+// ==========================================
+
+enum EbdContentStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+model EbdQuarter {
+  id              String           @id @default(cuid())
+  slug            String           @unique
+  year            Int
+  quarter         Int
+  className       String
+  publisher       String
+  title           String
+  issue           Int?
+  volume          Int?
+  sourceFileName  String?
+  sourceSha256    String?
+  sourcePageCount Int?
+  sourceSizeBytes Int?
+  status          EbdContentStatus @default(DRAFT)
+  publishedAt     DateTime?
+  publishedBy     String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  lessons         EbdLesson[]
+  pdfAssets       EbdPdfAsset[]
+
+  @@unique([year, quarter, className])
+  @@index([status, year, quarter])
+}
+
+model EbdLesson {
+  id            String           @id @default(cuid())
+  quarterId     String
+  quarter       EbdQuarter       @relation(fields: [quarterId], references: [id], onDelete: Cascade)
+  number        Int
+  slug          String           @unique
+  title         String
+  baseText      String
+  startPage     Int
+  endPage       Int
+  introduction  Json
+  sections      Json
+  questions     Json
+  dailyReadings Json
+  figures       Json             @default("[]")
+  status        EbdContentStatus @default(DRAFT)
+  sourceHash    String?
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  publishedAt   DateTime?
+  publishedBy   String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@unique([quarterId, number])
+  @@index([quarterId, status, number])
+  @@index([slug])
+}
+
+model EbdPdfAsset {
+  id          String     @id @default(cuid())
+  quarterId   String
+  quarter     EbdQuarter @relation(fields: [quarterId], references: [id], onDelete: Cascade)
+  version     Int
+  fileName    String
+  storagePath String?
+  url         String?
+  sha256      String
+  sizeBytes   Int
+  pageCount   Int
+  uploadedBy  String?
+  createdAt   DateTime   @default(now())
+
+  @@unique([quarterId, version])
+  @@index([quarterId, createdAt])
+}
+
