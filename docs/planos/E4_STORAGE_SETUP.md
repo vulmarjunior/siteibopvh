@@ -72,3 +72,19 @@ VITE_SUPABASE_ANON_KEY=dev-anon-key
 ## 6. Pendência de ambiente
 
 O caminho Supabase Storage está implementado, mas **não foi exercitado contra um bucket real** porque o `.env.local` de produção está com a conexão Supabase inválida (`tenant/user ... not found`). A validação contra o bucket `ebd` real deve ocorrer na homologação da E4/E5, antes da publicação do trimestre.
+
+## 7. Extração completa do trimestre
+
+Para a E5, o extrator versionado gera o JSON draft das 13 lições:
+
+```bash
+python scripts/ebd/extract-quarter.py \
+  --pdf materiais/ebd/2022/1T/adultos/PalavraeVida-1T2022-Digital.pdf \
+  --out materiais/ebd/2022/1T/adultos/importacao-1t2022-completo.json
+```
+
+- O JSON sai com `review.status: "draft"`; a revisão humana é obrigatória antes de publicar.
+- O PDF e o JSON completo não são versionados.
+- O script foi validado na 1T2022: 13 lições, p. 16–113, todas com 3–4 seções, perguntas e 7 leituras diárias.
+- Para outra edição, conferir `--summary-page`, `--page-offset` e o template.
+- Instruções adicionais em `scripts/ebd/README.md`.

@@ -15,9 +15,11 @@ Fonte oficial das pendências deste projeto.
   `feat/ebd-e4-admin-importacao`, commits `1264dee`, `425048c` e `d4812ee`).
   E5 — publicação do trimestre — **não iniciada** por decisão do responsável.
   Próximo passo: retomar a E5 em outra máquina, com o bucket `ebd` real no
-  Supabase Storage configurado. A autorização da editora foi confirmada em
-  26/10/2026 para uso não comercial e interno; a área `/ebd` deve nascer com
-  `noindex` em meta/header e fora do sitemap. O PDF de origem está em
+  Supabase Storage configurado. A extração completa é reproduzível por
+  `scripts/ebd/extract-quarter.py`; o JSON draft com 13 lições foi gerado
+  localmente e o texto/PDF não são versionados. A autorização da editora foi
+  confirmada em 26/10/2026 para uso não comercial e interno; a área `/ebd` deve
+  nascer com `noindex` em meta/header e fora do sitemap. O PDF de origem está em
   `materiais/ebd/2022/1T/adultos/` (local, ignorado pelo Git). A edição é 1T2022,
   com template anterior ao das amostras de 2024. Não é pré-requisito da decisão
   sobre a VPS. Plano em

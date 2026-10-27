@@ -11,6 +11,7 @@
 - **Sem nova função serverless:** API administrativa em `/api/ebd/admin`, atendida pelo entry `/api/index`; o limite de 12 funções da Vercel permanece.
 - **Validação:** 179 testes, lint e build verdes; Lighthouse 1,00 nas páginas públicas; PDF real de 4.850.159 bytes enviado como versão 2, com versão 1 preservada; hash divergente recusado com 409; rascunho inacessível no público; publicação/despublicação e auditoria verificadas localmente.
 - **Amostra vs. trimestre completo:** a amostra importada no ambiente local tem **2 lições** (Lições 1 e 2) porque a E1/E2 extraiu apenas essa amostra; o PDF tem **13 lições**. A E5 deve extrair, revisar e publicar as 13 lições do trimestre.
+- **Extração completa:** `scripts/ebd/extract-quarter.py` foi versionado e validado na 1T2022, gerando um JSON draft com as **13 lições** (p. 16–113) no esquema v1.0.0. O PDF e o JSON completo continuam fora do Git; instruções em `scripts/ebd/README.md`.
 - **E5 não iniciada:** a publicação do trimestre completo e a validação contra o bucket `ebd` real ficam para a retomada em outra máquina.
 - **Sem deploy/merge:** trabalho mantido na branch `feat/ebd-e4-admin-importacao`; `main` e produção não foram alteradas.
 - **Configuração:** instruções de Storage e variáveis em `docs/planos/E4_STORAGE_SETUP.md`; continuidade em `docs/CONTINUIDADE.md`.

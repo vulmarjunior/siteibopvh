@@ -57,6 +57,7 @@ npm run build
 - **Leitura:** texto reflow, fonte ajustável, tema claro/escuro/sistema, download do PDF, navegação, índice, busca com trechos e progresso local.
 - **Admin:** upload assinado do PDF, versionamento, importação do JSON com hash/tamanho, revisão com prévia e PDF, publicação/despublicação e auditoria.
 - **Amostra:** o ambiente local tem 2 lições importadas (L1/L2), mas o PDF tem **13 lições**. A E5 precisa extrair, revisar e importar as 13 antes de publicar.
+- **Extração completa:** `scripts/ebd/extract-quarter.py` (versionado) gera o JSON draft das 13 lições a partir do PDF; instruções em `scripts/ebd/README.md`. O JSON completo gerado nesta máquina é local e ignorado; na outra máquina, regenerar a partir do PDF.
 - **Pré-requisito da E5:** bucket `ebd` real no Supabase Storage e credenciais válidas; o `.env.local` de produção desta máquina está com a conexão Supabase inválida.
 - **Sem deploy:** a branch não foi mergeada; produção continua sem o módulo EBD.
 
@@ -65,6 +66,7 @@ npm run build
 - **179 testes** aprovados em 27 arquivos (`npm test` / Vitest).
 - Lint e build TypeScript/Vite aprovados.
 - EBD: Lighthouse 1,00 nas páginas públicas; upload de PDF de 4.850.159 bytes, importação, rascunho oculto, publicação/despublicação, versionamento e auditoria validados localmente.
+- EBD: extrator completo `scripts/ebd/extract-quarter.py` validado na 1T2022, gerando **13 lições** no esquema v1.0.0.
 - Central Administrativa com layout 2.0 ativo em produção na `main` (Sidebar em 4 pilares, Header com Breadcrumbs, Command Palette `Ctrl+K` e Dashboard Executivo de KPIs).
 
 
