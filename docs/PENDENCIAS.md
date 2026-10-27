@@ -9,28 +9,28 @@ Fonte oficial das pendências deste projeto.
   [AVALIACAO_MIGRACAO_VPS.md](AVALIACAO_MIGRACAO_VPS.md). Decisão pendente; não é
   pré-requisito do módulo EBD Digital. Envolve segurança da VPS, Auth/Storage do
   Supabase, backups e capacidade.
-- **2026-10-25 — EBD Digital: plano aprovado em 26/10/2026, E1 concluída na
-  edição real 1T2022 e E2/E3/E4 homologadas em 26/10/2026.** E4 — importação e
-  publicação no admin — homologada em 26/10/2026 (branch
-  `feat/ebd-e4-admin-importacao`, commits `1264dee`, `425048c` e `d4812ee`).
-  **Revisão 2 do plano aprovada em 27/10/2026:** a edição da revista deixa de ser
-  a identidade do bloco de lições e nasce o **ciclo de estudo** (uso), com data
-  por lição, regra mais exceções e rótulo público por período — ver
-  [planos/REVISAO_2_CICLOS.md](planos/REVISAO_2_CICLOS.md). Com isso, E5 —
-  **ciclos de estudo e calendário** — está aprovada e **não implementada**, e a
-  publicação passou a ser a **E6**. Próximo passo: implementar a E5 no executor;
-  a E6 depende do bucket `ebd` real no Supabase Storage. A extração completa é
-  reproduzível por `scripts/ebd/extract-quarter.py`; o JSON draft com 13 lições
-  foi gerado localmente em 27/10/2026 e o texto/PDF não são versionados. A
-  autorização da editora foi confirmada em 26/10/2026 para uso não comercial e
-  interno; a área `/ebd` deve nascer com `noindex` em meta/header e fora do
-  sitemap. O PDF de origem está em `materiais/ebd/2022/1T/adultos/` (local,
-  ignorado pelo Git; SHA-256 conferido). A edição é 1T2022, com template anterior
-  ao das amostras de 2024. Não é pré-requisito da decisão sobre a VPS. Plano em
-  [planos/PLANO_EBD_DIGITAL.md](planos/PLANO_EBD_DIGITAL.md), diagnóstico em
-  [planos/E1_DIAGNOSTICO_EXTRACAO.md](planos/E1_DIAGNOSTICO_EXTRACAO.md),
-  checklist da E2 em [planos/E2_CHECKLIST_WCAG.md](planos/E2_CHECKLIST_WCAG.md)
-  e configuração de Storage em
+- **2026-10-27 — EBD Digital: E5 implementada, aguardando homologação manual.**
+  E1 concluída na edição real 1T2022; E2, E3 e E4 homologadas em 26/10/2026 e em
+  produção. A Revisão 2 (aprovada em 27/10/2026) separou a **edição** (revista)
+  do **ciclo de estudo** (uso), com data por lição, regra mais exceções e rótulo
+  público por período — ver [planos/REVISAO_2_CICLOS.md](planos/REVISAO_2_CICLOS.md).
+  A **E5 (ciclos de estudo e calendário)** foi implementada na branch
+  `feat/ebd-e5-ciclos`, com PR
+  [#21](https://github.com/vulmarjunior/siteibopvh/pull/21) e CI verde; **sem
+  merge e sem deploy**. A homologação manual está bloqueada por ambiente: falta
+  `DATABASE_URL` no `.env.local` (Postgres local na porta 55432), autenticação
+  local do admin e bucket `ebd` real. Por isso a migração, o fluxo do admin e o
+  Lighthouse não foram executados. Roteiro clicável em
+  [planos/E5_HOMOLOGACAO.md](planos/E5_HOMOLOGACAO.md). A **E6** (homologação e
+  publicação do ciclo) segue pendente e depende do bucket real, do ciclo completo
+  da turma Adultos, do aceite do responsável, da autorização da editora
+  referenciada e do teste de acessibilidade (NVDA/TalkBack). A extração das 13
+  lições é reproduzível por `scripts/ebd/extract-quarter.py`; o PDF e o JSON não
+  são versionados. `/ebd` nasce com `noindex` em meta/header e fora do sitemap.
+  Plano em [planos/PLANO_EBD_DIGITAL.md](planos/PLANO_EBD_DIGITAL.md),
+  diagnóstico em [planos/E1_DIAGNOSTICO_EXTRACAO.md](planos/E1_DIAGNOSTICO_EXTRACAO.md),
+  checklist da E2 em [planos/E2_CHECKLIST_WCAG.md](planos/E2_CHECKLIST_WCAG.md) e
+  configuração de Storage em
   [planos/E4_STORAGE_SETUP.md](planos/E4_STORAGE_SETUP.md).
 
 ## Concluídas
