@@ -171,27 +171,28 @@ function supabaseUrl(): string {
   return process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
 }
 
-export function hasSupabaseStorage(): boolean {
-  const url = supabaseUrl();
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-    || process.env.SUPABASE_ANON_KEY
-    || process.env.VITE_SUPABASE_ANON_KEY
-    || '';
-  return Boolean(url && key);
+function isProductionRuntime(): boolean {
+  return process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
 }
 
-export function getEbdStorageClient(adminToken?: string): SupabaseClient | null {
+function storageKey(): string {
+  const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  if (serviceRole) return serviceRole;
+  if (isProductionRuntime()) return '';
+  return process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+}
+
+export function hasSupabaseStorage(): boolean {
+  return Boolean(supabaseUrl() && storageKey());
+}
+
+export function getEbdStorageClient(): SupabaseClient | null {
   const url = supabaseUrl();
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-    || process.env.SUPABASE_ANON_KEY
-    || process.env.VITE_SUPABASE_ANON_KEY
-    || '';
+  const key = storageKey();
   if (!url || !key) return null;
 
-  const useAdminToken = !process.env.SUPABASE_SERVICE_ROLE_KEY && Boolean(adminToken);
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
-    ...(useAdminToken ? { global: { headers: { Authorization: `Bearer ${adminToken}` } } } : {}),
   });
 }
 
@@ -205,7 +206,6 @@ export async function createUploadTarget(input: {
   sizeBytes: number;
   sha256: string;
   pageCount: number;
-  adminToken?: string;
 }): Promise<EbdStorageTarget> {
   const storagePath = buildPdfStoragePath(input.year, input.quarter, input.className, input.version);
 
@@ -227,8 +227,12 @@ export async function createUploadTarget(input: {
     };
   }
 
-  const client = getEbdStorageClient(input.adminToken);
-  if (!client) throw new Error('Supabase Storage não configurado para upload do PDF.');
+  const client = getEbdStorageClient();
+  if (!client) {
+    throw new Error(isProductionRuntime()
+      ? 'Supabase Storage não configurado: defina SUPABASE_SERVICE_ROLE_KEY na Vercel (ambiente Production) e faça um novo deploy.'
+      : 'Supabase Storage não configurado para upload do PDF.');
+  }
 
   const { data, error } = await client.storage.from(EBD_STORAGE_BUCKET).createSignedUploadUrl(storagePath);
   if (error || !data) {

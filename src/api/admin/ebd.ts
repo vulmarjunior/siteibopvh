@@ -1,7 +1,6 @@
 import express, { type Response } from 'express';
 import type { Prisma, PrismaClient } from '@prisma/client';
 import { createAdminAuthMiddleware, type AdminAuthenticatedRequest } from './auth.js';
-import { getAdminAuthToken } from '../../lib/admin/authCookie.js';
 import { hasAdminPermission } from '../../lib/admin/permissions.js';
 import { ensureEbdSchema } from '../ebd-schema.js';
 import {
@@ -31,6 +30,7 @@ import {
   MAX_EBD_PDF_BYTES,
   buildPdfStoragePath,
   createUploadTarget,
+  hasSupabaseStorage,
   isValidPdfStoragePath,
   isLocalEbdStorage,
   localPathForStoragePath,
@@ -445,7 +445,6 @@ export function createAdminEbdRouter(prisma: PrismaClient) {
         sizeBytes,
         sha256,
         pageCount,
-        adminToken: getAdminAuthToken(req)?.token,
       });
       return res.json({ ...target, maxBytes: MAX_PDF_BYTES });
     } catch (error) {
@@ -516,6 +515,11 @@ export function createAdminEbdRouter(prisma: PrismaClient) {
       const digest = await sha256File(localPath);
       if (digest !== sha256) return res.status(409).json({ error: 'O hash do PDF no armazenamento não confere.' });
     } else {
+      if (!hasSupabaseStorage()) {
+        return res.status(503).json({
+          error: 'Supabase Storage não configurado: defina SUPABASE_SERVICE_ROLE_KEY na Vercel (ambiente Production) e faça um novo deploy.',
+        });
+      }
       const found = await verifySupabaseObject(storagePath, sizeBytes);
       if (!found) return res.status(409).json({ error: 'O PDF não foi encontrado no Supabase Storage.' });
     }
