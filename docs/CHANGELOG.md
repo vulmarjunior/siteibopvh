@@ -17,6 +17,7 @@
 - **Publicação:** merge squash do PR #21 (`a66add8`) e deploy automático da Vercel em 27/10/2026, autorizados pelo responsável para homologação em produção. O reset do schema foi aplicado no primeiro acesso; `/api/ebd/cycles` responde lista vazia, `/api/ebd/quarters` responde 404 e não havia conteúdo antigo a preservar.
 - **Homologação em produção:** em andamento. Pendentes o teste manual do admin, o upload no bucket `ebd` real e o Lighthouse.
 - **Correção de contraste (PR #22):** o layout do admin aplica `text-stone-100` no wrapper; as telas da EBD usam fundo claro e herdavam texto quase branco sobre os cartões brancos. Títulos, rótulos, parágrafos e valores de formulário ficavam ilegíveis. As quatro telas (`/admin/ebd`, edição, ciclo e lição) passaram a definir `text-stone-900` na raiz; cabeçalho escuro e botões permanecem com `text-white` explícito. Sem mudança de lógica.
+- **Correção do limite de importação (PR #23):** o entry de produção usava `express.json()` com o limite padrão de 100 KB; o JSON real da 1T2022 tem 129.610 bytes e o import falhava com **413 Payload Too Large** antes da autenticação, sem gravar lições. O front mostrava apenas “Não foi possível concluir a operação.” e a criação do ciclo respondia “Importe as lições antes de criar o ciclo.”. O limite passou a **2 MB** no entry da Vercel e da Netlify, com resposta 413 em JSON e mensagem clara. Verificado em produção: 130 KB chega à autenticação (401) e 3 MB retorna 413 JSON.
 
 ### 2026-10-26 - EBD Digital: E2, E3 e E4 homologadas (branch `feat/ebd-e4-admin-importacao`)
 
