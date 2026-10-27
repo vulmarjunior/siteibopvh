@@ -11,17 +11,20 @@ Fonte oficial das pendências deste projeto.
   Supabase, backups e capacidade.
 - **2026-10-25 — EBD Digital: plano aprovado em 26/10/2026, E1 concluída na
   edição real 1T2022 e E2/E3 homologadas em 26/10/2026.** E4 — importação e
-  publicação no admin — em execução (branches `feat/ebd-e2-modelo-leitura` e
-  `feat/ebd-e3-busca-progresso`, commits `fd74136`, `7a6074c` e `3b1fafd`).
-  Próximo passo: concluir a E4, homologá-la e, depois, E5 — publicação do
-  trimestre. A autorização da editora foi confirmada em 26/10/2026 para uso não
-  comercial e interno; a área `/ebd` deve nascer com `noindex` em meta/header e
-  fora do sitemap. O PDF de origem está em `materiais/ebd/2022/1T/adultos/`
-  (local, ignorado pelo Git). A edição é 1T2022, com template anterior ao das
-  amostras de 2024. Não é pré-requisito da decisão sobre a VPS. Plano em
+  publicação no admin — implementada em 26/10/2026 (branch
+  `feat/ebd-e4-admin-importacao`, commit `1264dee`). Próximo passo: homologar a
+  E4 em ambiente com bucket `ebd` real no Supabase Storage e, depois, E5 —
+  publicação do trimestre. A autorização da editora foi confirmada em 26/10/2026
+  para uso não comercial e interno; a área `/ebd` deve nascer com `noindex` em
+  meta/header e fora do sitemap. O PDF de origem está em
+  `materiais/ebd/2022/1T/adultos/` (local, ignorado pelo Git). A edição é 1T2022,
+  com template anterior ao das amostras de 2024. Não é pré-requisito da decisão
+  sobre a VPS. Plano em
   [planos/PLANO_EBD_DIGITAL.md](planos/PLANO_EBD_DIGITAL.md), diagnóstico em
-  [planos/E1_DIAGNOSTICO_EXTRACAO.md](planos/E1_DIAGNOSTICO_EXTRACAO.md) e
-  checklist da E2 em [planos/E2_CHECKLIST_WCAG.md](planos/E2_CHECKLIST_WCAG.md).
+  [planos/E1_DIAGNOSTICO_EXTRACAO.md](planos/E1_DIAGNOSTICO_EXTRACAO.md),
+  checklist da E2 em [planos/E2_CHECKLIST_WCAG.md](planos/E2_CHECKLIST_WCAG.md)
+  e configuração de Storage em
+  [planos/E4_STORAGE_SETUP.md](planos/E4_STORAGE_SETUP.md).
 
 ## Concluídas
 

@@ -2,7 +2,7 @@
 
 > **Projeto:** siteibopvh (módulo `ebd`)
 > **Status:** em execução
-> **Estado:** E2 e E3 homologadas em 26/10/2026; E4 em execução; E5 pendente
+> **Estado:** E2 e E3 homologadas em 26/10/2026; E4 implementada em 26/10/2026 na branch `feat/ebd-e4-admin-importacao` (commit `1264dee`); homologação da E4 pendente; E5 pendente
 > **Homologação:** E2 e E3 aprovadas pelo responsável em 26/10/2026; E4/E5 pendentes
 > **Aprovado por:** Vulmar Junior em 2026-10-26
 > **Planejado por:** OIKOS
@@ -163,7 +163,7 @@ Estados do trimestre: `rascunho` → `em revisão` → `publicado` → `arquivad
 | E1 | Diagnóstico dos PDFs e extração local | 2 lições extraídas localmente com título, seções e perguntas reconhecidos; relatório comparando ferramentas candidatas (pdfjs-dist no Node, PyMuPDF/pdfplumber, marker/docling) com taxa de acerto e esforço de revisão; esquema de importação definido; PDFs de origem com texto extraível ou plano B definido | implementado | [E1_DIAGNOSTICO_EXTRACAO.md](E1_DIAGNOSTICO_EXTRACAO.md) |
 | E2 | Modelo de dados e leitura pública | RF1, RF2, RF4, RF6 e RF10 funcionando com amostra real do trimestre; checklist WCAG 2.1 AA aplicado; sem rolagem horizontal em 360px; página com `noindex` desde a primeira versão | homologado | Branch `feat/ebd-e2-modelo-leitura`, commits `fd74136` e `7a6074c`; [E2_CHECKLIST_WCAG.md](E2_CHECKLIST_WCAG.md); aceite do responsável em 26/10/2026 |
 | E3 | Busca e progresso local | RF3 e RF5 funcionando; busca retorna lição e trecho; progresso persiste entre sessões e pode ser limpo | homologado | Branch `feat/ebd-e3-busca-progresso`, commits `3b1fafd` e `f3eefbd`; busca com trechos e progresso local validados; aceite do responsável em 26/10/2026 |
-| E4 | Importação e publicação no admin | RF7, RF8, RF11 e RF12 com permissão `ebd:manage`; importação de PDF + JSON de uma lição real em ambiente de teste; hash divergente recusado; upload direto ao Storage por URL assinada (PDF acima de 4,5 MB funciona); versão anterior preservada; rascunho inacessível no público; auditoria registrada | planejado | |
+| E4 | Importação e publicação no admin | RF7, RF8, RF11 e RF12 com permissão `ebd:manage`; importação de PDF + JSON de uma lição real em ambiente de teste; hash divergente recusado; upload direto ao Storage por URL assinada (PDF acima de 4,5 MB funciona); versão anterior preservada; rascunho inacessível no público; auditoria registrada | implementado | Branch `feat/ebd-e4-admin-importacao`, commit `1264dee`; [E4_STORAGE_SETUP.md](E4_STORAGE_SETUP.md); admin `/admin/ebd` com criação, upload assinado, importação, revisão, prévia, PDF, publicação/despublicação e auditoria; 179 testes, lint e build verdes; Lighthouse 1,00 nas páginas públicas; validação local com PDF de 4.850.159 bytes e as 2 lições da 1T2022. Caminho Supabase Storage implementado, pendente de teste em bucket real |
 | E5 | Homologação e publicação do trimestre | Trimestre da turma Adultos completo no ar; aceite do responsável registrado; autorização da editora referenciada; RF9 e RNF8 verificados (`noindex` em meta/header, fora do sitemap) | planejado | |
 
 **Vocabulário de status:** `planejado` → `em execução` → `implementado` → `testado` → `homologado` → `publicado`. Também `bloqueado` e `abandonado`.
@@ -212,6 +212,7 @@ Estados do trimestre: `rascunho` → `em revisão` → `publicado` → `arquivad
 | 2026-10-26 | E2 | Homologação do responsável e validação da navegação local | Aceite em 26/10/2026; duas lições listadas e aberta a Lição 1 no ambiente local com banco de teste | — |
 | 2026-10-26 | E3 | Busca por texto no trimestre publicado (RF3) com trechos e destaque; progresso local (RF5) com marcação de lida, salvamento da posição, retomada e limpeza por lição ou global | Branch `feat/ebd-e3-busca-progresso`, commit `3b1fafd`; 164 testes, lint e build verdes; Lighthouse 1,00 em `/ebd?q=criacao` e na lição; 320/360 px sem rolagem horizontal; busca sem acentos retorna “criação”; progresso persiste após recarregar e limpa corretamente | Busca em memória sobre as lições publicadas do trimestre (sem migração de schema), adequada ao MVP de 13 lições; avaliação de índice FTS fica para quando o acervo crescer |
 | 2026-10-26 | E3 | Homologação do responsável | Aceite em 26/10/2026; busca e progresso validados na interface local | — |
+| 2026-10-26 | E4 | Admin `/admin/ebd` com criação de trimestre, upload assinado do PDF, importação do JSON com validação de hash e tamanho, revisão com prévia e PDF, publicação/despublicação de lição e trimestre, versionamento do PDF e auditoria; permissão `ebd:manage` | Branch `feat/ebd-e4-admin-importacao`, commit `1264dee`; [E4_STORAGE_SETUP.md](E4_STORAGE_SETUP.md); 179 testes, lint e build verdes; PDF real de 4.850.159 bytes enviado como v2 (v1 preservada); hash divergente recusado com 409; rascunho fora do público; publicação/despublicação e auditoria validados; Lighthouse 1,00 nas páginas públicas | Caminho Supabase Storage implementado, mas não exercitado em bucket real por falta de credenciais válidas no `.env.local`; validação real fica para a homologação/E5 |
 
 ## 10. Verificações do OIKOS (append-only)
 
