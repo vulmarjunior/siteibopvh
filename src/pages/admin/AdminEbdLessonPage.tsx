@@ -20,7 +20,8 @@ import {
   formatEbdDate,
 } from '../../components/admin/ebd/AdminEbdUi';
 import { ebdAdminRequest } from '../../lib/ebd/adminApi';
-import { quarterLabel } from '../../lib/ebd/content';
+import { editionLabel } from '../../lib/ebd/content';
+import { formatCivilDateWithWeekday } from '../../lib/ebd/schedule';
 import type {
   EbdAdminLessonDetail,
   EbdAdminPdfAsset,
@@ -267,7 +268,7 @@ export default function AdminEbdLessonPage() {
     );
   }
 
-  const pdfUrl = latestPdf ? `/api/ebd/admin/quarters/${lesson.quarterId}/pdf?assetId=${latestPdf.id}` : null;
+  const pdfUrl = latestPdf ? `/api/ebd/admin/editions/${lesson.editionId}/pdf?assetId=${latestPdf.id}` : null;
   const pdfUrlWithPage = pdfUrl ? `${pdfUrl}#page=${lesson.startPage}` : null;
 
   return (
@@ -278,9 +279,9 @@ export default function AdminEbdLessonPage() {
       </Helmet>
       <AdminEbdPageHeader
         title={`Lição ${lesson.number} — ${lesson.title}`}
-        subtitle={`${quarterLabel(lesson.quarter.year, lesson.quarter.quarter)} • ${lesson.quarter.className} • ${lesson.baseText}`}
-        backTo={`/admin/ebd/${lesson.quarterId}`}
-        backLabel="Voltar ao trimestre"
+        subtitle={`${editionLabel(lesson.edition.year, lesson.edition.quarter)} • ${lesson.edition.className} • ${lesson.baseText}`}
+        backTo={`/admin/ebd/${lesson.editionId}`}
+        backLabel="Voltar à edição"
         actions={<EbdStatusBadge status={lesson.status} />}
       />
 
@@ -311,14 +312,39 @@ export default function AdminEbdLessonPage() {
                 <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                 {lesson.status === 'PUBLISHED' ? 'Despublicar' : 'Publicar lição'}
               </button>
-              <Link to={`/admin/ebd/${lesson.quarterId}`} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-stone-300 px-3 py-2 text-xs font-bold hover:bg-stone-50">
-                <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Trimestre
+              <Link to={`/admin/ebd/${lesson.editionId}`} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-stone-300 px-3 py-2 text-xs font-bold hover:bg-stone-50">
+                <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Edição
               </Link>
             </div>
           </div>
           <p className="mt-2 text-xs text-stone-500">
             Salvar uma alteração volta a lição para <strong>rascunho</strong> e exige nova publicação.
           </p>
+          {lesson.cycles.length > 0 ? (
+            <div className="mt-4 border-t border-stone-200 pt-3">
+              <p className="text-xs font-bold uppercase tracking-wide text-stone-500">Ciclos que usam esta lição</p>
+              <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+                {lesson.cycles.map((cycle) => (
+                  <li key={cycle.id} className="rounded-xl bg-stone-100 p-2 text-xs">
+                    <Link to={`/admin/ebd/ciclo/${cycle.id}`} className="font-bold underline">
+                      {cycle.periodLabel} • {cycle.className}
+                    </Link>
+                    <p className="text-stone-600">
+                      {cycle.date ? formatCivilDateWithWeekday(cycle.date) : 'sem data'} •{' '}
+                      {cycle.exceptionKind === 'RULE'
+                        ? 'pela regra'
+                        : cycle.exceptionKind === 'RESCHEDULED'
+                          ? 'ajustada manualmente'
+                          : 'sem encontro na semana prevista'}
+                    </p>
+                    {cycle.divergesFromRule ? (
+                      <p className="font-bold text-amber-800">divergente após reancoragem</p>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
 
         <section className="rounded-2xl bg-white p-5 shadow" aria-labelledby="conteudo-titulo">

@@ -25,7 +25,8 @@ const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminHomeBannersPage = lazy(() => import('./pages/admin/AdminHomeBannersPage'));
 const AdminHistoryPage = lazy(() => import('./pages/admin/AdminHistoryPage'));
 const AdminEbdPage = lazy(() => import('./pages/admin/AdminEbdPage'));
-const AdminEbdQuarterPage = lazy(() => import('./pages/admin/AdminEbdQuarterPage'));
+const AdminEbdEditionPage = lazy(() => import('./pages/admin/AdminEbdEditionPage'));
+const AdminEbdCyclePage = lazy(() => import('./pages/admin/AdminEbdCyclePage'));
 const AdminEbdLessonPage = lazy(() => import('./pages/admin/AdminEbdLessonPage'));
 const HistoryPage = lazy(() => import('./pages/history/HistoryPage'));
 const EbdHomePage = lazy(() => import('./pages/ebd/EbdHomePage'));
@@ -81,7 +82,8 @@ const App: React.FC = () => (
           <Route path="/admin/criancas" element={<AdminCriancasPage />} />
           <Route path="/admin/ebd" element={<AdminEbdPage />} />
           <Route path="/admin/ebd/licoes/:lessonId" element={<AdminEbdLessonPage />} />
-          <Route path="/admin/ebd/:quarterId" element={<AdminEbdQuarterPage />} />
+          <Route path="/admin/ebd/ciclo/:cycleId" element={<AdminEbdCyclePage />} />
+          <Route path="/admin/ebd/:editionId" element={<AdminEbdEditionPage />} />
           <Route path="/admin/usuarios" element={<AdminUsersPage />} />
           <Route path="/admin/banners" element={<AdminHomeBannersPage />} />
           <Route path="/admin/veredas" element={<VeredasDashboardPage />} />
