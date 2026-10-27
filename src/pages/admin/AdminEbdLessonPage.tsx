@@ -268,6 +268,7 @@ export default function AdminEbdLessonPage() {
   }
 
   const pdfUrl = latestPdf ? `/api/ebd/admin/quarters/${lesson.quarterId}/pdf?assetId=${latestPdf.id}` : null;
+  const pdfUrlWithPage = pdfUrl ? `${pdfUrl}#page=${lesson.startPage}` : null;
 
   return (
     <main className="min-h-screen bg-stone-100 text-stone-900">
@@ -502,13 +503,13 @@ export default function AdminEbdLessonPage() {
               <>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                   <p className="text-xs text-stone-500">v{latestPdf?.version} • {latestPdf?.fileName}</p>
-                  <a href={pdfUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-amber-700 underline">
+                  <a href={pdfUrlWithPage || pdfUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-amber-700 underline">
                     Abrir em nova aba
                   </a>
                 </div>
                 <iframe
                   title="PDF original da revista"
-                  src={pdfUrl}
+                  src={pdfUrlWithPage || pdfUrl}
                   className="mt-2 h-[70vh] w-full rounded-xl border border-stone-200"
                 />
               </>
