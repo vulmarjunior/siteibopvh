@@ -342,16 +342,33 @@ export function assertImportHash(payload: EbdImportPayload, assetSha256: string)
   return null;
 }
 
-export function quarterSlugFor(year: number, quarter: number, className: string): string {
-  const classSlug = className
+export function slugify(value: string): string {
+  return value
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
-  return `${year}-${quarter}t-${classSlug || 'turma'}`;
 }
 
-export function lessonSlugFor(quarterSlug: string, lessonNumber: number): string {
-  return `${quarterSlug}-licao-${String(lessonNumber).padStart(2, '0')}`;
+/**
+ * Slug da edição (a revista). Não é mais identidade pública — o ciclo é.
+ * Mantido para compor o slug permanente da lição.
+ */
+export function editionSlugFor(year: number, quarter: number, className: string): string {
+  return `${year}-${quarter}t-${slugify(className) || 'turma'}`;
+}
+
+/** Slug permanente da lição dentro da edição; não muda ao reancorar ciclos. */
+export function lessonSlugFor(editionSlug: string, lessonNumber: number): string {
+  return `${editionSlug}-licao-${String(lessonNumber).padStart(2, '0')}`;
+}
+
+/**
+ * Slug permanente do ciclo, derivado da turma e da data da lição 1.
+ * Nunca é regerado: links compartilhados precisam continuar válidos.
+ */
+export function cycleSlugFor(className: string, firstLessonDate: string, attempt = 0): string {
+  const base = `${slugify(className) || 'turma'}-${firstLessonDate}`;
+  return attempt > 0 ? `${base}-${attempt + 1}` : base;
 }

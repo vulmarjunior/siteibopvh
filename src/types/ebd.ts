@@ -23,6 +23,18 @@ export interface EbdFigure {
   alt?: string | null;
 }
 
+/** A edição é a revista: proveniência editorial, nunca o rótulo público. */
+export interface EbdEditionRef {
+  id: string;
+  publisher: string;
+  year: number;
+  quarter: number;
+  className: string;
+  title: string;
+  issue: number | null;
+  volume: number | null;
+}
+
 export interface EbdLessonSummary {
   number: number;
   slug: string;
@@ -30,31 +42,30 @@ export interface EbdLessonSummary {
   baseText: string;
   startPage: number;
   endPage: number;
+  /** Data calculada do encontro neste ciclo (YYYY-MM-DD). */
+  scheduledOn: string | null;
 }
 
-export interface EbdQuarterSummary {
+/** O ciclo é o uso da edição: turma, datas e rótulo público por período. */
+export interface EbdCycleSummary {
   id: string;
   slug: string;
-  year: number;
-  quarter: number;
   className: string;
-  publisher: string;
-  title: string;
-  issue: number | null;
-  volume: number | null;
-  lessonCount: number;
+  startsOn: string;
+  weekday: number;
+  periodLabel: string;
   publishedAt: string | null;
+  edition: EbdEditionRef;
   lessons: EbdLessonSummary[];
 }
 
-export interface EbdQuarterRef {
+export interface EbdCycleRef {
   id: string;
   slug: string;
-  year: number;
-  quarter: number;
   className: string;
-  title: string;
-  publisher: string;
+  startsOn: string;
+  weekday: number;
+  periodLabel: string;
 }
 
 export interface EbdPdfInfo {
@@ -69,6 +80,7 @@ export interface EbdLessonNavigationItem {
   number: number;
   slug: string;
   title: string;
+  scheduledOn: string | null;
 }
 
 export interface EbdLessonDetail extends EbdLessonSummary {
@@ -77,7 +89,8 @@ export interface EbdLessonDetail extends EbdLessonSummary {
   questions: EbdQuestion[];
   dailyReadings: EbdDailyReading[];
   figures: EbdFigure[];
-  quarter: EbdQuarterRef;
+  cycle: EbdCycleRef;
+  edition: EbdEditionRef;
   index: EbdLessonSummary[];
   navigation: {
     previous: EbdLessonNavigationItem | null;
@@ -86,8 +99,12 @@ export interface EbdLessonDetail extends EbdLessonSummary {
   pdf: EbdPdfInfo | null;
 }
 
-export interface EbdQuartersResponse {
-  quarters: EbdQuarterSummary[];
+export interface EbdCyclesResponse {
+  cycles: EbdCycleSummary[];
+}
+
+export interface EbdCycleResponse {
+  cycle: EbdCycleSummary;
 }
 
 export interface EbdLessonResponse {
@@ -106,20 +123,9 @@ export interface EbdSearchResult {
   snippets: EbdSearchSnippet[];
 }
 
-export interface EbdSearchQuarter {
-  id: string;
-  slug: string;
-  year: number;
-  quarter: number;
-  className: string;
-  title: string;
-  publisher: string;
-  lessonCount: number;
-}
-
 export interface EbdSearchResponse {
   query: string;
-  quarter: EbdSearchQuarter;
+  cycle: EbdCycleRef & { lessonCount: number };
   results: EbdSearchResult[];
 }
 
@@ -130,4 +136,3 @@ export interface EbdProgressEntry {
 }
 
 export type EbdProgressStore = Record<string, EbdProgressEntry>;
-

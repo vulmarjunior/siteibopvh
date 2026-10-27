@@ -6,6 +6,18 @@ import type {
 } from './ebd.js';
 
 export type EbdAdminStatus = 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'ARCHIVED';
+export type EbdScheduleKind = 'RULE' | 'RESCHEDULED' | 'NO_MEETING';
+
+export interface EbdAdminEditionRef {
+  id: string;
+  publisher: string;
+  year: number;
+  quarter: number;
+  className: string;
+  title: string;
+  issue: number | null;
+  volume: number | null;
+}
 
 export interface EbdAdminPdfAsset {
   id: string;
@@ -34,40 +46,54 @@ export interface EbdAdminLessonSummary {
   updatedAt: string;
 }
 
-export interface EbdAdminQuarterSummary {
-  id: string;
-  slug: string;
-  year: number;
-  quarter: number;
-  className: string;
-  publisher: string;
-  title: string;
-  issue: number | null;
-  volume: number | null;
-  status: EbdAdminStatus;
-  publishedAt: string | null;
-  publishedBy: string | null;
+export interface EbdAdminEditionSummary extends EbdAdminEditionRef {
+  sourceFileName: string | null;
+  sourceSha256: string | null;
+  sourcePageCount: number | null;
+  sourceSizeBytes: number | null;
   createdAt: string;
   updatedAt: string;
   lessonCount: number;
   publishedLessonCount: number;
   pdfAssetCount: number;
   latestPdfVersion: number;
+  cycleCount: number;
+  publishedCycleCount: number;
 }
 
-export interface EbdAdminQuarterDetail {
+export interface EbdAdminCycleSummary {
   id: string;
+  editionId: string;
   slug: string;
-  year: number;
-  quarter: number;
   className: string;
-  publisher: string;
-  title: string;
-  issue: number | null;
-  volume: number | null;
+  startsOn: string;
+  weekday: number;
+  anchorRevision: number;
   status: EbdAdminStatus;
   publishedAt: string | null;
-  publishedBy: string | null;
+  periodLabel: string;
+  firstDate: string;
+  lastDate: string;
+  lessonCount: number;
+  publishedLessonCount: number;
+  edition: EbdAdminEditionRef;
+}
+
+/** Resumo do ciclo exibido dentro da edição (sem agenda completa). */
+export interface EbdAdminEditionCycleSummary {
+  id: string;
+  slug: string;
+  className: string;
+  startsOn: string;
+  weekday: number;
+  anchorRevision: number;
+  status: EbdAdminStatus;
+  publishedAt: string | null;
+  periodLabel: string;
+  lessonCount: number;
+}
+
+export interface EbdAdminEditionDetail extends EbdAdminEditionRef {
   sourceFileName: string | null;
   sourceSha256: string | null;
   sourcePageCount: number | null;
@@ -76,11 +102,77 @@ export interface EbdAdminQuarterDetail {
   updatedAt: string;
   lessons: EbdAdminLessonSummary[];
   pdfAssets: EbdAdminPdfAsset[];
+  cycles: EbdAdminEditionCycleSummary[];
+}
+
+/** Linha da agenda: conteúdo da lição + data calculada no ciclo. */
+export interface EbdAdminScheduleLesson extends EbdAdminLessonSummary {
+  lessonNumber: number;
+  date: string | null;
+  ruleDate: string | null;
+  exceptionKind: EbdScheduleKind;
+  scheduledOn: string | null;
+  divergesFromRule: boolean;
+  sharesDateWith: number[];
+}
+
+export interface EbdAdminCycleDetail {
+  id: string;
+  editionId: string;
+  slug: string;
+  className: string;
+  startsOn: string;
+  weekday: number;
+  anchorRevision: number;
+  status: EbdAdminStatus;
+  publishedAt: string | null;
+  publishedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+  edition: EbdAdminEditionRef;
+  periodLabel: string;
+  firstDate: string;
+  lastDate: string;
+  lessons: EbdAdminScheduleLesson[];
+}
+
+export interface EbdSchedulePreviewEntry {
+  lessonNumber: number;
+  date: string;
+  ruleDate: string;
+  exceptionKind: EbdScheduleKind;
+  scheduledOn: string | null;
+  divergesFromRule: boolean;
+  sharesDateWith: number[];
+}
+
+export interface EbdSchedulePreview {
+  startsOn: string;
+  weekday: number;
+  anchorRevision: number;
+  entries: EbdSchedulePreviewEntry[];
+  firstDate: string;
+  lastDate: string;
+  periodLabel: string;
+}
+
+export interface EbdAdminLessonCycleInfo {
+  id: string;
+  slug: string;
+  className: string;
+  startsOn: string;
+  weekday: number;
+  status: EbdAdminStatus;
+  periodLabel: string;
+  lessonNumber: number;
+  date: string | null;
+  exceptionKind: EbdScheduleKind;
+  divergesFromRule: boolean;
 }
 
 export interface EbdAdminLessonDetail {
   id: string;
-  quarterId: string;
+  editionId: string;
   number: number;
   slug: string;
   title: string;
@@ -100,15 +192,8 @@ export interface EbdAdminLessonDetail {
   publishedBy: string | null;
   createdAt: string;
   updatedAt: string;
-  quarter: {
-    id: string;
-    slug: string;
-    year: number;
-    quarter: number;
-    className: string;
-    title: string;
-    status: EbdAdminStatus;
-  };
+  edition: EbdAdminEditionRef;
+  cycles: EbdAdminLessonCycleInfo[];
 }
 
 export interface EbdAdminAuditEntry {
@@ -141,7 +226,7 @@ export type EbdAdminUploadTarget =
     };
 
 export interface EbdAdminImportResponse {
-  quarter: EbdAdminQuarterDetail;
+  edition: EbdAdminEditionDetail;
   imported: number;
   warnings: string[];
   assetId: string;

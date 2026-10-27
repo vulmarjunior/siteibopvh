@@ -150,6 +150,7 @@ export function searchLessons(lessons: EbdSearchableLesson[], query: string): Eb
         baseText: lesson.baseText,
         startPage: lesson.startPage,
         endPage: lesson.endPage,
+        scheduledOn: lesson.scheduledOn,
       },
       matches,
       snippets,
