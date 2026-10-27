@@ -3,6 +3,7 @@ import {
   buildPdfStoragePath,
   classSlug,
   createLocalUploadToken,
+  hasSupabaseStorage,
   isPdfBuffer,
   isValidPdfStoragePath,
   localPathForStoragePath,
@@ -57,6 +58,43 @@ describe('storage da EBD', () => {
     } finally {
       if (previous === undefined) delete process.env.EBD_LOCAL_STORAGE_DIR;
       else process.env.EBD_LOCAL_STORAGE_DIR = previous;
+    }
+  });
+
+  it('exige a service role em produção e não cai para a anon key', () => {
+    const keys = [
+      'SUPABASE_URL',
+      'VITE_SUPABASE_URL',
+      'SUPABASE_SERVICE_ROLE_KEY',
+      'SUPABASE_ANON_KEY',
+      'VITE_SUPABASE_ANON_KEY',
+      'NODE_ENV',
+      'VERCEL',
+    ] as const;
+    const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+    try {
+      process.env.SUPABASE_URL = 'https://example.supabase.co';
+      delete process.env.VITE_SUPABASE_URL;
+      delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+      process.env.SUPABASE_ANON_KEY = 'anon';
+      process.env.VITE_SUPABASE_ANON_KEY = 'anon';
+      process.env.NODE_ENV = 'production';
+      delete process.env.VERCEL;
+
+      expect(hasSupabaseStorage()).toBe(false);
+
+      process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role';
+      expect(hasSupabaseStorage()).toBe(true);
+
+      delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+      process.env.NODE_ENV = 'development';
+      expect(hasSupabaseStorage()).toBe(true);
+    } finally {
+      for (const key of keys) {
+        const value = previous[key];
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
     }
   });
 });
