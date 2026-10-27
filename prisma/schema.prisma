@@ -901,36 +901,79 @@ enum EbdContentStatus {
   ARCHIVED
 }
 
-model EbdQuarter {
-  id              String           @id @default(cuid())
-  slug            String           @unique
+enum EbdScheduleException {
+  RULE
+  RESCHEDULED
+  NO_MEETING
+}
+
+// A revista (objeto bibliográfico). Imutável; proveniência editorial.
+model EbdEdition {
+  id              String       @id @default(cuid())
+  publisher       String
   year            Int
   quarter         Int
   className       String
-  publisher       String
-  title           String
   issue           Int?
   volume          Int?
+  title           String
   sourceFileName  String?
   sourceSha256    String?
   sourcePageCount Int?
   sourceSizeBytes Int?
-  status          EbdContentStatus @default(DRAFT)
-  publishedAt     DateTime?
-  publishedBy     String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
   lessons         EbdLesson[]
+  cycles          EbdCycle[]
   pdfAssets       EbdPdfAsset[]
 
-  @@unique([year, quarter, className])
-  @@index([status, year, quarter])
+  @@unique([publisher, year, quarter, className])
+  @@index([year, quarter])
+}
+
+// O uso da edição: turma, âncora, dia da semana e status público.
+model EbdCycle {
+  id             String           @id @default(cuid())
+  editionId      String
+  edition        EbdEdition       @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  slug           String           @unique
+  className      String
+  startsOn       DateTime         @db.Date
+  weekday        Int              @default(0)
+  anchorRevision Int              @default(1)
+  status         EbdContentStatus @default(DRAFT)
+  publishedAt    DateTime?
+  publishedBy    String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  schedule       EbdCycleLesson[]
+
+  @@index([editionId, status])
+  @@index([status, startsOn])
+}
+
+// Agenda: exceções sobre a regra. A data de RULE é sempre calculada.
+model EbdCycleLesson {
+  id                 String               @id @default(cuid())
+  cycleId            String
+  cycle              EbdCycle             @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  lessonId           String
+  lesson             EbdLesson            @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonNumber       Int
+  scheduledOn        DateTime?            @db.Date
+  exceptionKind      EbdScheduleException @default(RULE)
+  adjustedAtRevision Int?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  @@unique([cycleId, lessonNumber])
+  @@index([lessonId])
 }
 
 model EbdLesson {
   id            String           @id @default(cuid())
-  quarterId     String
-  quarter       EbdQuarter       @relation(fields: [quarterId], references: [id], onDelete: Cascade)
+  editionId     String
+  edition       EbdEdition       @relation(fields: [editionId], references: [id], onDelete: Cascade)
   number        Int
   slug          String           @unique
   title         String
@@ -950,16 +993,17 @@ model EbdLesson {
   publishedBy   String?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
+  cycleEntries  EbdCycleLesson[]
 
-  @@unique([quarterId, number])
-  @@index([quarterId, status, number])
+  @@unique([editionId, number])
+  @@index([editionId, status, number])
   @@index([slug])
 }
 
 model EbdPdfAsset {
   id          String     @id @default(cuid())
-  quarterId   String
-  quarter     EbdQuarter @relation(fields: [quarterId], references: [id], onDelete: Cascade)
+  editionId   String
+  edition     EbdEdition @relation(fields: [editionId], references: [id], onDelete: Cascade)
   version     Int
   fileName    String
   storagePath String?
@@ -970,7 +1014,7 @@ model EbdPdfAsset {
   uploadedBy  String?
   createdAt   DateTime   @default(now())
 
-  @@unique([quarterId, version])
-  @@index([quarterId, createdAt])
+  @@unique([editionId, version])
+  @@index([editionId, createdAt])
 }
 
