@@ -10,13 +10,14 @@ Fonte oficial das pendências deste projeto.
   pré-requisito do módulo EBD Digital. Envolve segurança da VPS, Auth/Storage do
   Supabase, backups e capacidade.
 - **2026-10-25 — EBD Digital: plano aprovado em 26/10/2026, E1 concluída na
-  edição real 1T2022 e E2/E3 homologadas em 26/10/2026.** E4 — importação e
-  publicação no admin — implementada em 26/10/2026 (branch
-  `feat/ebd-e4-admin-importacao`, commit `1264dee`). Próximo passo: homologar a
-  E4 em ambiente com bucket `ebd` real no Supabase Storage e, depois, E5 —
-  publicação do trimestre. A autorização da editora foi confirmada em 26/10/2026
-  para uso não comercial e interno; a área `/ebd` deve nascer com `noindex` em
-  meta/header e fora do sitemap. O PDF de origem está em
+  edição real 1T2022 e E2/E3/E4 homologadas em 26/10/2026.** E4 — importação e
+  publicação no admin — homologada em 26/10/2026 (branch
+  `feat/ebd-e4-admin-importacao`, commits `1264dee`, `425048c` e `d4812ee`).
+  E5 — publicação do trimestre — **não iniciada** por decisão do responsável.
+  Próximo passo: retomar a E5 em outra máquina, com o bucket `ebd` real no
+  Supabase Storage configurado. A autorização da editora foi confirmada em
+  26/10/2026 para uso não comercial e interno; a área `/ebd` deve nascer com
+  `noindex` em meta/header e fora do sitemap. O PDF de origem está em
   `materiais/ebd/2022/1T/adultos/` (local, ignorado pelo Git). A edição é 1T2022,
   com template anterior ao das amostras de 2024. Não é pré-requisito da decisão
   sobre a VPS. Plano em

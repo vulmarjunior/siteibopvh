@@ -2,6 +2,19 @@
 
 ## [Em Desenvolvimento]
 
+### 2026-10-26 - EBD Digital: E2, E3 e E4 homologadas (branch `feat/ebd-e4-admin-importacao`)
+
+- **Leitura pública (`/ebd` e `/ebd/licao/:slug`):** modelo `EbdQuarter`/`EbdLesson`/`EbdPdfAsset`, leitura em texto reflow, fonte ajustável, tema claro/escuro/sistema, download do PDF, navegação anterior/próxima, índice, `noindex` em meta e header e busca por texto com trechos.
+- **Progresso local:** marcação de lição como lida, retomada da posição, selos “Lida”/“Em andamento” e limpeza por lição ou global em `localStorage`.
+- **Central Administrativa (`/admin/ebd`):** criação de trimestre, upload do PDF por URL assinada (Supabase Storage em produção e adaptador local em desenvolvimento), versionamento do PDF sem sobrescrever versões anteriores, importação do JSON v1.0.0 com validação de SHA-256 e tamanho, revisão com prévia e PDF na página da lição, publicação/despublicação por lição e por trimestre, arquivamento e auditoria em `CuradoriaAuditoria`.
+- **Permissão:** nova `ebd:manage`, concedida a `ADMIN_GERAL` e `EDITOR`, integrada à Sidebar, Dashboard, navegação global e Command Palette.
+- **Sem nova função serverless:** API administrativa em `/api/ebd/admin`, atendida pelo entry `/api/index`; o limite de 12 funções da Vercel permanece.
+- **Validação:** 179 testes, lint e build verdes; Lighthouse 1,00 nas páginas públicas; PDF real de 4.850.159 bytes enviado como versão 2, com versão 1 preservada; hash divergente recusado com 409; rascunho inacessível no público; publicação/despublicação e auditoria verificadas localmente.
+- **Amostra vs. trimestre completo:** a amostra importada no ambiente local tem **2 lições** (Lições 1 e 2) porque a E1/E2 extraiu apenas essa amostra; o PDF tem **13 lições**. A E5 deve extrair, revisar e publicar as 13 lições do trimestre.
+- **E5 não iniciada:** a publicação do trimestre completo e a validação contra o bucket `ebd` real ficam para a retomada em outra máquina.
+- **Sem deploy/merge:** trabalho mantido na branch `feat/ebd-e4-admin-importacao`; `main` e produção não foram alteradas.
+- **Configuração:** instruções de Storage e variáveis em `docs/planos/E4_STORAGE_SETUP.md`; continuidade em `docs/CONTINUIDADE.md`.
+
 ### 2026-10-09 - Dia das Crianças: inscrição sem crianças (adultos que vão sozinhos)
 
 - **Formulário Público (`/criancas`):**

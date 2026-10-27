@@ -10,8 +10,8 @@ hotsites, inscrições e área administrativa.
 - Ciclo de vida: produção
 - Publicação: Vercel, `https://www.ibopvh.com.br`
 - Banco: PostgreSQL (Supabase)
-- Homologação: não registrada nesta pauta
-- Verificado em: 2026-10-23
+- Homologação: EBD Digital — E2, E3 e E4 homologadas; E5 pendente
+- Verificado em: 2026-10-26
 
 ## Princípios e limites
 
@@ -23,4 +23,7 @@ hotsites, inscrições e área administrativa.
 
 ## Próximo passo
 
-Definir a próxima pauta com o responsável; não há pendência registrada.
+Retomar a **E5 — publicação do trimestre da EBD** em outra máquina, com o bucket
+`ebd` real configurado no Supabase Storage. A branch
+`feat/ebd-e4-admin-importacao` reúne E2, E3 e E4; não houve merge em `main` nem
+deploy de produção.
