@@ -64,6 +64,7 @@ npm run build
 - **Amostra:** o banco local tinha 2 lições (L1/L2); o PDF tem **13**. A E6 precisa revisar e publicar o ciclo completo.
 - **Extração:** `scripts/ebd/extract-quarter.py` (versionado) gera o JSON draft das 13 lições; instruções em `scripts/ebd/README.md`. O JSON completo gerado nesta máquina é local e ignorado.
 - **Pendências por ambiente (E5):** validação manual do admin em produção, bucket `ebd` real e Lighthouse **ainda não concluídos**. O schema já está aplicado; o que falta é exercitar o fluxo com login real e Storage configurado. Rodar o roteiro [planos/E5_HOMOLOGACAO.md](planos/E5_HOMOLOGACAO.md) antes de considerar a E5 homologada.
+- **Correção pendente no import (27/10/2026):** a comparação de `year`/`quarter`/`class` em `src/api/admin/ebd.ts` bloqueia a importação quando o período editorial difere do período de uso, contrariando a Revisão 2. A questão e as opções estão em [planos/E5_PROVENIENCIA_EDITORIAL.md](planos/E5_PROVENIENCIA_EDITORIAL.md). A E5 não deve ser homologada antes de corrigir o fluxo.
 
 ## Última validação
 

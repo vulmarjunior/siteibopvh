@@ -27,7 +27,10 @@ Fonte oficial das pendências deste projeto.
   Adultos, do aceite do responsável, da autorização da editora referenciada e do
   teste de acessibilidade (NVDA/TalkBack). A extração das 13 lições é
   reproduzível por `scripts/ebd/extract-quarter.py`; o PDF e o JSON não são
-  versionados. `/ebd` nasce com `noindex` em meta/header e fora do sitemap.
+  versionados. `/ebd` nasce com `noindex` em meta/header e fora do sitemap. O
+  import está bloqueado pela comparação de ano/trimestre/turma em
+  `src/api/admin/ebd.ts`; a questão, as evidências e as opções estão em
+  [planos/E5_PROVENIENCIA_EDITORIAL.md](planos/E5_PROVENIENCIA_EDITORIAL.md).
   Plano em [planos/PLANO_EBD_DIGITAL.md](planos/PLANO_EBD_DIGITAL.md),
   diagnóstico em [planos/E1_DIAGNOSTICO_EXTRACAO.md](planos/E1_DIAGNOSTICO_EXTRACAO.md),
   checklist da E2 em [planos/E2_CHECKLIST_WCAG.md](planos/E2_CHECKLIST_WCAG.md) e
