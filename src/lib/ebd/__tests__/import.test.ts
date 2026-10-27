@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   assertImportHash,
+  cycleSlugFor,
+  editionSlugFor,
   lessonSlugFor,
-  quarterSlugFor,
   validateEbdImport,
 } from '../import';
 
@@ -112,10 +113,16 @@ describe('assertImportHash', () => {
 });
 
 describe('slugs da EBD', () => {
-  it('gera slugs estáveis para trimestre e lição', () => {
-    expect(quarterSlugFor(2022, 1, 'Adultos')).toBe('2022-1t-adultos');
-    expect(quarterSlugFor(2022, 1, 'Jovens e Adultos')).toBe('2022-1t-jovens-e-adultos');
+  it('gera o slug da edição sem torná-lo identidade pública', () => {
+    expect(editionSlugFor(2022, 1, 'Adultos')).toBe('2022-1t-adultos');
+    expect(editionSlugFor(2022, 1, 'Jovens e Adultos')).toBe('2022-1t-jovens-e-adultos');
     expect(lessonSlugFor('2022-1t-adultos', 1)).toBe('2022-1t-adultos-licao-01');
     expect(lessonSlugFor('2022-1t-adultos', 13)).toBe('2022-1t-adultos-licao-13');
+  });
+
+  it('gera o slug permanente do ciclo pela turma e pela lição 1', () => {
+    expect(cycleSlugFor('Adultos', '2027-09-05')).toBe('adultos-2027-09-05');
+    expect(cycleSlugFor('Jovens e Adultos', '2027-09-05')).toBe('jovens-e-adultos-2027-09-05');
+    expect(cycleSlugFor('Adultos', '2027-09-05', 1)).toBe('adultos-2027-09-05-2');
   });
 });

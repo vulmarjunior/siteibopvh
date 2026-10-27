@@ -12,7 +12,7 @@ const LOCAL_UPLOAD_SECRET = process.env.EBD_LOCAL_UPLOAD_SECRET
 const PDF_PATH_PATTERN = /^ebd\/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+\/revista-v\d+\.pdf$/;
 
 export interface LocalUploadPayload {
-  quarterId: string;
+  editionId: string;
   path: string;
   version: number;
   fileName: string;
@@ -196,7 +196,7 @@ export function getEbdStorageClient(adminToken?: string): SupabaseClient | null 
 }
 
 export async function createUploadTarget(input: {
-  quarterId: string;
+  editionId: string;
   year: number;
   quarter: number;
   className: string;
@@ -214,7 +214,7 @@ export async function createUploadTarget(input: {
       mode: 'local',
       uploadUrl: '/api/ebd/admin/local-upload',
       token: createLocalUploadToken({
-        quarterId: input.quarterId,
+        editionId: input.editionId,
         path: storagePath,
         version: input.version,
         fileName: input.fileName,

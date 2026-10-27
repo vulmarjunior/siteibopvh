@@ -5,17 +5,17 @@ import { BookOpenCheck, Loader2, Plus } from 'lucide-react';
 import {
   AdminEbdPageHeader,
   EbdFeedback,
-  EbdStatusBadge,
   formatEbdDate,
 } from '../../components/admin/ebd/AdminEbdUi';
 import { ebdAdminRequest } from '../../lib/ebd/adminApi';
-import type { EbdAdminQuarterDetail, EbdAdminQuarterSummary } from '../../types/ebd-admin';
+import { editionLabel } from '../../lib/ebd/content';
+import type { EbdAdminEditionSummary } from '../../types/ebd-admin';
 
 const now = new Date();
 
 export default function AdminEbdPage() {
   const navigate = useNavigate();
-  const [quarters, setQuarters] = useState<EbdAdminQuarterSummary[]>([]);
+  const [editions, setEditions] = useState<EbdAdminEditionSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -24,8 +24,8 @@ export default function AdminEbdPage() {
     year: String(now.getFullYear()),
     quarter: String(Math.floor(now.getMonth() / 3) + 1),
     className: 'Adultos',
-    publisher: 'Convenção Batista Fluminense',
-    title: 'Revista de Jovens e Adultos',
+    publisher: 'Editora Cristã Evangélica',
+    title: '',
     issue: '',
     volume: '',
   });
@@ -34,10 +34,10 @@ export default function AdminEbdPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await ebdAdminRequest<{ quarters: EbdAdminQuarterSummary[] }>('/quarters');
-      setQuarters(data.quarters);
+      const data = await ebdAdminRequest<{ editions: EbdAdminEditionSummary[] }>('/editions');
+      setEditions(data.editions);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível carregar os trimestres.');
+      setError(cause instanceof Error ? cause.message : 'Não foi possível carregar as edições.');
     } finally {
       setLoading(false);
     }
@@ -47,13 +47,13 @@ export default function AdminEbdPage() {
     void load();
   }, [load]);
 
-  async function createQuarter(event: FormEvent<HTMLFormElement>) {
+  async function createEdition(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setCreating(true);
     setError('');
     setNotice('');
     try {
-      const data = await ebdAdminRequest<{ quarter: EbdAdminQuarterDetail }>('/quarters', {
+      const created = await ebdAdminRequest<{ edition: EbdAdminEditionSummary }>('/editions', {
         method: 'POST',
         body: JSON.stringify({
           year: Number(form.year),
@@ -65,200 +65,196 @@ export default function AdminEbdPage() {
           volume: form.volume ? Number(form.volume) : null,
         }),
       });
-      setNotice('Trimestre criado como rascunho. Agora envie o PDF e importe o JSON.');
-      navigate(`/admin/ebd/${data.quarter.id}`);
+      setNotice('Edição cadastrada. Envie o PDF e importe o JSON das lições.');
+      setForm((current) => ({ ...current, title: '', issue: '', volume: '' }));
+      navigate(`/admin/ebd/${created.edition.id}`);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível criar o trimestre.');
+      setError(cause instanceof Error ? cause.message : 'Não foi possível criar a edição.');
     } finally {
       setCreating(false);
     }
   }
 
   return (
-    <main className="min-h-screen bg-stone-100 text-stone-900">
+    <main className="min-h-screen bg-stone-100">
       <Helmet>
         <title>EBD Digital — Central Administrativa</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
+
       <AdminEbdPageHeader
         title="EBD Digital"
-        subtitle="Trimestres, PDFs e lições da Escola Bíblica Dominical"
+        subtitle="Edições, ciclos de estudo e agenda das lições"
         actions={
-          <Link
-            to="/ebd"
-            className="rounded-lg border border-white/30 px-3 py-2 text-xs font-bold text-white hover:bg-white/10"
-            target="_blank"
-            rel="noreferrer"
+          <button
+            type="button"
+            onClick={() => void load()}
+            className="rounded-lg border border-white/30 px-3 py-2 text-xs font-bold uppercase tracking-wide"
           >
-            Abrir área pública
-          </Link>
+            Atualizar
+          </button>
         }
       />
 
-      <section className="mx-auto max-w-7xl p-5">
+      <section className="mx-auto max-w-7xl px-5 py-8">
         <EbdFeedback error={error} notice={notice} />
 
-        <div className="grid gap-5 lg:grid-cols-[22rem_minmax(0,1fr)] lg:items-start">
-          <form onSubmit={createQuarter} className="rounded-2xl bg-white p-5 shadow">
+        <div className="grid gap-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
+          <form onSubmit={createEdition} className="h-fit rounded-2xl bg-white p-5 shadow">
             <h2 className="flex items-center gap-2 font-serif text-xl font-bold">
               <Plus className="h-5 w-5 text-amber-600" aria-hidden="true" />
-              Novo trimestre
+              Nova edição
             </h2>
-            <p className="mt-1 text-xs text-stone-500">Crie o trimestre como rascunho e depois envie o PDF e o JSON.</p>
+            <p className="mt-1 text-sm text-stone-600">
+              A edição é a revista: editora, ano, trimestre editorial e turma. O ciclo de estudo é criado
+              depois, na página da edição.
+            </p>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className="text-sm font-bold text-stone-600">
-                Ano
+            <div className="mt-4 grid gap-3">
+              <label className="text-sm font-semibold">
+                Editora
                 <input
-                  type="number"
-                  min={1900}
-                  max={2100}
+                  className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 text-sm"
+                  value={form.publisher}
+                  onChange={(event) => setForm((current) => ({ ...current, publisher: event.target.value }))}
                   required
-                  value={form.year}
-                  onChange={(event) => setForm({ ...form, year: event.target.value })}
-                  className="mt-1 w-full rounded-xl border border-stone-300 p-2.5 font-normal"
                 />
               </label>
-              <label className="text-sm font-bold text-stone-600">
-                Trimestre
-                <select
-                  value={form.quarter}
-                  onChange={(event) => setForm({ ...form, quarter: event.target.value })}
-                  className="mt-1 w-full rounded-xl border border-stone-300 p-2.5 font-normal"
-                >
-                  <option value="1">1º</option>
-                  <option value="2">2º</option>
-                  <option value="3">3º</option>
-                  <option value="4">4º</option>
-                </select>
-              </label>
-            </div>
-
-            <label className="mt-3 block text-sm font-bold text-stone-600">
-              Turma
-              <input
-                required
-                value={form.className}
-                onChange={(event) => setForm({ ...form, className: event.target.value })}
-                className="mt-1 w-full rounded-xl border border-stone-300 p-2.5 font-normal"
-              />
-            </label>
-            <label className="mt-3 block text-sm font-bold text-stone-600">
-              Editora
-              <input
-                required
-                value={form.publisher}
-                onChange={(event) => setForm({ ...form, publisher: event.target.value })}
-                className="mt-1 w-full rounded-xl border border-stone-300 p-2.5 font-normal"
-              />
-            </label>
-            <label className="mt-3 block text-sm font-bold text-stone-600">
-              Título da revista
-              <input
-                required
-                value={form.title}
-                onChange={(event) => setForm({ ...form, title: event.target.value })}
-                className="mt-1 w-full rounded-xl border border-stone-300 p-2.5 font-normal"
-              />
-            </label>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <label className="text-sm font-bold text-stone-600">
-                Edição
+              <label className="text-sm font-semibold">
+                Título da revista
                 <input
-                  type="number"
-                  min={1}
-                  value={form.issue}
-                  onChange={(event) => setForm({ ...form, issue: event.target.value })}
-                  className="mt-1 w-full rounded-xl border border-stone-300 p-2.5 font-normal"
+                  className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 text-sm"
+                  value={form.title}
+                  onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
+                  required
                 />
               </label>
-              <label className="text-sm font-bold text-stone-600">
-                Volume
+              <div className="grid grid-cols-2 gap-3">
+                <label className="text-sm font-semibold">
+                  Ano editorial
+                  <input
+                    type="number"
+                    min={1900}
+                    max={2100}
+                    className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 text-sm"
+                    value={form.year}
+                    onChange={(event) => setForm((current) => ({ ...current, year: event.target.value }))}
+                    required
+                  />
+                </label>
+                <label className="text-sm font-semibold">
+                  Trimestre editorial
+                  <select
+                    className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 text-sm"
+                    value={form.quarter}
+                    onChange={(event) => setForm((current) => ({ ...current, quarter: event.target.value }))}
+                  >
+                    <option value="1">1º</option>
+                    <option value="2">2º</option>
+                    <option value="3">3º</option>
+                    <option value="4">4º</option>
+                  </select>
+                </label>
+              </div>
+              <label className="text-sm font-semibold">
+                Turma
                 <input
-                  type="number"
-                  min={1}
-                  value={form.volume}
-                  onChange={(event) => setForm({ ...form, volume: event.target.value })}
-                  className="mt-1 w-full rounded-xl border border-stone-300 p-2.5 font-normal"
+                  className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 text-sm"
+                  value={form.className}
+                  onChange={(event) => setForm((current) => ({ ...current, className: event.target.value }))}
+                  required
                 />
               </label>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="text-sm font-semibold">
+                  Edição (nº)
+                  <input
+                    type="number"
+                    min={1}
+                    className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 text-sm"
+                    value={form.issue}
+                    onChange={(event) => setForm((current) => ({ ...current, issue: event.target.value }))}
+                  />
+                </label>
+                <label className="text-sm font-semibold">
+                  Volume
+                  <input
+                    type="number"
+                    min={1}
+                    className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 text-sm"
+                    value={form.volume}
+                    onChange={(event) => setForm((current) => ({ ...current, volume: event.target.value }))}
+                  />
+                </label>
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={creating}
-              className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-stone-950 hover:bg-amber-400 disabled:opacity-50"
+              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
             >
               {creating ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Plus className="h-4 w-4" aria-hidden="true" />}
-              Criar trimestre
+              Cadastrar edição
             </button>
           </form>
 
-          <div className="rounded-2xl bg-white p-5 shadow">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-serif text-xl font-bold">Trimestres cadastrados</h2>
-              <span className="text-xs text-stone-500">{quarters.length} registro(s)</span>
-            </div>
-
+          <div className="space-y-4">
             {loading ? (
-              <div className="grid place-items-center py-16">
-                <Loader2 className="h-8 w-8 animate-spin text-amber-600" aria-label="Carregando trimestres" />
+              <div className="grid place-items-center rounded-2xl bg-white py-16 shadow">
+                <Loader2 className="h-8 w-8 animate-spin text-amber-600" aria-label="Carregando edições" />
               </div>
-            ) : quarters.length === 0 ? (
-              <div className="mt-6 rounded-xl border border-dashed border-stone-300 p-8 text-center text-sm text-stone-500">
-                <BookOpenCheck className="mx-auto mb-3 h-8 w-8 text-amber-600" aria-hidden="true" />
-                Nenhum trimestre cadastrado. Crie o primeiro ao lado.
+            ) : editions.length === 0 ? (
+              <div className="rounded-2xl bg-white p-6 shadow">
+                <h2 className="font-serif text-xl font-bold">Nenhuma edição cadastrada</h2>
+                <p className="mt-2 text-sm text-stone-600">
+                  Cadastre a revista ao lado, envie o PDF e importe o JSON das lições extraído do próprio PDF.
+                </p>
               </div>
             ) : (
-              <div className="mt-4 overflow-x-auto">
-                <table className="w-full min-w-[52rem] text-left text-sm">
-                  <thead>
-                    <tr className="border-b border-stone-200 text-xs uppercase tracking-wide text-stone-500">
-                      <th className="p-2">Trimestre</th>
-                      <th className="p-2">Status</th>
-                      <th className="p-2">Lições</th>
-                      <th className="p-2">PDF</th>
-                      <th className="p-2">Atualizado</th>
-                      <th className="p-2" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {quarters.map((quarter) => (
-                      <tr key={quarter.id} className="border-b border-stone-100 align-top">
-                        <td className="p-2">
-                          <strong className="block font-serif text-base">
-                            {quarter.quarter}º trimestre de {quarter.year} — {quarter.className}
-                          </strong>
-                          <span className="text-xs text-stone-500">{quarter.title}</span>
-                        </td>
-                        <td className="p-2">
-                          <EbdStatusBadge status={quarter.status} />
-                          {quarter.publishedAt ? (
-                            <span className="mt-1 block text-[0.68rem] text-stone-500">
-                              {formatEbdDate(quarter.publishedAt)}
-                            </span>
-                          ) : null}
-                        </td>
-                        <td className="p-2 text-xs">
-                          {quarter.publishedLessonCount}/{quarter.lessonCount} publicadas
-                        </td>
-                        <td className="p-2 text-xs">
-                          {quarter.pdfAssetCount > 0 ? `v${quarter.latestPdfVersion} (${quarter.pdfAssetCount})` : '—'}
-                        </td>
-                        <td className="p-2 text-xs text-stone-500">{formatEbdDate(quarter.updatedAt)}</td>
-                        <td className="p-2 text-right">
-                          <Link
-                            to={`/admin/ebd/${quarter.id}`}
-                            className="inline-flex min-h-9 items-center rounded-lg bg-stone-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-stone-800"
-                          >
-                            Gerenciar
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              editions.map((edition) => (
+                <article key={edition.id} className="rounded-2xl bg-white p-5 shadow">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold uppercase tracking-wide text-amber-700">
+                        {editionLabel(edition.year, edition.quarter)} • {edition.className}
+                      </p>
+                      <h2 className="mt-1 font-serif text-xl font-bold leading-tight">{edition.title}</h2>
+                      <p className="mt-1 text-sm text-stone-600">
+                        {edition.publisher}
+                        {edition.issue ? ` • Edição ${edition.issue}` : ''}
+                        {edition.volume ? ` • Volume ${edition.volume}` : ''}
+                      </p>
+                    </div>
+                    <Link
+                      to={`/admin/ebd/${edition.id}`}
+                      className="inline-flex items-center gap-2 rounded-xl bg-stone-900 px-3 py-2 text-xs font-bold uppercase tracking-wide text-white"
+                    >
+                      <BookOpenCheck className="h-4 w-4" aria-hidden="true" />
+                      Abrir edição
+                    </Link>
+                  </div>
+
+                  <dl className="mt-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+                    <div className="rounded-xl bg-stone-100 p-2">
+                      <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-stone-500">Lições</dt>
+                      <dd className="font-bold">{edition.lessonCount} <span className="font-normal text-stone-500">({edition.publishedLessonCount} publicadas)</span></dd>
+                    </div>
+                    <div className="rounded-xl bg-stone-100 p-2">
+                      <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-stone-500">PDF</dt>
+                      <dd className="font-bold">{edition.latestPdfVersion > 0 ? `v${edition.latestPdfVersion}` : 'pendente'}</dd>
+                    </div>
+                    <div className="rounded-xl bg-stone-100 p-2">
+                      <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-stone-500">Ciclos</dt>
+                      <dd className="font-bold">{edition.cycleCount} <span className="font-normal text-stone-500">({edition.publishedCycleCount} publicados)</span></dd>
+                    </div>
+                    <div className="rounded-xl bg-stone-100 p-2">
+                      <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-stone-500">Atualizada</dt>
+                      <dd className="text-xs font-semibold">{formatEbdDate(edition.updatedAt)}</dd>
+                    </div>
+                  </dl>
+                </article>
+              ))
             )}
           </div>
         </div>

@@ -15,6 +15,7 @@ const lesson: EbdSearchableLesson = {
   baseText: 'Romanos 1:1-8',
   startPage: 16,
   endPage: 22,
+  scheduledOn: '2027-09-05',
   introduction: ['Neste trimestre, estudaremos o Pentateuco.'],
   sections: [
     {

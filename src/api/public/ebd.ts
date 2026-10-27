@@ -11,25 +11,142 @@ import {
   normalizeStringArray,
   pdfDownloadPath,
 } from '../../lib/ebd/content.js';
+import { civilDateFromDb, computeEbdSchedule, type EbdScheduleEntry } from '../../lib/ebd/schedule.js';
 import { searchLessons, type EbdSearchableLesson } from '../../lib/ebd/search.js';
 import type {
+  EbdCycleRef,
+  EbdCycleSummary,
+  EbdEditionRef,
   EbdLessonDetail,
   EbdLessonSummary,
-  EbdQuarterSummary,
 } from '../../types/ebd.js';
 
 const MODULE_LABEL = '[EBD]';
 
 const lessonSummarySelect = {
+  id: true,
   number: true,
   slug: true,
   title: true,
   baseText: true,
   startPage: true,
   endPage: true,
+  status: true,
 } satisfies Prisma.EbdLessonSelect;
 
-type LessonSummaryRow = Prisma.EbdLessonGetPayload<{ select: typeof lessonSummarySelect }>;
+type LessonRow = Prisma.EbdLessonGetPayload<{ select: typeof lessonSummarySelect }>;
+
+const scheduleEntrySelect = {
+  lessonNumber: true,
+  exceptionKind: true,
+  scheduledOn: true,
+  adjustedAtRevision: true,
+  lesson: { select: lessonSummarySelect },
+} satisfies Prisma.EbdCycleLessonSelect;
+
+type ScheduleEntryRow = Prisma.EbdCycleLessonGetPayload<{ select: typeof scheduleEntrySelect }>;
+
+const cycleInclude = {
+  edition: true,
+  schedule: {
+    orderBy: { lessonNumber: 'asc' },
+    select: scheduleEntrySelect,
+  },
+} satisfies Prisma.EbdCycleInclude;
+
+type CycleRow = Prisma.EbdCycleGetPayload<{ include: typeof cycleInclude }>;
+
+const editionSelect = {
+  id: true,
+  publisher: true,
+  year: true,
+  quarter: true,
+  className: true,
+  title: true,
+  issue: true,
+  volume: true,
+} satisfies Prisma.EbdEditionSelect;
+
+function toEditionRef(edition: Prisma.EbdEditionGetPayload<{ select: typeof editionSelect }>): EbdEditionRef {
+  return {
+    id: edition.id,
+    publisher: edition.publisher,
+    year: edition.year,
+    quarter: edition.quarter,
+    className: edition.className,
+    title: edition.title,
+    issue: edition.issue,
+    volume: edition.volume,
+  };
+}
+
+function scheduleOf(cycle: Pick<CycleRow, 'startsOn' | 'weekday' | 'anchorRevision' | 'schedule'>) {
+  const startsOn = civilDateFromDb(cycle.startsOn);
+  const lessonCount = cycle.schedule.reduce((max, row) => Math.max(max, row.lessonNumber), 0);
+  return computeEbdSchedule({
+    startsOn: startsOn ?? '',
+    weekday: cycle.weekday,
+    lessonCount,
+    anchorRevision: cycle.anchorRevision,
+    exceptions: cycle.schedule.map((row) => ({
+      lessonNumber: row.lessonNumber,
+      exceptionKind: row.exceptionKind,
+      scheduledOn: civilDateFromDb(row.scheduledOn),
+      adjustedAtRevision: row.adjustedAtRevision,
+    })),
+  });
+}
+
+function lessonFromRow(row: LessonRow, entry: EbdScheduleEntry | undefined): EbdLessonSummary {
+  return {
+    number: row.number,
+    slug: row.slug,
+    title: row.title,
+    baseText: row.baseText,
+    startPage: row.startPage,
+    endPage: row.endPage,
+    scheduledOn: entry?.date ?? null,
+  };
+}
+
+function publishedEntries(cycle: CycleRow, schedule: ReturnType<typeof computeEbdSchedule>) {
+  const byNumber = new Map(schedule.entries.map((entry) => [entry.lessonNumber, entry]));
+  return cycle.schedule
+    .filter((row) => row.lesson.status === 'PUBLISHED')
+    .map((row) => ({ row, entry: byNumber.get(row.lessonNumber) }))
+    .filter((item): item is { row: ScheduleEntryRow; entry: EbdScheduleEntry } => Boolean(item.entry));
+}
+
+function toCycleSummary(cycle: CycleRow): EbdCycleSummary {
+  const schedule = scheduleOf(cycle);
+  return {
+    id: cycle.id,
+    slug: cycle.slug,
+    className: cycle.className,
+    startsOn: civilDateFromDb(cycle.startsOn) ?? '',
+    weekday: cycle.weekday,
+    periodLabel: schedule.periodLabel,
+    publishedAt: cycle.publishedAt ? cycle.publishedAt.toISOString() : null,
+    edition: toEditionRef(cycle.edition),
+    lessons: publishedEntries(cycle, schedule).map(({ row, entry }) => lessonFromRow(row.lesson, entry)),
+  };
+}
+
+function toCycleRef(
+  cycle: Pick<CycleRow, 'id' | 'slug' | 'className' | 'startsOn' | 'weekday' | 'anchorRevision'>,
+  schedule: ReturnType<typeof computeEbdSchedule>,
+  lessonCount: number,
+): EbdCycleRef & { lessonCount: number } {
+  return {
+    id: cycle.id,
+    slug: cycle.slug,
+    className: cycle.className,
+    startsOn: civilDateFromDb(cycle.startsOn) ?? '',
+    weekday: cycle.weekday,
+    periodLabel: schedule.periodLabel,
+    lessonCount,
+  };
+}
 
 const searchLessonSelect = {
   ...lessonSummarySelect,
@@ -41,59 +158,23 @@ const searchLessonSelect = {
 
 type SearchLessonRow = Prisma.EbdLessonGetPayload<{ select: typeof searchLessonSelect }>;
 
-function toSearchableLesson(lesson: SearchLessonRow): EbdSearchableLesson {
+function toSearchableLesson(row: SearchLessonRow, entry: EbdScheduleEntry): EbdSearchableLesson {
   return {
-    ...toLessonSummary(lesson),
-    introduction: normalizeStringArray(lesson.introduction),
-    sections: normalizeSections(lesson.sections),
-    questions: normalizeQuestions(lesson.questions),
-    dailyReadings: normalizeDailyReadings(lesson.dailyReadings),
+    ...lessonFromRow(row, entry),
+    introduction: normalizeStringArray(row.introduction),
+    sections: normalizeSections(row.sections),
+    questions: normalizeQuestions(row.questions),
+    dailyReadings: normalizeDailyReadings(row.dailyReadings),
   };
-}
-
-function toLessonSummary(lesson: LessonSummaryRow): EbdLessonSummary {
-  return {
-    number: lesson.number,
-    slug: lesson.slug,
-    title: lesson.title,
-    baseText: lesson.baseText,
-    startPage: lesson.startPage,
-    endPage: lesson.endPage,
-  };
-}
-
-function toQuarterSummary(
-  quarter: Prisma.EbdQuarterGetPayload<{ include: { lessons: { select: typeof lessonSummarySelect } } }>,
-): EbdQuarterSummary {
-  return {
-    id: quarter.id,
-    slug: quarter.slug,
-    year: quarter.year,
-    quarter: quarter.quarter,
-    className: quarter.className,
-    publisher: quarter.publisher,
-    title: quarter.title,
-    issue: quarter.issue,
-    volume: quarter.volume,
-    lessonCount: quarter.lessons.length,
-    publishedAt: quarter.publishedAt ? quarter.publishedAt.toISOString() : null,
-    lessons: quarter.lessons.map(toLessonSummary),
-  };
-}
-
-function parseInteger(value: string | undefined): number | null {
-  if (!value || !/^\d+$/.test(value)) return null;
-  const number = Number(value);
-  return Number.isSafeInteger(number) ? number : null;
 }
 
 function setPublicCache(res: Response) {
   res.setHeader('Cache-Control', 'no-store');
 }
 
-function latestPdfAsset(prisma: PrismaClient, quarterId: string) {
+function latestPdfAsset(prisma: PrismaClient, editionId: string) {
   return prisma.ebdPdfAsset.findFirst({
-    where: { quarterId },
+    where: { editionId },
     orderBy: { version: 'desc' },
   });
 }
@@ -111,135 +192,62 @@ export function createPublicEbdRouter(prisma: PrismaClient) {
     next();
   });
 
-  router.get('/quarters', async (_req, res) => {
-    const quarters = await prisma.ebdQuarter.findMany({
+  router.get('/cycles', async (_req, res) => {
+    const cycles = await prisma.ebdCycle.findMany({
       where: { status: 'PUBLISHED' },
-      orderBy: [{ year: 'desc' }, { quarter: 'desc' }],
-      include: {
-        lessons: {
-          where: { status: 'PUBLISHED' },
-          orderBy: { number: 'asc' },
-          select: lessonSummarySelect,
-        },
-      },
+      orderBy: [{ startsOn: 'desc' }, { className: 'asc' }],
+      include: cycleInclude,
     });
 
     setPublicCache(res);
     res.json({
-      quarters: quarters.filter((quarter) => quarter.lessons.length > 0).map(toQuarterSummary),
+      cycles: cycles.map(toCycleSummary).filter((cycle) => cycle.lessons.length > 0),
     });
   });
 
-  router.get('/search', async (req, res) => {
-    const query = String(req.query.q ?? '').trim();
-    if (query.length < 2 || query.length > 80) {
-      res.status(400).json({ error: 'Digite uma busca entre 2 e 80 caracteres.' });
+  router.get('/cycles/:slug', async (req, res) => {
+    const slug = String(req.params.slug ?? '').trim();
+    if (!slug || slug.length > 160) {
+      res.status(400).json({ error: 'Ciclo inválido.' });
       return;
     }
 
-    const yearParam = typeof req.query.year === 'string' ? req.query.year : undefined;
-    const quarterParam = typeof req.query.quarter === 'string' ? req.query.quarter : undefined;
-    const className = typeof req.query.class === 'string' ? req.query.class.trim() : '';
-
-    if ((yearParam && !quarterParam) || (!yearParam && quarterParam)) {
-      res.status(400).json({ error: 'Informe ano e trimestre juntos.' });
+    const cycle = await prisma.ebdCycle.findFirst({
+      where: { slug, status: 'PUBLISHED' },
+      include: cycleInclude,
+    });
+    if (!cycle) {
+      res.status(404).json({ error: 'Ciclo não encontrado ou ainda não publicado.' });
       return;
     }
 
-    type SearchQuarterRow = Prisma.EbdQuarterGetPayload<{
-      include: { lessons: { select: typeof searchLessonSelect } };
-    }>;
-    let record: SearchQuarterRow | null = null;
-
-    if (yearParam && quarterParam) {
-      const year = parseInteger(yearParam);
-      const quarter = parseInteger(quarterParam);
-      if (
-        year === null ||
-        year < 1900 ||
-        year > 2100 ||
-        quarter === null ||
-        quarter < 1 ||
-        quarter > 4
-      ) {
-        res.status(400).json({ error: 'Trimestre inválido.' });
-        return;
-      }
-
-      record = await prisma.ebdQuarter.findFirst({
-        where: {
-          year,
-          quarter,
-          status: 'PUBLISHED',
-          ...(className ? { className } : {}),
-        },
-        orderBy: { className: 'asc' },
-        include: {
-          lessons: {
-            where: { status: 'PUBLISHED' },
-            orderBy: { number: 'asc' },
-            select: searchLessonSelect,
-          },
-        },
-      });
-    } else {
-      record = await prisma.ebdQuarter.findFirst({
-        where: {
-          status: 'PUBLISHED',
-          lessons: { some: { status: 'PUBLISHED' } },
-        },
-        orderBy: [{ year: 'desc' }, { quarter: 'desc' }, { className: 'asc' }],
-        include: {
-          lessons: {
-            where: { status: 'PUBLISHED' },
-            orderBy: { number: 'asc' },
-            select: searchLessonSelect,
-          },
-        },
-      });
-    }
-
-    if (!record || record.lessons.length === 0) {
-      res.status(404).json({ error: 'Nenhum trimestre publicado para busca.' });
+    const summary = toCycleSummary(cycle);
+    if (summary.lessons.length === 0) {
+      res.status(404).json({ error: 'Ciclo sem lições publicadas.' });
       return;
     }
-
-    const results = searchLessons(record.lessons.map(toSearchableLesson), query);
 
     setPublicCache(res);
-    res.json({
-      query,
-      quarter: {
-        id: record.id,
-        slug: record.slug,
-        year: record.year,
-        quarter: record.quarter,
-        className: record.className,
-        title: record.title,
-        publisher: record.publisher,
-        lessonCount: record.lessons.length,
-      },
-      results,
-    });
+    res.json({ cycle: summary });
   });
 
-  router.get('/quarters/:id/pdf', async (req, res) => {
+  router.get('/editions/:id/pdf', async (req, res) => {
     const id = String(req.params.id ?? '').trim();
     if (!id || id.length > 80) {
-      res.status(400).json({ error: 'Trimestre inválido.' });
+      res.status(400).json({ error: 'Edição inválida.' });
       return;
     }
 
-    const quarter = await prisma.ebdQuarter.findFirst({
-      where: { id, status: 'PUBLISHED' },
+    const published = await prisma.ebdCycle.findFirst({
+      where: { editionId: id, status: 'PUBLISHED' },
       select: { id: true },
     });
-    if (!quarter) {
+    if (!published) {
       res.status(404).json({ error: 'PDF não disponível.' });
       return;
     }
 
-    const asset = await latestPdfAsset(prisma, quarter.id);
+    const asset = await latestPdfAsset(prisma, id);
     if (!asset) {
       res.status(404).json({ error: 'PDF não disponível.' });
       return;
@@ -263,39 +271,71 @@ export function createPublicEbdRouter(prisma: PrismaClient) {
     res.redirect(302, resolved.url);
   });
 
-  router.get('/quarters/:year/:quarter', async (req, res) => {
-    const year = parseInteger(req.params.year);
-    const quarter = parseInteger(req.params.quarter);
-    if (year === null || year < 1900 || year > 2100 || quarter === null || quarter < 1 || quarter > 4) {
-      res.status(400).json({ error: 'Trimestre inválido.' });
+  router.get('/search', async (req, res) => {
+    const query = String(req.query.q ?? '').trim();
+    if (query.length < 2 || query.length > 80) {
+      res.status(400).json({ error: 'Digite uma busca entre 2 e 80 caracteres.' });
       return;
     }
 
-    const className = typeof req.query.class === 'string' ? req.query.class.trim() : '';
-    const record = await prisma.ebdQuarter.findFirst({
+    const cycleSlug = typeof req.query.cycle === 'string' ? req.query.cycle.trim() : '';
+    const cycle = await prisma.ebdCycle.findFirst({
       where: {
-        year,
-        quarter,
         status: 'PUBLISHED',
-        ...(className ? { className } : {}),
+        ...(cycleSlug ? { slug: cycleSlug } : {}),
+        schedule: { some: { lesson: { status: 'PUBLISHED' } } },
       },
-      orderBy: { className: 'asc' },
+      orderBy: [{ startsOn: 'desc' }, { className: 'asc' }],
       include: {
-        lessons: {
-          where: { status: 'PUBLISHED' },
-          orderBy: { number: 'asc' },
-          select: lessonSummarySelect,
+        edition: { select: editionSelect },
+        schedule: {
+          where: { lesson: { status: 'PUBLISHED' } },
+          orderBy: { lessonNumber: 'asc' },
+          select: {
+            lessonNumber: true,
+            exceptionKind: true,
+            scheduledOn: true,
+            adjustedAtRevision: true,
+            lesson: { select: searchLessonSelect },
+          },
         },
       },
     });
 
-    if (!record || record.lessons.length === 0) {
-      res.status(404).json({ error: 'Trimestre não encontrado.' });
+    if (!cycle || cycle.schedule.length === 0) {
+      res.status(404).json({ error: 'Nenhum ciclo publicado para busca.' });
       return;
     }
 
+    const schedule = computeEbdSchedule({
+      startsOn: civilDateFromDb(cycle.startsOn) ?? '',
+      weekday: cycle.weekday,
+      lessonCount: Math.max(...cycle.schedule.map((row) => row.lessonNumber)),
+      anchorRevision: cycle.anchorRevision,
+      exceptions: cycle.schedule.map((row) => ({
+        lessonNumber: row.lessonNumber,
+        exceptionKind: row.exceptionKind,
+        scheduledOn: civilDateFromDb(row.scheduledOn),
+        adjustedAtRevision: row.adjustedAtRevision,
+      })),
+    });
+    const entryByNumber = new Map(schedule.entries.map((entry) => [entry.lessonNumber, entry]));
+
+    const searchable = cycle.schedule
+      .map((row) => {
+        const entry = entryByNumber.get(row.lessonNumber);
+        return entry ? toSearchableLesson(row.lesson, entry) : null;
+      })
+      .filter((lesson): lesson is EbdSearchableLesson => lesson !== null);
+
+    const results = searchLessons(searchable, query);
+
     setPublicCache(res);
-    res.json({ quarter: toQuarterSummary(record) });
+    res.json({
+      query,
+      cycle: toCycleRef(cycle, schedule, searchable.length),
+      results,
+    });
   });
 
   router.get('/lessons/:slug', async (req, res) => {
@@ -308,62 +348,76 @@ export function createPublicEbdRouter(prisma: PrismaClient) {
     const record = await prisma.ebdLesson.findFirst({
       where: { slug, status: 'PUBLISHED' },
       include: {
-        quarter: {
-          select: {
-            id: true,
-            slug: true,
-            year: true,
-            quarter: true,
-            className: true,
-            title: true,
-            publisher: true,
-            status: true,
+        edition: { select: editionSelect },
+        cycleEntries: {
+          include: {
+            cycle: {
+              select: {
+                id: true,
+                slug: true,
+                className: true,
+                startsOn: true,
+                weekday: true,
+                anchorRevision: true,
+                status: true,
+                publishedAt: true,
+              },
+            },
           },
+          orderBy: { cycle: { startsOn: 'desc' } },
         },
       },
     });
 
-    if (!record || record.quarter.status !== 'PUBLISHED') {
+    if (!record) {
       res.status(404).json({ error: 'Lição não encontrada ou ainda não publicada.' });
       return;
     }
 
-    const quarterLessons = await prisma.ebdLesson.findMany({
-      where: { quarterId: record.quarterId, status: 'PUBLISHED' },
-      orderBy: { number: 'asc' },
-      select: lessonSummarySelect,
-    });
+    const publishedCycle = record.cycleEntries
+      .map((entry) => entry.cycle)
+      .find((cycle) => cycle.status === 'PUBLISHED');
+    if (!publishedCycle) {
+      res.status(404).json({ error: 'Lição não encontrada ou ainda não publicada.' });
+      return;
+    }
 
-    const asset = await latestPdfAsset(prisma, record.quarterId);
+    const cycle = await prisma.ebdCycle.findUnique({
+      where: { id: publishedCycle.id },
+      include: cycleInclude,
+    });
+    if (!cycle) {
+      res.status(404).json({ error: 'Ciclo não encontrado.' });
+      return;
+    }
+
+    const schedule = scheduleOf(cycle);
+    const entries = publishedEntries(cycle, schedule);
+    const current = entries.find(({ row }) => row.lesson.id === record.id);
+    if (!current) {
+      res.status(404).json({ error: 'Lição não encontrada ou ainda não publicada.' });
+      return;
+    }
+
+    const asset = await latestPdfAsset(prisma, cycle.editionId);
+    const index = entries.map(({ row, entry }) => lessonFromRow(row.lesson, entry));
     const lesson: EbdLessonDetail = {
-      number: record.number,
-      slug: record.slug,
-      title: record.title,
-      baseText: record.baseText,
-      startPage: record.startPage,
-      endPage: record.endPage,
+      ...lessonFromRow(record, current.entry),
       introduction: normalizeStringArray(record.introduction),
       sections: normalizeSections(record.sections),
       questions: normalizeQuestions(record.questions),
       dailyReadings: normalizeDailyReadings(record.dailyReadings),
       figures: normalizeFigures(record.figures),
-      quarter: {
-        id: record.quarter.id,
-        slug: record.quarter.slug,
-        year: record.quarter.year,
-        quarter: record.quarter.quarter,
-        className: record.quarter.className,
-        title: record.quarter.title,
-        publisher: record.quarter.publisher,
-      },
-      index: quarterLessons.map(toLessonSummary),
-      navigation: buildLessonNavigation(quarterLessons, record.number),
+      cycle: toCycleRef(cycle, schedule, entries.length),
+      edition: toEditionRef(cycle.edition),
+      index,
+      navigation: buildLessonNavigation(index, record.number),
       pdf: asset
         ? {
             fileName: asset.fileName,
             sizeBytes: asset.sizeBytes,
             pageCount: asset.pageCount,
-            downloadUrl: pdfDownloadPath(record.quarter.id),
+            downloadUrl: pdfDownloadPath(cycle.editionId),
             page: record.startPage,
           }
         : null,

@@ -92,7 +92,7 @@ export function normalizeFigures(value: unknown): EbdFigure[] {
   return figures;
 }
 
-export function quarterLabel(year: number, quarter: number): string {
+export function editionLabel(year: number, quarter: number): string {
   return `${quarter}º trimestre de ${year}`;
 }
 
@@ -106,21 +106,22 @@ export function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} MB`;
 }
 
-export function pdfDownloadPath(quarterId: string): string {
-  return `/api/ebd/quarters/${encodeURIComponent(quarterId)}/pdf`;
+export function pdfDownloadPath(editionId: string): string {
+  return `/api/ebd/editions/${encodeURIComponent(editionId)}/pdf`;
 }
 
 export function buildLessonNavigation(
-  lessons: ReadonlyArray<Pick<EbdLessonSummary, 'number' | 'slug' | 'title'>>,
+  lessons: ReadonlyArray<Pick<EbdLessonSummary, 'number' | 'slug' | 'title' | 'scheduledOn'>>,
   currentNumber: number,
 ) {
   const ordered = [...lessons].sort((a, b) => a.number - b.number);
   const position = ordered.findIndex((lesson) => lesson.number === currentNumber);
   if (position < 0) return { previous: null, next: null };
-  const toItem = (lesson: Pick<EbdLessonSummary, 'number' | 'slug' | 'title'>) => ({
+  const toItem = (lesson: Pick<EbdLessonSummary, 'number' | 'slug' | 'title' | 'scheduledOn'>) => ({
     number: lesson.number,
     slug: lesson.slug,
     title: lesson.title,
+    scheduledOn: lesson.scheduledOn,
   });
   return {
     previous: position > 0 ? toItem(ordered[position - 1]) : null,

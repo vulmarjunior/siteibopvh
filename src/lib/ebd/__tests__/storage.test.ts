@@ -32,7 +32,7 @@ describe('storage da EBD', () => {
 
   it('assina e valida o token do upload local', () => {
     const token = createLocalUploadToken({
-      quarterId: 'quarter-1',
+      editionId: 'edition-1',
       path: 'ebd/2022/1/adultos/revista-v1.pdf',
       version: 1,
       fileName: 'revista.pdf',
@@ -41,7 +41,7 @@ describe('storage da EBD', () => {
       pageCount: 10,
     });
     const payload = verifyLocalUploadToken(token);
-    expect(payload?.quarterId).toBe('quarter-1');
+    expect(payload?.editionId).toBe('edition-1');
     expect(payload?.path).toBe('ebd/2022/1/adultos/revista-v1.pdf');
     expect(verifyLocalUploadToken(`${token}x`)).toBeNull();
     expect(verifyLocalUploadToken('invalido')).toBeNull();

@@ -8,7 +8,7 @@ import {
   normalizeSections,
   normalizeStringArray,
   pdfDownloadPath,
-  quarterLabel,
+  editionLabel,
 } from '../content';
 
 describe('normalizeStringArray', () => {
@@ -73,15 +73,15 @@ describe('normalizeDailyReadings', () => {
 
 describe('buildLessonNavigation', () => {
   const lessons = [
-    { number: 3, slug: 'tres', title: 'Três' },
-    { number: 1, slug: 'um', title: 'Um' },
-    { number: 2, slug: 'dois', title: 'Dois' },
+    { number: 3, slug: 'tres', title: 'Três', scheduledOn: '2027-09-19' },
+    { number: 1, slug: 'um', title: 'Um', scheduledOn: '2027-09-05' },
+    { number: 2, slug: 'dois', title: 'Dois', scheduledOn: null },
   ];
 
   it('retorna anterior e próxima na ordem numérica', () => {
     expect(buildLessonNavigation(lessons, 2)).toEqual({
-      previous: { number: 1, slug: 'um', title: 'Um' },
-      next: { number: 3, slug: 'tres', title: 'Três' },
+      previous: { number: 1, slug: 'um', title: 'Um', scheduledOn: '2027-09-05' },
+      next: { number: 3, slug: 'tres', title: 'Três', scheduledOn: '2027-09-19' },
     });
   });
 
@@ -94,7 +94,7 @@ describe('buildLessonNavigation', () => {
 
 describe('helpers de exibição', () => {
   it('formata trimestre, páginas e tamanho de arquivo', () => {
-    expect(quarterLabel(2022, 1)).toBe('1º trimestre de 2022');
+    expect(editionLabel(2022, 1)).toBe('1º trimestre de 2022');
     expect(formatPageRange(16, 22)).toBe('p. 16–22');
     expect(formatPageRange(30, 30)).toBe('p. 30');
     expect(formatFileSize(4_850_159)).toBe('4,6 MB');
@@ -103,6 +103,6 @@ describe('helpers de exibição', () => {
   });
 
   it('codifica o caminho do PDF', () => {
-    expect(pdfDownloadPath('abc 123')).toBe('/api/ebd/quarters/abc%20123/pdf');
+    expect(pdfDownloadPath('abc 123')).toBe('/api/ebd/editions/abc%20123/pdf');
   });
 });
