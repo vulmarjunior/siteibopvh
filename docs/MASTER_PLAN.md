@@ -10,7 +10,7 @@ hotsites, inscrições e área administrativa.
 - Ciclo de vida: produção
 - Publicação: Vercel, `https://www.ibopvh.com.br`
 - Banco: PostgreSQL (Supabase)
-- Homologação: EBD Digital — E2, E3 e E4 homologadas; E5 publicada em 27/10/2026, homologação pendente; decisões da proveniência editorial tomadas (Rev. 3)
+- Homologação: EBD Digital — E2, E3 e E4 homologadas; E5 publicada em 27/10/2026, homologação pendente; Rev. 3 da proveniência editorial implementada no PR #25 (CI verde, sem merge/deploy)
 - Verificado em: 2026-10-27
 
 ## Princípios e limites
@@ -23,9 +23,9 @@ hotsites, inscrições e área administrativa.
 
 ## Próximo passo
 
-Implementar a **Rev. 3 da proveniência editorial da E5**: a edição nasce do
-JSON, os metadados são editáveis antes do primeiro asset e a divergência é
-exibida como nota informativa, sem bloquear. Depois, limpar a edição órfã em
-janela autorizada e rodar o roteiro operador de
+Revisar e mergear o PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25),
+que implementa a **Rev. 3 da proveniência editorial da E5** (decisões 1, 2 e 5)
+com CI verde. Depois, com autorização específica, publicar, limpar a edição
+órfã em janela controlada e rodar o roteiro operador de
 `docs/planos/E5_HOMOLOGACAO.md` em produção. A generalização do período
-editorial (opção D) fica para a iteração seguinte, antes de links públicos.
+editorial (decisão 3) fica para a iteração seguinte, antes de links públicos.
