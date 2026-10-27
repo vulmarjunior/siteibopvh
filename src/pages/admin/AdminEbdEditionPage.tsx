@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
@@ -7,6 +7,8 @@ import {
   FileJson,
   FileText,
   Loader2,
+  Lock,
+  Pencil,
   Plus,
   RefreshCw,
   Upload,
@@ -26,6 +28,11 @@ import {
   sha256File,
 } from '../../lib/ebd/adminApi';
 import { editionLabel } from '../../lib/ebd/content';
+import { validateEbdImport, type EbdImportEdition } from '../../lib/ebd/import';
+import {
+  canEditEditionMetadata,
+  editionDivergences,
+} from '../../lib/ebd/provenance';
 import {
   formatCivilDateWithWeekday,
   weekdayLabel,
@@ -61,11 +68,14 @@ export default function AdminEbdEditionPage() {
   const [pdfProgress, setPdfProgress] = useState('');
   const [jsonFile, setJsonFile] = useState<File | null>(null);
   const [jsonData, setJsonData] = useState<unknown>(null);
+  const [jsonEdition, setJsonEdition] = useState<EbdImportEdition | null>(null);
   const [importPreview, setImportPreview] = useState<ImportPreview | null>(null);
   const [importAssetId, setImportAssetId] = useState('');
   const [importBusy, setImportBusy] = useState(false);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [statusBusy, setStatusBusy] = useState(false);
+  const [metadataForm, setMetadataForm] = useState({ year: '', quarter: '', className: '' });
+  const [metadataBusy, setMetadataBusy] = useState(false);
   const [cycleForm, setCycleForm] = useState({ startsOn: today, weekday: '0', className: '' });
   const [preview, setPreview] = useState<EbdSchedulePreview | null>(null);
   const [previewBusy, setPreviewBusy] = useState(false);
@@ -84,6 +94,11 @@ export default function AdminEbdEditionPage() {
           : data.edition.pdfAssets[0]?.id || ''
       ));
       setCycleForm((current) => ({ ...current, className: current.className || data.edition.className }));
+      setMetadataForm({
+        year: String(data.edition.year),
+        quarter: String(data.edition.quarter),
+        className: data.edition.className,
+      });
       const auditData = await ebdAdminRequest<{ audit: EbdAdminAuditEntry[] }>(`/editions/${editionId}/audit`).catch(() => ({ audit: [] }));
       setAudit(auditData.audit);
     } catch (cause) {
@@ -100,6 +115,11 @@ export default function AdminEbdEditionPage() {
   useEffect(() => {
     setPreview(null);
   }, [cycleForm.startsOn, cycleForm.weekday]);
+
+  const divergences = useMemo(
+    () => (edition && jsonEdition ? editionDivergences(jsonEdition, edition) : []),
+    [edition, jsonEdition],
+  );
 
   async function uploadPdf() {
     if (!edition || !pdfFile) return;
@@ -161,25 +181,30 @@ export default function AdminEbdEditionPage() {
 
   async function readJson(file: File) {
     setJsonFile(file);
+    setJsonData(null);
+    setJsonEdition(null);
+    setImportPreview(null);
     setWarnings([]);
     setError('');
+    setNotice('');
     try {
       const parsed: unknown = JSON.parse(await file.text());
-      setJsonData(parsed);
-      const source = (parsed as { source?: { file_name?: unknown; sha256?: unknown } })?.source;
-      const editionData = (parsed as { edition?: { year?: unknown; quarter?: unknown; class?: unknown } })?.edition;
-      const lessons = (parsed as { lessons?: unknown[] })?.lessons;
+      const validation = validateEbdImport(parsed);
+      if (validation.ok === false) {
+        setWarnings(validation.errors);
+        setError('O JSON não segue o esquema de importação v1.0.0.');
+        return;
+      }
+      const data = validation.data;
+      setJsonData(data);
+      setJsonEdition(data.edition);
       setImportPreview({
-        fileName: typeof source?.file_name === 'string' ? source.file_name : file.name,
-        sha256: typeof source?.sha256 === 'string' ? source.sha256 : '',
-        lessons: Array.isArray(lessons) ? lessons.length : 0,
-        edition: editionData
-          ? `${String(editionData.year || '—')} • ${String(editionData.quarter || '—')}º trimestre • ${String(editionData.class || '—')}`
-          : '—',
+        fileName: data.source.file_name,
+        sha256: data.source.sha256,
+        lessons: data.lessons.length,
+        edition: `${data.edition.year} • ${data.edition.quarter}º trimestre • ${data.edition.class}`,
       });
     } catch {
-      setJsonData(null);
-      setImportPreview(null);
       setJsonFile(null);
       setError('O arquivo selecionado não é um JSON válido.');
     }
@@ -208,6 +233,42 @@ export default function AdminEbdEditionPage() {
       setError(cause instanceof Error ? cause.message : 'Não foi possível importar o JSON.');
     } finally {
       setImportBusy(false);
+    }
+  }
+
+  async function saveMetadata(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!edition) return;
+    const year = Number(metadataForm.year);
+    const quarter = Number(metadataForm.quarter);
+    const className = metadataForm.className.trim();
+    if (!Number.isInteger(year) || year < 1900 || year > 2100) {
+      setError('Informe um ano editorial válido.');
+      return;
+    }
+    if (!Number.isInteger(quarter) || quarter < 1 || quarter > 4) {
+      setError('Informe o trimestre editorial de 1 a 4.');
+      return;
+    }
+    if (!className) {
+      setError('Informe a turma da edição.');
+      return;
+    }
+
+    setMetadataBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      await ebdAdminRequest(`/editions/${edition.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ year, quarter, className }),
+      });
+      setNotice('Metadados editoriais corrigidos. Slug e caminho do PDF passam a usar estes valores.');
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível corrigir os metadados.');
+    } finally {
+      setMetadataBusy(false);
     }
   }
 
@@ -296,6 +357,11 @@ export default function AdminEbdEditionPage() {
   const latestAsset = edition.pdfAssets[0];
   const publishedCount = edition.lessons.filter((lesson) => lesson.status === 'PUBLISHED').length;
   const activeLessons = edition.lessons.filter((lesson) => lesson.status !== 'ARCHIVED');
+  const metadataEditable = canEditEditionMetadata({
+    pdfAssets: edition.pdfAssets.length,
+    lessons: edition.lessons.length,
+    cycles: edition.cycles.length,
+  });
 
   return (
     <main className="min-h-screen bg-stone-100 text-stone-900">
@@ -374,6 +440,7 @@ export default function AdminEbdEditionPage() {
             </h2>
             <p className="mt-1 text-sm text-stone-600">
               O JSON de importação não muda: <code>edition.*</code> e <code>source.*</code> são proveniência editorial.
+              Esquema v1.0.0, hash SHA-256 e tamanho do PDF continuam como bloqueios.
             </p>
 
             <div className="mt-4 grid gap-3">
@@ -410,6 +477,35 @@ export default function AdminEbdEditionPage() {
                     {importPreview.lessons} lições • {importPreview.edition}
                   </p>
                   <p className="mt-1 break-all text-xs text-stone-500">SHA-256 {importPreview.sha256 || '—'}</p>
+                </div>
+              ) : null}
+
+              {divergences.length > 0 ? (
+                <div role="note" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+                  <p className="font-bold">Divergência informativa entre o JSON e a edição</p>
+                  <p className="mt-1 text-xs">
+                    O import <strong>não é bloqueado</strong> por estes campos. Editora, título,
+                    edição e volume passam a valer os valores do JSON; ano, trimestre e turma
+                    permanecem os da edição.
+                  </p>
+                  <table className="mt-2 w-full text-xs">
+                    <thead>
+                      <tr className="text-left font-bold uppercase tracking-wide text-amber-800">
+                        <th className="py-1 pr-2">Campo</th>
+                        <th className="py-1 pr-2">JSON</th>
+                        <th className="py-1">Edição</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {divergences.map((item) => (
+                        <tr key={item.field} className="border-t border-amber-200">
+                          <td className="py-1 pr-2">{item.label}</td>
+                          <td className="py-1 pr-2">{item.json}</td>
+                          <td className="py-1">{item.edition}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               ) : null}
 
@@ -622,9 +718,73 @@ export default function AdminEbdEditionPage() {
             <dl className="mt-2 space-y-1 text-sm">
               <div><dt className="text-xs font-bold uppercase tracking-wide text-stone-500">Editora</dt><dd>{edition.publisher}</dd></div>
               <div><dt className="text-xs font-bold uppercase tracking-wide text-stone-500">Período editorial</dt><dd>{editionLabel(edition.year, edition.quarter)}</dd></div>
+              <div><dt className="text-xs font-bold uppercase tracking-wide text-stone-500">Turma</dt><dd>{edition.className}</dd></div>
               <div><dt className="text-xs font-bold uppercase tracking-wide text-stone-500">Edição / volume</dt><dd>{edition.issue ?? '—'} / {edition.volume ?? '—'}</dd></div>
               <div><dt className="text-xs font-bold uppercase tracking-wide text-stone-500">Origem</dt><dd className="break-all text-xs">{edition.sourceFileName ?? '—'}</dd></div>
             </dl>
+
+            {metadataEditable ? (
+              <form onSubmit={saveMetadata} className="mt-4 rounded-xl border border-stone-200 p-3">
+                <p className="flex items-center gap-2 text-sm font-bold">
+                  <Pencil className="h-4 w-4 text-amber-600" aria-hidden="true" />
+                  Corrigir metadados
+                </p>
+                <p className="mt-1 text-xs text-stone-600">
+                  Enquanto a edição não tiver PDF, lições nem ciclos, ano, trimestre e turma podem ser
+                  corrigidos. Depois disso, ficam bloqueados.
+                </p>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <label className="text-xs font-semibold">
+                    Ano editorial
+                    <input
+                      type="number"
+                      min={1900}
+                      max={2100}
+                      value={metadataForm.year}
+                      onChange={(event) => setMetadataForm((current) => ({ ...current, year: event.target.value }))}
+                      className="mt-1 w-full rounded-lg border border-stone-300 px-2 py-1.5 text-sm"
+                      required
+                    />
+                  </label>
+                  <label className="text-xs font-semibold">
+                    Trimestre
+                    <select
+                      value={metadataForm.quarter}
+                      onChange={(event) => setMetadataForm((current) => ({ ...current, quarter: event.target.value }))}
+                      className="mt-1 w-full rounded-lg border border-stone-300 px-2 py-1.5 text-sm"
+                    >
+                      <option value="1">1º</option>
+                      <option value="2">2º</option>
+                      <option value="3">3º</option>
+                      <option value="4">4º</option>
+                    </select>
+                  </label>
+                  <label className="col-span-2 text-xs font-semibold">
+                    Turma
+                    <input
+                      value={metadataForm.className}
+                      onChange={(event) => setMetadataForm((current) => ({ ...current, className: event.target.value }))}
+                      className="mt-1 w-full rounded-lg border border-stone-300 px-2 py-1.5 text-sm"
+                      required
+                    />
+                  </label>
+                </div>
+                <button
+                  type="submit"
+                  disabled={metadataBusy}
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-stone-900 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
+                >
+                  {metadataBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Pencil className="h-3.5 w-3.5" aria-hidden="true" />}
+                  Salvar metadados
+                </button>
+              </form>
+            ) : (
+              <p className="mt-4 flex items-start gap-2 rounded-xl bg-stone-100 p-3 text-xs text-stone-600">
+                <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                Ano, trimestre e turma ficam bloqueados depois do primeiro PDF, lição ou ciclo.
+                A proveniência acima continua visível.
+              </p>
+            )}
           </article>
 
           <article className="rounded-2xl bg-white p-5 shadow">

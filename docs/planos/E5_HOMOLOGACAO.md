@@ -5,10 +5,11 @@
 > **Ambiente:** **produção** (`https://ibopvh.com.br`), autorizado em 27/10/2026
 > **Deploy de referência:** PR [#21](https://github.com/vulmarjunior/siteibopvh/pull/21),
 > squash `a66add8`, com as correções #22–24
-> **Quando usar:** **depois** que o executor implementar a Rev. 3 e limpar a
+> **Quando usar:** **depois** do merge/deploy da Rev. 4 (PR #25) e da limpeza da
 > edição órfã. Se a tela de criação ainda pedir ano/trimestre/turma manualmente,
 > pare: a Rev. 3 não está publicada.
-> **Status:** aguardando implementação da Rev. 3 e ambiente
+> **Status:** Rev. 4 implementada no PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25)
+> (CI verde, sem merge/deploy); aguardando autorização para publicar e limpar a órfã
 
 ## Como este guia funciona
 
@@ -30,8 +31,8 @@
 
 ## Antes de começar — o agente confirma
 
-- [ ] Rev. 3 implementada e publicada (edição nasce do JSON; nota informativa;
-      órfã removida).
+- [ ] Rev. 4 (PR #25) mergeada e publicada (edição nasce do JSON; nota
+      informativa) e órfã removida com autorização.
 - [ ] Edição antiga **2026 / 4º trimestre / Adultos** não existe mais.
 - [ ] Bucket `ebd` criado no Supabase, **privado**.
 - [ ] `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL` e

@@ -4,6 +4,7 @@ import type {
   EbdQuestion,
   EbdSection,
 } from './ebd.js';
+import type { EbdEditionDivergence } from '../lib/ebd/provenance.js';
 
 export type EbdAdminStatus = 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'ARCHIVED';
 export type EbdScheduleKind = 'RULE' | 'RESCHEDULED' | 'NO_MEETING';
@@ -231,4 +232,6 @@ export interface EbdAdminImportResponse {
   warnings: string[];
   assetId: string;
   sha256: string;
+  /** Divergências informativas de proveniência; nunca bloqueiam o import. */
+  divergences: EbdEditionDivergence[];
 }

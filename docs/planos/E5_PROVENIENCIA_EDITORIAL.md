@@ -1,6 +1,6 @@
 # E5 — Proveniência editorial x identidade da edição
 
-> **Status:** análise registrada em 27/10/2026; **decisões tomadas em 27/10/2026 (Rev. 3)**; nenhum código alterado; E5 **não homologada**.
+> **Status:** análise registrada em 27/10/2026; **decisões tomadas em 27/10/2026 (Rev. 3)**; **decisões 1, 2 e 5 implementadas em 27/10/2026 (Rev. 4)** no PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25), com CI verde; **sem merge e sem deploy**; E5 **não homologada**.
 > **Origem:** homologação em produção do PR [#21](https://github.com/vulmarjunior/siteibopvh/pull/21)
 > (squash `a66add8`), ao importar o JSON da 1T2022.
 > **Para:** próximo agente que retomar a E5/E6.
@@ -62,9 +62,13 @@ que os dados editoriais não são identidade:
 O código, porém, recusa o import quando ano, trimestre ou turma divergem. Isso contradiz
 o desenho aprovado e o próprio roteiro de homologação.
 
-## 4. O que o código faz hoje
+## 4. O que o código fazia antes da Rev. 4
 
-Os campos editoriais não são “só rótulos” na implementação atual. Eles ainda definem:
+> **Atualizado na Rev. 4 (§17):** o bloqueio editorial do import foi removido e a
+> edição passou a nascer do JSON. Esta seção permanece como registro do estado
+> anterior à implementação.
+
+Os campos editoriais não são “só rótulos” na implementação anterior. Eles ainda definem:
 
 | Uso | Onde | Efeito |
 |---|---|---|
@@ -312,3 +316,76 @@ executor.
   reavaliar o Vercel Pro se o teto de 12 funções virar bloqueio; VPS somente
   como projeto separado, após segurança, backups, LGPD e rollback.
 - Alterar o contrato JSON v1.0.0 nesta entrega.
+
+## 17. Rev. 4 — implementação das decisões 1, 2 e 5 (27/10/2026)
+
+> **Situação:** implementado no PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25),
+> com CI verde (`Testes, lint e build`, 50 s). **Sem merge e sem deploy nesta
+> sessão.** A E5 continua **não homologada**.
+
+### 17.1 Decisões
+
+| # | Decisão | Estado | Evidência |
+|---|---|---|---|
+| 1 | A edição nasce do JSON | **Implementada** | `POST /api/ebd/admin/editions` valida o JSON v1.0.0 e cria a edição com `edition.*` e `source.*`; `/admin/ebd` deixou de pedir ano/trimestre/turma manualmente. Testes de rota em `src/api/admin/__tests__/ebd.test.ts`. |
+| 2 | Metadados editáveis antes do primeiro asset | **Implementada** | `PATCH /editions/:id` aceita ano, trimestre e turma enquanto não houver PDF, lições ou ciclos; depois retorna 409. A regra é compartilhada por `canEditEditionMetadata` (`src/lib/ebd/provenance.ts`) e a UI mostra o formulário ou o aviso de bloqueio. |
+| 5 | Divergência exibida como nota informativa | **Implementada** | O import não compara mais `year`/`quarter`/`class`; `editionDivergences` alimenta a nota lado a lado no admin e o campo `divergences` da resposta da API. O import segue. |
+| 3 | Generalização do período editorial | **Não iniciada** | Fica para a próxima iteração, antes de remover o `noindex` ou compartilhar links públicos. |
+| 4 | Limpeza da edição órfã | **Não executada** | Exige autorização explícita e janela própria; nenhum script de limpeza foi rodado. |
+
+### 17.2 Bloqueios preservados
+
+| Verificação | Resposta | Evidência |
+|---|---|---|
+| Esquema do JSON fora de v1.0.0 | 422 | Teste de rota no import e na criação. |
+| `source.sha256` divergente do asset | 409 | Teste de rota no import. |
+| `source.size_bytes` divergente do asset | 409 | Teste de rota no import. |
+
+### 17.3 Arquivos alterados
+
+- `src/lib/ebd/provenance.ts` — regras compartilhadas de divergência e de
+  editabilidade dos metadados.
+- `src/api/admin/ebd.ts` — criação a partir do JSON, PATCH condicionado e
+  import sem bloqueio editorial.
+- `src/pages/admin/AdminEbdPage.tsx` — criação a partir do JSON.
+- `src/pages/admin/AdminEbdEditionPage.tsx` — correção de metadados e nota
+  informativa.
+- `src/types/ebd-admin.ts` — `divergences` na resposta do import.
+- `src/lib/ebd/__tests__/provenance.test.ts` e
+  `src/api/admin/__tests__/ebd.test.ts` — testes das novas regras.
+
+### 17.4 Validação
+
+- `npm test`: **211 testes em 30 arquivos** (antes: 202 em 29). Inclui 9 testes
+  de rota da API admin e 5 das regras de proveniência.
+- `npm run lint`: aprovado, sem avisos.
+- `npm run build`: aprovado (TypeScript + Vite).
+- CI do PR #25: `Testes, lint e build` **verde** (50 s), run
+  [40575414251](https://github.com/vulmarjunior/siteibopvh/actions/runs/40575414251).
+  O Vercel gerou apenas o **preview automático do PR**; produção não foi
+  alterada.
+- **Não houve validação manual em produção** nesta sessão: o ambiente local
+  segue sem `DATABASE_URL` e sem bucket real. A homologação continua sendo o
+  próximo passo depois do merge/deploy autorizados.
+
+### 17.5 Critérios de aceite da §11
+
+| Critério | Estado |
+|---|---|
+| Importar JSON com `edition.year`/`quarter`/`class` diferentes conclui | **Coberto por teste de rota** (200, lição gravada, `divergences` preenchido); falta a confirmação manual em produção. |
+| Hash, tamanho e esquema continuam bloqueando | **Coberto por testes de rota** (409, 409 e 422). |
+| Rótulo principal do público continua sendo o período do ciclo | Sem alteração nesta entrega. |
+| Admin exibe a proveniência real, com nota de divergência | **Implementado**; validação visual fica para o roteiro da E5. |
+| Contrato JSON v1.0.0 continua aceito | **Coberto pelos testes de validação existentes.** |
+| Testes, lint e build verdes | **Aprovado localmente e no CI do PR #25.** |
+
+### 17.6 Pendências
+
+1. Revisar e mergear o PR #25 (o merge e o deploy não foram autorizados nesta
+   sessão).
+2. Limpar a edição órfã **2026 / 4º trimestre / Adultos** e o PDF do bucket,
+   com autorização explícita e verificação antes/depois (decisão 4).
+3. Executar `docs/planos/E5_HOMOLOGACAO.md` em produção, agora sem o cadastro
+   manual e com a nota informativa.
+4. Planejar a decisão 3 (período editorial generalizado) antes de remover o
+   `noindex` ou compartilhar links públicos.

@@ -2,6 +2,15 @@
 
 ## [Em Desenvolvimento]
 
+### 2026-10-27 - EBD Digital: Rev. 3 da proveniência editorial (PR #25)
+
+- **Edição nasce do JSON:** `POST /api/ebd/admin/editions` passou a validar o JSON v1.0.0 e criar a edição com `edition.*` e `source.*`. O formulário manual de ano/trimestre/turma foi removido de `/admin/ebd`; a tela lê o JSON, mostra a proveniência e só então cria a edição.
+- **Metadados editáveis antes do primeiro asset:** `PATCH /editions/:id` aceita ano, trimestre e turma enquanto não houver PDF, lições ou ciclos; depois retorna 409. A regra é compartilhada por `canEditEditionMetadata` (`src/lib/ebd/provenance.ts`) e a página da edição mostra o formulário de correção ou o aviso de bloqueio.
+- **Divergência informativa:** o import não compara mais `year`/`quarter`/`class`. `editionDivergences` alimenta a nota lado a lado no admin e o campo `divergences` da resposta da API; o import segue normalmente.
+- **Bloqueios preservados:** esquema v1.0.0 (422), hash SHA-256 (409) e tamanho do PDF (409). Cobertura explícita em testes de rota.
+- **Validação:** 211 testes em 30 arquivos (9 de rota da API admin e 5 de proveniência), lint e build verdes. PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25) com CI verde.
+- **Sem deploy:** PR aberto, sem merge e sem deploy nesta sessão. A edição órfã **2026/4/Adultos** não foi removida (decisão 4, aguardando autorização) e a generalização do período editorial (decisão 3) fica para a próxima iteração. A E5 continua **não homologada**.
+
 ### 2026-10-27 - EBD Digital: E5 - ciclos de estudo e calendário (PR #21, publicado)
 
 - **Modelo (Rev. 2):** `EbdQuarter` deixa de existir. A **edição** (`EbdEdition`) é a revista (editora, ano, trimestre editorial, nº, volume, turma, PDF e hash); o **ciclo** (`EbdCycle`) é o uso (turma, `startsOn`, dia da semana, status, slug permanente); a **agenda** (`EbdCycleLesson`) guarda a posição da lição e a exceção (`RULE`, `RESCHEDULED`, `NO_MEETING`).

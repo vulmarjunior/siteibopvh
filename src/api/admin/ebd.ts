@@ -19,6 +19,10 @@ import {
   normalizeStringArray,
 } from '../../lib/ebd/content.js';
 import {
+  canEditEditionMetadata,
+  editionDivergences,
+} from '../../lib/ebd/provenance.js';
+import {
   civilDateFromDb,
   computeEbdSchedule,
   dbDateFromCivil,
@@ -61,6 +65,11 @@ const param = (value: string | string[] | undefined): string =>
   (Array.isArray(value) ? value[0] : value) || '';
 
 const iso = (value: Date | null | undefined): string | null => (value ? value.toISOString() : null);
+
+const isUniqueConstraintError = (error: unknown): boolean =>
+  typeof error === 'object'
+  && error !== null
+  && (error as { code?: string }).code === 'P2002';
 
 const audit = async (
   prisma: PrismaClient,
@@ -310,38 +319,72 @@ export function createAdminEbdRouter(prisma: PrismaClient) {
 
   router.post('/editions', async (req: AdminAuthenticatedRequest, res) => {
     const body = req.body ?? {};
-    const year = integer(body.year);
-    const quarterNumber = integer(body.quarter);
-    const className = text(body.className, 80);
-    const publisher = text(body.publisher, 160);
-    const title = text(body.title, 200);
-    const issue = body.issue == null || body.issue === '' ? null : integer(body.issue);
-    const volume = body.volume == null || body.volume === '' ? null : integer(body.volume);
+    const payloadValue = body.data ?? body.payload ?? (body.schema_version ? body : null);
+    if (!payloadValue) {
+      return res.status(400).json({
+        error: 'A edição é criada a partir do JSON de importação. Envie o JSON extraído do PDF.',
+      });
+    }
 
-    if (year === null || year < 1900 || year > 2100) return res.status(400).json({ error: 'Informe um ano válido.' });
-    if (quarterNumber === null || quarterNumber < 1 || quarterNumber > 4) return res.status(400).json({ error: 'Informe o trimestre editorial de 1 a 4.' });
-    if (!className || !publisher || !title) return res.status(400).json({ error: 'Informe turma, editora e título.' });
-    if (issue !== null && (issue < 1 || issue > 9999)) return res.status(400).json({ error: 'Edição inválida.' });
-    if (volume !== null && (volume < 1 || volume > 9999)) return res.status(400).json({ error: 'Volume inválido.' });
+    const validation = validateEbdImport(payloadValue);
+    if (validation.ok === false) {
+      return res.status(422).json({ error: 'O JSON não segue o esquema de importação.', details: validation.errors });
+    }
+    const data: EbdImportPayload = validation.data;
+    const metadata = {
+      publisher: data.edition.publisher,
+      title: data.edition.title,
+      year: data.edition.year,
+      quarter: data.edition.quarter,
+      className: data.edition.class,
+      issue: data.edition.issue ?? null,
+      volume: data.edition.volume ?? null,
+    };
 
     const existing = await prisma.ebdEdition.findUnique({
       where: {
-        publisher_year_quarter_className: { publisher, year, quarter: quarterNumber, className },
+        publisher_year_quarter_className: {
+          publisher: metadata.publisher,
+          year: metadata.year,
+          quarter: metadata.quarter,
+          className: metadata.className,
+        },
       },
       select: { id: true },
     });
-    if (existing) return res.status(409).json({ error: 'Já existe uma edição dessa editora, ano, trimestre e turma.' });
+    if (existing) {
+      return res.status(409).json({
+        error: 'Já existe uma edição dessa editora, ano, trimestre e turma.',
+        editionId: existing.id,
+      });
+    }
 
-    const created = await prisma.ebdEdition.create({
-      data: { publisher, year, quarter: quarterNumber, className, title, issue, volume },
-    });
-    await audit(prisma, req, 'CRIAR_EDICAO_EBD', 'EbdEdition', created.id, {
-      year,
-      quarter: quarterNumber,
-      className,
-      title,
-    });
-    return res.status(201).json({ edition: created });
+    try {
+      const created = await prisma.ebdEdition.create({
+        data: {
+          ...metadata,
+          sourceFileName: data.source.file_name,
+          sourceSha256: data.source.sha256,
+          sourcePageCount: data.source.page_count,
+          sourceSizeBytes: data.source.size_bytes,
+        },
+      });
+      await audit(prisma, req, 'CRIAR_EDICAO_EBD', 'EbdEdition', created.id, {
+        origin: 'json',
+        year: metadata.year,
+        quarter: metadata.quarter,
+        className: metadata.className,
+        title: metadata.title,
+        sourceSha256: data.source.sha256,
+        lessonCount: data.lessons.length,
+      });
+      return res.status(201).json({ edition: created });
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        return res.status(409).json({ error: 'Já existe uma edição dessa editora, ano, trimestre e turma.' });
+      }
+      throw error;
+    }
   });
 
   router.get('/editions/:id', async (req, res) => {
@@ -392,21 +435,80 @@ export function createAdminEbdRouter(prisma: PrismaClient) {
     const body = req.body ?? {};
     const publisher = body.publisher === undefined ? existing.publisher : text(body.publisher, 160);
     const title = body.title === undefined ? existing.title : text(body.title, 200);
+    const year = body.year === undefined ? existing.year : integer(body.year);
+    const quarter = body.quarter === undefined ? existing.quarter : integer(body.quarter);
+    const className = body.className === undefined ? existing.className : text(body.className, 80);
     const issue = body.issue === undefined ? existing.issue : body.issue === null || body.issue === '' ? null : integer(body.issue);
     const volume = body.volume === undefined ? existing.volume : body.volume === null || body.volume === '' ? null : integer(body.volume);
     if (!publisher || !title) return res.status(400).json({ error: 'Editora e título são obrigatórios.' });
+    if (year === null || year < 1900 || year > 2100) return res.status(400).json({ error: 'Informe um ano editorial válido.' });
+    if (quarter === null || quarter < 1 || quarter > 4) return res.status(400).json({ error: 'Informe o trimestre editorial de 1 a 4.' });
+    if (!className) return res.status(400).json({ error: 'Informe a turma da edição.' });
     if (issue !== null && (issue < 1 || issue > 9999)) return res.status(400).json({ error: 'Edição inválida.' });
     if (volume !== null && (volume < 1 || volume > 9999)) return res.status(400).json({ error: 'Volume inválido.' });
 
-    const updated = await prisma.ebdEdition.update({
-      where: { id },
-      data: { publisher, title, issue, volume },
-    });
-    await audit(prisma, req, 'ATUALIZAR_EDICAO_EBD', 'EbdEdition', id, {
-      before: { publisher: existing.publisher, title: existing.title, issue: existing.issue, volume: existing.volume },
-      after: { publisher, title, issue, volume },
-    });
-    return res.json({ edition: updated });
+    const editorialChanged = year !== existing.year
+      || quarter !== existing.quarter
+      || className !== existing.className;
+
+    if (editorialChanged) {
+      const counts = await prisma.ebdEdition.findUnique({
+        where: { id },
+        select: {
+          _count: { select: { pdfAssets: true, lessons: true, cycles: true } },
+        },
+      });
+      const editable = counts
+        ? canEditEditionMetadata({
+            pdfAssets: counts._count.pdfAssets,
+            lessons: counts._count.lessons,
+            cycles: counts._count.cycles,
+          })
+        : false;
+      if (!editable) {
+        return res.status(409).json({
+          error: 'Ano, trimestre e turma só podem ser corrigidos enquanto a edição não tiver PDF, lições ou ciclos.',
+        });
+      }
+    }
+
+    const uniqueChanged = publisher !== existing.publisher || editorialChanged;
+    if (uniqueChanged) {
+      const conflict = await prisma.ebdEdition.findUnique({
+        where: {
+          publisher_year_quarter_className: { publisher, year, quarter, className },
+        },
+        select: { id: true },
+      });
+      if (conflict && conflict.id !== id) {
+        return res.status(409).json({ error: 'Já existe uma edição dessa editora, ano, trimestre e turma.' });
+      }
+    }
+
+    try {
+      const updated = await prisma.ebdEdition.update({
+        where: { id },
+        data: { publisher, title, year, quarter, className, issue, volume },
+      });
+      await audit(prisma, req, 'ATUALIZAR_EDICAO_EBD', 'EbdEdition', id, {
+        before: {
+          publisher: existing.publisher,
+          title: existing.title,
+          year: existing.year,
+          quarter: existing.quarter,
+          className: existing.className,
+          issue: existing.issue,
+          volume: existing.volume,
+        },
+        after: { publisher, title, year, quarter, className, issue, volume },
+      });
+      return res.json({ edition: updated });
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        return res.status(409).json({ error: 'Já existe uma edição dessa editora, ano, trimestre e turma.' });
+      }
+      throw error;
+    }
   });
 
   router.post('/editions/:id/pdf-upload', async (req: AdminAuthenticatedRequest, res) => {
@@ -582,13 +684,9 @@ export function createAdminEbdRouter(prisma: PrismaClient) {
     }
     const data: EbdImportPayload = validation.data;
 
-    if (
-      data.edition.year !== edition.year ||
-      data.edition.quarter !== edition.quarter ||
-      data.edition.class !== edition.className
-    ) {
-      return res.status(400).json({ error: 'A edição do JSON não coincide com a edição cadastrada.' });
-    }
+    // Rev. 3: a proveniência editorial não bloqueia o import. A divergência é
+    // informativa e o admin mostra os dois valores lado a lado.
+    const divergences = editionDivergences(data.edition, edition);
 
     const assetId = text(body.assetId, 80);
     const asset = assetId
@@ -692,6 +790,7 @@ export function createAdminEbdRouter(prisma: PrismaClient) {
       version: asset.version,
       sha256: data.source.sha256,
       lessonCount: prepared.length,
+      divergences: divergences.map((item) => item.field),
     });
 
     const detail = await prisma.ebdEdition.findUnique({
@@ -707,6 +806,7 @@ export function createAdminEbdRouter(prisma: PrismaClient) {
       warnings,
       assetId: asset.id,
       sha256: data.source.sha256,
+      divergences,
     });
   });
 
