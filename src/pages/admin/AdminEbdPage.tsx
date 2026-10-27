@@ -1,17 +1,16 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpenCheck, Loader2, Plus } from 'lucide-react';
+import { BookOpenCheck, FileJson, Loader2, Plus } from 'lucide-react';
 import {
   AdminEbdPageHeader,
   EbdFeedback,
   formatEbdDate,
 } from '../../components/admin/ebd/AdminEbdUi';
-import { ebdAdminRequest } from '../../lib/ebd/adminApi';
+import { EbdAdminApiError, ebdAdminRequest } from '../../lib/ebd/adminApi';
 import { editionLabel } from '../../lib/ebd/content';
+import { validateEbdImport, type EbdImportPayload } from '../../lib/ebd/import';
 import type { EbdAdminEditionSummary } from '../../types/ebd-admin';
-
-const now = new Date();
 
 export default function AdminEbdPage() {
   const navigate = useNavigate();
@@ -20,15 +19,9 @@ export default function AdminEbdPage() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({
-    year: String(now.getFullYear()),
-    quarter: String(Math.floor(now.getMonth() / 3) + 1),
-    className: 'Adultos',
-    publisher: 'Editora Cristã Evangélica',
-    title: '',
-    issue: '',
-    volume: '',
-  });
+  const [jsonName, setJsonName] = useState('');
+  const [payload, setPayload] = useState<EbdImportPayload | null>(null);
+  const [jsonErrors, setJsonErrors] = useState<string[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -47,28 +40,41 @@ export default function AdminEbdPage() {
     void load();
   }, [load]);
 
-  async function createEdition(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setCreating(true);
+  async function readJson(file: File) {
+    setJsonName(file.name);
+    setPayload(null);
+    setJsonErrors([]);
     setError('');
     setNotice('');
     try {
-      const created = await ebdAdminRequest<{ edition: EbdAdminEditionSummary }>('/editions', {
+      const parsed: unknown = JSON.parse(await file.text());
+      const validation = validateEbdImport(parsed);
+      if (validation.ok === false) {
+        setJsonErrors(validation.errors);
+        setError('O JSON não segue o esquema de importação v1.0.0.');
+        return;
+      }
+      setPayload(validation.data);
+    } catch {
+      setError('O arquivo selecionado não é um JSON válido.');
+    }
+  }
+
+  async function createEdition() {
+    if (!payload) return;
+    setCreating(true);
+    setError('');
+    setNotice('');
+    setJsonErrors([]);
+    try {
+      const created = await ebdAdminRequest<{ edition: { id: string } }>('/editions', {
         method: 'POST',
-        body: JSON.stringify({
-          year: Number(form.year),
-          quarter: Number(form.quarter),
-          className: form.className,
-          publisher: form.publisher,
-          title: form.title,
-          issue: form.issue ? Number(form.issue) : null,
-          volume: form.volume ? Number(form.volume) : null,
-        }),
+        body: JSON.stringify({ data: payload }),
       });
-      setNotice('Edição cadastrada. Envie o PDF e importe o JSON das lições.');
-      setForm((current) => ({ ...current, title: '', issue: '', volume: '' }));
+      setNotice('Edição criada a partir do JSON. Agora envie o PDF e importe as lições.');
       navigate(`/admin/ebd/${created.edition.id}`);
     } catch (cause) {
+      if (cause instanceof EbdAdminApiError) setJsonErrors(cause.details);
       setError(cause instanceof Error ? cause.message : 'Não foi possível criar a edição.');
     } finally {
       setCreating(false);
@@ -99,105 +105,86 @@ export default function AdminEbdPage() {
       <section className="mx-auto max-w-7xl px-5 py-8">
         <EbdFeedback error={error} notice={notice} />
 
-        <div className="grid gap-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
-          <form onSubmit={createEdition} className="h-fit rounded-2xl bg-white p-5 shadow">
+        <div className="grid gap-6 lg:grid-cols-[24rem_minmax(0,1fr)]">
+          <article className="h-fit rounded-2xl bg-white p-5 shadow">
             <h2 className="flex items-center gap-2 font-serif text-xl font-bold">
-              <Plus className="h-5 w-5 text-amber-600" aria-hidden="true" />
-              Nova edição
+              <FileJson className="h-5 w-5 text-amber-600" aria-hidden="true" />
+              Nova edição a partir do JSON
             </h2>
             <p className="mt-1 text-sm text-stone-600">
-              A edição é a revista: editora, ano, trimestre editorial e turma. O ciclo de estudo é criado
-              depois, na página da edição.
+              A edição é a revista e nasce do JSON extraído do PDF. O sistema lê editora, título,
+              ano, trimestre, turma, edição e volume; o PDF é anexado depois, nesta mesma edição.
             </p>
 
             <div className="mt-4 grid gap-3">
               <label className="text-sm font-semibold">
-                Editora
+                JSON de importação (v1.0.0)
                 <input
-                  className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 text-sm"
-                  value={form.publisher}
-                  onChange={(event) => setForm((current) => ({ ...current, publisher: event.target.value }))}
-                  required
+                  type="file"
+                  accept="application/json,.json"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) void readJson(file);
+                  }}
+                  className="mt-1 w-full rounded-xl border border-stone-300 p-2 text-sm"
                 />
               </label>
-              <label className="text-sm font-semibold">
-                Título da revista
-                <input
-                  className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 text-sm"
-                  value={form.title}
-                  onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
-                  required
-                />
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <label className="text-sm font-semibold">
-                  Ano editorial
-                  <input
-                    type="number"
-                    min={1900}
-                    max={2100}
-                    className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 text-sm"
-                    value={form.year}
-                    onChange={(event) => setForm((current) => ({ ...current, year: event.target.value }))}
-                    required
-                  />
-                </label>
-                <label className="text-sm font-semibold">
-                  Trimestre editorial
-                  <select
-                    className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 text-sm"
-                    value={form.quarter}
-                    onChange={(event) => setForm((current) => ({ ...current, quarter: event.target.value }))}
-                  >
-                    <option value="1">1º</option>
-                    <option value="2">2º</option>
-                    <option value="3">3º</option>
-                    <option value="4">4º</option>
-                  </select>
-                </label>
-              </div>
-              <label className="text-sm font-semibold">
-                Turma
-                <input
-                  className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 text-sm"
-                  value={form.className}
-                  onChange={(event) => setForm((current) => ({ ...current, className: event.target.value }))}
-                  required
-                />
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <label className="text-sm font-semibold">
-                  Edição (nº)
-                  <input
-                    type="number"
-                    min={1}
-                    className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 text-sm"
-                    value={form.issue}
-                    onChange={(event) => setForm((current) => ({ ...current, issue: event.target.value }))}
-                  />
-                </label>
-                <label className="text-sm font-semibold">
-                  Volume
-                  <input
-                    type="number"
-                    min={1}
-                    className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 text-sm"
-                    value={form.volume}
-                    onChange={(event) => setForm((current) => ({ ...current, volume: event.target.value }))}
-                  />
-                </label>
-              </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={creating}
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
-            >
-              {creating ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Plus className="h-4 w-4" aria-hidden="true" />}
-              Cadastrar edição
-            </button>
-          </form>
+              {jsonName ? <p className="text-xs text-stone-500">Arquivo selecionado: {jsonName}</p> : null}
+
+              {jsonErrors.length > 0 ? (
+                <ul className="list-disc space-y-1 rounded-xl bg-red-50 p-3 pl-7 text-xs text-red-900">
+                  {jsonErrors.map((detail) => <li key={detail}>{detail}</li>)}
+                </ul>
+              ) : null}
+
+              {payload ? (
+                <div className="rounded-xl bg-stone-100 p-3 text-sm">
+                  <p className="font-bold">{payload.edition.title}</p>
+                  <p className="text-stone-600">{payload.edition.publisher}</p>
+                  <dl className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <dt className="font-bold uppercase tracking-wide text-stone-500">Período editorial</dt>
+                      <dd>{editionLabel(payload.edition.year, payload.edition.quarter)}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-bold uppercase tracking-wide text-stone-500">Turma</dt>
+                      <dd>{payload.edition.class}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-bold uppercase tracking-wide text-stone-500">Edição / volume</dt>
+                      <dd>{payload.edition.issue ?? '—'} / {payload.edition.volume ?? '—'}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-bold uppercase tracking-wide text-stone-500">Lições</dt>
+                      <dd>{payload.lessons.length}</dd>
+                    </div>
+                  </dl>
+                  <p className="mt-2 break-all text-xs text-stone-500">
+                    PDF {payload.source.file_name} • {payload.source.size_bytes} bytes
+                  </p>
+                  <p className="mt-1 break-all text-xs text-stone-500">
+                    SHA-256 {payload.source.sha256}
+                  </p>
+                </div>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={() => void createEdition()}
+                disabled={!payload || creating}
+                className="inline-flex w-fit items-center gap-2 rounded-xl bg-stone-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+              >
+                {creating ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Plus className="h-4 w-4" aria-hidden="true" />}
+                Criar edição
+              </button>
+
+              <p className="text-xs text-stone-500">
+                O esquema v1.0.0 é obrigatório. O hash e o tamanho do PDF continuam sendo conferidos
+                como bloqueios na importação das lições.
+              </p>
+            </div>
+          </article>
 
           <div className="space-y-4">
             {loading ? (
@@ -208,7 +195,8 @@ export default function AdminEbdPage() {
               <div className="rounded-2xl bg-white p-6 shadow">
                 <h2 className="font-serif text-xl font-bold">Nenhuma edição cadastrada</h2>
                 <p className="mt-2 text-sm text-stone-600">
-                  Cadastre a revista ao lado, envie o PDF e importe o JSON das lições extraído do próprio PDF.
+                  Selecione o JSON extraído do PDF ao lado. A edição será criada com a proveniência
+                  editorial do próprio JSON; depois envie o PDF e importe as lições.
                 </p>
               </div>
             ) : (
