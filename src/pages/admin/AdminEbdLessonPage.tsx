@@ -250,7 +250,7 @@ export default function AdminEbdLessonPage() {
 
   if (loading && !lesson) {
     return (
-      <main className="min-h-screen bg-stone-100 p-8">
+      <main className="min-h-screen bg-stone-100 p-8 text-stone-900">
         <div className="grid place-items-center py-24"><Loader2 className="h-9 w-9 animate-spin text-amber-600" aria-label="Carregando lição" /></div>
       </main>
     );
@@ -258,7 +258,7 @@ export default function AdminEbdLessonPage() {
 
   if (!lesson || !form) {
     return (
-      <main className="min-h-screen bg-stone-100 p-8">
+      <main className="min-h-screen bg-stone-100 p-8 text-stone-900">
         <div className="mx-auto max-w-3xl rounded-2xl bg-white p-8 shadow">
           <h1 className="font-serif text-2xl font-bold">Lição indisponível</h1>
           <p className="mt-2 text-sm text-stone-600">{error || 'Lição não encontrada.'}</p>

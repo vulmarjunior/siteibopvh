@@ -76,7 +76,7 @@ export default function AdminEbdPage() {
   }
 
   return (
-    <main className="min-h-screen bg-stone-100">
+    <main className="min-h-screen bg-stone-100 text-stone-900">
       <Helmet>
         <title>EBD Digital — Central Administrativa</title>
         <meta name="robots" content="noindex, nofollow" />
