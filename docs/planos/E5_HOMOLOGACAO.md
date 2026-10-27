@@ -6,10 +6,11 @@
 > **Deploy de referência:** PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25),
 > squash `7695173` (Rev. 4), sobre a E5 do PR [#21](https://github.com/vulmarjunior/siteibopvh/pull/21)
 > (squash `a66add8`)
-> **Quando usar:** **depois** da limpeza da edição órfã. Se a tela de criação
-> ainda pedir ano/trimestre/turma manualmente, pare: a Rev. 4 não está publicada.
-> **Status:** Rev. 4 publicada em produção em 27/10/2026; limpeza da órfã
-> pendente (sem credenciais de produção no ambiente local)
+> **Quando usar:** a Rev. 4 já está publicada e a edição órfã foi removida; o
+> guia está pronto para a homologação. Se a tela de criação ainda pedir
+> ano/trimestre/turma manualmente, pare: a Rev. 4 não está publicada.
+> **Status:** Rev. 4 publicada em produção em 27/10/2026; órfã removida em
+> 27/10/2026; **aguardando a homologação manual**
 
 ## Como este guia funciona
 
@@ -32,7 +33,7 @@
 ## Antes de começar — o agente confirma
 
 - [x] Rev. 4 (PR #25) mergeada e publicada em produção em 27/10/2026.
-- [ ] Edição antiga **2026 / 4º trimestre / Adultos** removida com autorização
+- [x] Edição antiga **2026 / 4º trimestre / Adultos** removida com autorização
       (e o PDF do bucket).
 - [ ] Bucket `ebd` criado no Supabase, **privado**.
 - [ ] `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL` e

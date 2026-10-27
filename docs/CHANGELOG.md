@@ -10,7 +10,8 @@
 - **Bloqueios preservados:** esquema v1.0.0 (422), hash SHA-256 (409) e tamanho do PDF (409). Cobertura explícita em testes de rota.
 - **Validação:** 211 testes em 30 arquivos (9 de rota da API admin e 5 de proveniência), lint e build verdes. PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25) com CI verde.
 - **Publicação:** merge squash do PR #25 (`7695173`) e deploy **Vercel Production** em 27/10/2026, após autorização do responsável. CI da `main` verde (44 s); smoke: `/api/ebd/cycles` 200, `/api/ebd/quarters` 404, `/api/ebd/admin/editions` 401 sem sessão e `/ebd` com `noindex`.
-- **Pendente:** a edição órfã **2026/4/Adultos** não foi removida — o ambiente local não tem credenciais de produção válidas (decisão 4). A generalização do período editorial (decisão 3) fica para a próxima iteração. A E5 continua **não homologada**.
+- **Limpeza da edição órfã (decisão 4):** o responsável removeu a edição **2026/4/Adultos** (`cmvqucvhr00008o0q1h8ikx7v`) e o PDF do bucket `ebd` pelo painel Supabase em 27/10/2026, usando a Opção A do roteiro. Nenhum conteúdo público foi afetado; o script `scripts/ebd/cleanup-orphan-edition.ts` permanece para casos futuros.
+- **Pendente:** homologação manual em produção e generalização do período editorial (decisão 3), que fica para a próxima iteração. A E5 continua **não homologada**.
 
 ### 2026-10-27 - EBD Digital: E5 - ciclos de estudo e calendário (PR #21, publicado)
 
