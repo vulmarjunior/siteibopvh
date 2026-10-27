@@ -184,7 +184,7 @@ export default function AdminEbdCyclePage() {
 
   if (loading && !cycle) {
     return (
-      <main className="min-h-screen bg-stone-100 p-8">
+      <main className="min-h-screen bg-stone-100 p-8 text-stone-900">
         <div className="grid place-items-center py-24"><Loader2 className="h-9 w-9 animate-spin text-amber-600" aria-label="Carregando ciclo" /></div>
       </main>
     );
@@ -192,7 +192,7 @@ export default function AdminEbdCyclePage() {
 
   if (!cycle) {
     return (
-      <main className="min-h-screen bg-stone-100 p-8">
+      <main className="min-h-screen bg-stone-100 p-8 text-stone-900">
         <div className="mx-auto max-w-3xl rounded-2xl bg-white p-8 shadow">
           <h1 className="font-serif text-2xl font-bold">Ciclo indisponível</h1>
           <p className="mt-2 text-sm text-stone-600">{error || 'Ciclo não encontrado.'}</p>
@@ -203,7 +203,7 @@ export default function AdminEbdCyclePage() {
   }
 
   return (
-    <main className="min-h-screen bg-stone-100">
+    <main className="min-h-screen bg-stone-100 text-stone-900">
       <Helmet>
         <title>{cycle.periodLabel} — Agenda da EBD</title>
         <meta name="robots" content="noindex, nofollow" />
