@@ -48,6 +48,31 @@ JSON de amostra `materiais/ebd/2022/1T/adultos/importacao-1t2022.json`.
 
 ## Importar no admin
 
-O JSON completo pode ser importado em `/admin/ebd/:quarterId`. O hash e o
+O JSON completo pode ser importado em `/admin/ebd/:editionId`. O hash e o
 tamanho do PDF precisam coincidir com a versão registrada. A importação cria as
 lições como rascunho; a publicação é manual.
+
+## Limpar edição órfã (sem lições e sem ciclos)
+
+Use o id da edição (`/admin/ebd/:editionId`). O padrão é **dry-run**:
+
+```bash
+npx tsx --env-file=<arquivo-com-credenciais> \
+  scripts/ebd/cleanup-orphan-edition.ts --edition-id <id>
+```
+
+Para remover de fato, o arquivo de credenciais precisa conter `DATABASE_URL`,
+`SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` de produção:
+
+```bash
+npx tsx --env-file=<arquivo-com-credenciais> \
+  scripts/ebd/cleanup-orphan-edition.ts --edition-id <id> --apply
+```
+
+> O `.env.production.local` gerado por alguns fluxos da Vercel pode trazer os
+> valores sensíveis como `[SENSITIVE]`; nesse caso, use outra fonte segura de
+> credenciais.
+
+O script recusa edição com lições ou ciclos, remove primeiro os PDFs do bucket
+`ebd` e depois as linhas do banco. Se a remoção do banco falhar, rode de novo: a
+edição já estará sem PDF.

@@ -1,6 +1,6 @@
 # E5 — Proveniência editorial x identidade da edição
 
-> **Status:** análise registrada em 27/10/2026; **decisões tomadas em 27/10/2026 (Rev. 3)**; **decisões 1, 2 e 5 implementadas em 27/10/2026 (Rev. 4)** no PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25), com CI verde; **sem merge e sem deploy**; E5 **não homologada**.
+> **Status:** análise registrada em 27/10/2026; **decisões tomadas em 27/10/2026 (Rev. 3)**; **decisões 1, 2 e 5 implementadas (Rev. 4) e publicadas em produção em 27/10/2026** (PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25), squash `7695173`); a limpeza da órfã (decisão 4) segue pendente por falta de credenciais de produção no ambiente local; E5 **não homologada**.
 > **Origem:** homologação em produção do PR [#21](https://github.com/vulmarjunior/siteibopvh/pull/21)
 > (squash `a66add8`), ao importar o JSON da 1T2022.
 > **Para:** próximo agente que retomar a E5/E6.
@@ -320,8 +320,10 @@ executor.
 ## 17. Rev. 4 — implementação das decisões 1, 2 e 5 (27/10/2026)
 
 > **Situação:** implementado no PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25),
-> com CI verde (`Testes, lint e build`, 50 s). **Sem merge e sem deploy nesta
-> sessão.** A E5 continua **não homologada**.
+> com CI verde, **mergeado (squash `7695173`) e publicado em produção em
+> 27/10/2026**. O smoke de produção passou. A limpeza da órfã (decisão 4) segue
+> pendente por falta de credenciais de produção neste ambiente. A E5 continua
+> **não homologada**.
 
 ### 17.1 Decisões
 
@@ -331,7 +333,7 @@ executor.
 | 2 | Metadados editáveis antes do primeiro asset | **Implementada** | `PATCH /editions/:id` aceita ano, trimestre e turma enquanto não houver PDF, lições ou ciclos; depois retorna 409. A regra é compartilhada por `canEditEditionMetadata` (`src/lib/ebd/provenance.ts`) e a UI mostra o formulário ou o aviso de bloqueio. |
 | 5 | Divergência exibida como nota informativa | **Implementada** | O import não compara mais `year`/`quarter`/`class`; `editionDivergences` alimenta a nota lado a lado no admin e o campo `divergences` da resposta da API. O import segue. |
 | 3 | Generalização do período editorial | **Não iniciada** | Fica para a próxima iteração, antes de remover o `noindex` ou compartilhar links públicos. |
-| 4 | Limpeza da edição órfã | **Não executada** | Exige autorização explícita e janela própria; nenhum script de limpeza foi rodado. |
+| 4 | Limpeza da edição órfã | **Não executada** | Autorizada, mas bloqueada por falta de credenciais de produção válidas no ambiente local; nenhum dado foi apagado. |
 
 ### 17.2 Bloqueios preservados
 
@@ -361,12 +363,16 @@ executor.
 - `npm run lint`: aprovado, sem avisos.
 - `npm run build`: aprovado (TypeScript + Vite).
 - CI do PR #25: `Testes, lint e build` **verde** (50 s), run
-  [40575414251](https://github.com/vulmarjunior/siteibopvh/actions/runs/40575414251).
-  O Vercel gerou apenas o **preview automático do PR**; produção não foi
-  alterada.
-- **Não houve validação manual em produção** nesta sessão: o ambiente local
-  segue sem `DATABASE_URL` e sem bucket real. A homologação continua sendo o
-  próximo passo depois do merge/deploy autorizados.
+  [40575414251](https://github.com/vulmarjunior/siteibopvh/actions/runs/40575414251);
+  o commit de documentação também passou
+  ([40576397394](https://github.com/vulmarjunior/siteibopvh/actions/runs/40576397394),
+  49 s).
+- Após o merge, CI da `main` **verde** (44 s), run
+  [40578594656](https://github.com/vulmarjunior/siteibopvh/actions/runs/40578594656),
+  e deploy **Vercel Production** concluído.
+- **Não houve homologação manual em produção** nesta sessão: o ambiente local
+  não tem credenciais de produção válidas. A homologação continua sendo o
+  próximo passo, junto com a limpeza da órfã.
 
 ### 17.5 Critérios de aceite da §11
 
@@ -381,11 +387,35 @@ executor.
 
 ### 17.6 Pendências
 
-1. Revisar e mergear o PR #25 (o merge e o deploy não foram autorizados nesta
-   sessão).
-2. Limpar a edição órfã **2026 / 4º trimestre / Adultos** e o PDF do bucket,
-   com autorização explícita e verificação antes/depois (decisão 4).
-3. Executar `docs/planos/E5_HOMOLOGACAO.md` em produção, agora sem o cadastro
+1. Limpar a edição órfã **2026 / 4º trimestre / Adultos** e o PDF do bucket,
+   com verificação antes/depois (decisão 4). **Bloqueada neste ambiente por
+   falta de credenciais de produção.**
+2. Executar `docs/planos/E5_HOMOLOGACAO.md` em produção, agora sem o cadastro
    manual e com a nota informativa.
-4. Planejar a decisão 3 (período editorial generalizado) antes de remover o
+3. Planejar a decisão 3 (período editorial generalizado) antes de remover o
    `noindex` ou compartilhar links públicos.
+
+### 17.7 Publicação em produção (27/10/2026)
+
+- PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25) mergeado em
+  squash `7695173`.
+- CI da `main` **verde** (44 s), run
+  [40578594656](https://github.com/vulmarjunior/siteibopvh/actions/runs/40578594656).
+- Deploy **Vercel Production** concluído
+  (`https://ibopvh-qxlvmggnn-vulmar-junior-s-projects.vercel.app`, alias
+  `https://www.ibopvh.com.br`).
+- Smoke de produção: `/api/health` 200; `/api/ebd/cycles` 200
+  `{"cycles":[]}`; `/api/ebd/quarters` 404; `/api/ebd/admin/editions` 401 sem
+  sessão; `POST /api/ebd/admin/editions` 401 sem sessão; `/ebd` 200 com
+  `X-Robots-Tag: noindex, nofollow`.
+- UI publicada: o chunk `AdminEbdPage-48hCdHsF.js` contém o fluxo “a partir do
+  JSON”.
+- **Limpeza da órfã não executada:** o `.env.local` aponta para o projeto de
+  homologação `nvjxhfdoxpcdraovgsuu` (indisponível) e o
+  `.env.production.local` tem os valores sensíveis redigidos (`[SENSITIVE]`);
+  não há `SUPABASE_SERVICE_ROLE_KEY` local. Nenhum dado foi apagado. A limpeza
+  exige execução em ambiente com `DATABASE_URL` e
+  `SUPABASE_SERVICE_ROLE_KEY` de produção.
+- **Ferramenta de limpeza:** `scripts/ebd/cleanup-orphan-edition.ts` (dry-run
+  por padrão; `--apply` exige as credenciais acima e recusa edição com lições
+  ou ciclos). Instruções em `scripts/ebd/README.md`.

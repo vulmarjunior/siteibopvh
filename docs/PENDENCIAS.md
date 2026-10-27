@@ -23,9 +23,10 @@ Fonte oficial das pendências deste projeto.
   teste de acessibilidade (NVDA/TalkBack). A extração das 13 lições é
   reproduzível por `scripts/ebd/extract-quarter.py`; o PDF e o JSON não são
   versionados. `/ebd` nasce com `noindex` em meta/header e fora do sitemap. A
-  Rev. 3 da proveniência editorial foi implementada no PR
-  [#25](https://github.com/vulmarjunior/siteibopvh/pull/25), com CI verde e sem
-  merge/deploy nesta sessão; a questão e as evidências estão em
+  Rev. 3 da proveniência editorial foi implementada e publicada em 27/10/2026
+  (PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25), squash
+  `7695173`), com CI verde e smoke de produção aprovado; a questão e as
+  evidências estão em
   [planos/E5_PROVENIENCIA_EDITORIAL.md](planos/E5_PROVENIENCIA_EDITORIAL.md) §17.
   Plano em [planos/PLANO_EBD_DIGITAL.md](planos/PLANO_EBD_DIGITAL.md),
   diagnóstico em [planos/E1_DIAGNOSTICO_EXTRACAO.md](planos/E1_DIAGNOSTICO_EXTRACAO.md),
@@ -36,11 +37,11 @@ Fonte oficial das pendências deste projeto.
   do JSON; metadados editáveis antes do primeiro asset; período editorial
   generalizado depois da homologação, antes de links públicos; edição órfã
   removida por limpeza controlada; divergência exibida como nota informativa,
-  sem bloquear. **As decisões 1, 2 e 5 estão implementadas no PR #25 (211
-  testes, lint e build verdes; CI verde), sem merge/deploy.** Próximo passo:
-  revisar/mergear o PR, publicar com autorização, limpar a órfã (4) em janela
-  autorizada e concluir a homologação; a generalização (3) fica para a próxima
-  iteração. Detalhes em
+  sem bloquear. **As decisões 1, 2 e 5 estão implementadas e publicadas em
+  27/10/2026 (PR #25, squash `7695173`; 211 testes, lint e build verdes; CI da
+  `main` verde; smoke de produção aprovado).** Próximo passo: limpar a órfã (4)
+  em ambiente com credenciais de produção e concluir a homologação; a
+  generalização (3) fica para a próxima iteração. Detalhes em
   [planos/E5_PROVENIENCIA_EDITORIAL.md](planos/E5_PROVENIENCIA_EDITORIAL.md) §17.
 
 ## Concluídas
