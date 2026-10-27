@@ -10,8 +10,8 @@ hotsites, inscrições e área administrativa.
 - Ciclo de vida: produção
 - Publicação: Vercel, `https://www.ibopvh.com.br`
 - Banco: PostgreSQL (Supabase)
-- Homologação: EBD Digital — E2, E3 e E4 homologadas; E5 pendente
-- Verificado em: 2026-10-26
+- Homologação: EBD Digital — E2, E3 e E4 homologadas; E5 publicada em 27/10/2026, homologação pendente; decisões da proveniência editorial tomadas (Rev. 3)
+- Verificado em: 2026-10-27
 
 ## Princípios e limites
 
@@ -23,7 +23,9 @@ hotsites, inscrições e área administrativa.
 
 ## Próximo passo
 
-Retomar a **E5 — publicação do trimestre da EBD** em outra máquina, com o bucket
-`ebd` real configurado no Supabase Storage. A branch
-`feat/ebd-e4-admin-importacao` reúne E2, E3 e E4; não houve merge em `main` nem
-deploy de produção.
+Implementar a **Rev. 3 da proveniência editorial da E5**: a edição nasce do
+JSON, os metadados são editáveis antes do primeiro asset e a divergência é
+exibida como nota informativa, sem bloquear. Depois, limpar a edição órfã em
+janela autorizada e rodar o roteiro operador de
+`docs/planos/E5_HOMOLOGACAO.md` em produção. A generalização do período
+editorial (opção D) fica para a iteração seguinte, antes de links públicos.
