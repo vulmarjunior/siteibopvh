@@ -1,8 +1,7 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
-import path from 'node:path';
-import fs from 'node:fs';
 import type { Prisma, PrismaClient } from '@prisma/client';
 import { ensureEbdSchema } from '../ebd-schema.js';
+import { resolveStoredPdf } from '../../lib/ebd/storage.js';
 import {
   buildLessonNavigation,
   normalizeDailyReadings,
@@ -89,7 +88,7 @@ function parseInteger(value: string | undefined): number | null {
 }
 
 function setPublicCache(res: Response) {
-  res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=120');
+  res.setHeader('Cache-Control', 'no-store');
 }
 
 function latestPdfAsset(prisma: PrismaClient, quarterId: string) {
@@ -246,36 +245,22 @@ export function createPublicEbdRouter(prisma: PrismaClient) {
       return;
     }
 
-    if (asset.url) {
-      try {
-        const target = new URL(asset.url);
-        if (target.protocol === 'https:' || target.protocol === 'http:') {
-          res.setHeader('Cache-Control', 'public, max-age=300');
-          res.redirect(302, target.toString());
-          return;
-        }
-      } catch (error) {
-        console.error(`${MODULE_LABEL} PDF URL inválida:`, error instanceof Error ? error.message : error);
-      }
+    const resolved = await resolveStoredPdf(asset);
+    if (!resolved) {
+      res.status(404).json({ error: 'PDF não disponível.' });
+      return;
     }
 
-    const localDirectory = process.env.EBD_LOCAL_PDF_DIR;
-    if (process.env.NODE_ENV !== 'production' && localDirectory) {
-      const baseDirectory = path.resolve(localDirectory);
-      const fileName = path.basename(asset.fileName);
-      const localFile = path.resolve(baseDirectory, fileName);
-      const insideBase = localFile === path.join(baseDirectory, fileName)
-        && localFile.startsWith(baseDirectory + path.sep);
-      if (insideBase && fs.existsSync(localFile)) {
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="${fileName.replace(/"/g, '')}"`);
-        res.setHeader('Cache-Control', 'private, max-age=0, must-revalidate');
-        res.sendFile(localFile);
-        return;
-      }
+    if (resolved.kind === 'file') {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${asset.fileName.replace(/"/g, '')}"`);
+      res.setHeader('Cache-Control', 'private, max-age=0, must-revalidate');
+      res.sendFile(resolved.path);
+      return;
     }
 
-    res.status(404).json({ error: 'PDF não disponível.' });
+    res.setHeader('Cache-Control', 'public, max-age=300');
+    res.redirect(302, resolved.url);
   });
 
   router.get('/quarters/:year/:quarter', async (req, res) => {

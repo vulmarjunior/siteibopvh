@@ -35,6 +35,7 @@ export async function ensureEbdSchema(prisma: PrismaClient) {
         "sourceSizeBytes" INTEGER,
         "status" "EbdContentStatus" NOT NULL DEFAULT 'DRAFT',
         "publishedAt" TIMESTAMP(3),
+        "publishedBy" TEXT,
         "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT "EbdQuarter_pkey" PRIMARY KEY ("id")
@@ -61,6 +62,7 @@ export async function ensureEbdSchema(prisma: PrismaClient) {
         "reviewedBy" TEXT,
         "reviewedAt" TIMESTAMP(3),
         "publishedAt" TIMESTAMP(3),
+        "publishedBy" TEXT,
         "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT "EbdLesson_pkey" PRIMARY KEY ("id")
@@ -78,10 +80,16 @@ export async function ensureEbdSchema(prisma: PrismaClient) {
         "sha256" TEXT NOT NULL,
         "sizeBytes" INTEGER NOT NULL,
         "pageCount" INTEGER NOT NULL,
+        "uploadedBy" TEXT,
         "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT "EbdPdfAsset_pkey" PRIMARY KEY ("id")
       );
     `);
+
+    // Evolução idempotente para bancos criados na E2.
+    await prisma.$executeRawUnsafe(`ALTER TABLE "EbdQuarter" ADD COLUMN IF NOT EXISTS "publishedBy" TEXT;`);
+    await prisma.$executeRawUnsafe(`ALTER TABLE "EbdLesson" ADD COLUMN IF NOT EXISTS "publishedBy" TEXT;`);
+    await prisma.$executeRawUnsafe(`ALTER TABLE "EbdPdfAsset" ADD COLUMN IF NOT EXISTS "uploadedBy" TEXT;`);
 
     await prisma.$executeRawUnsafe(`CREATE UNIQUE INDEX IF NOT EXISTS "EbdQuarter_slug_key" ON "EbdQuarter"("slug");`);
     await prisma.$executeRawUnsafe(`CREATE UNIQUE INDEX IF NOT EXISTS "EbdQuarter_year_quarter_className_key" ON "EbdQuarter"("year", "quarter", "className");`);

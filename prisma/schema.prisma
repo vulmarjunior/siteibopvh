@@ -917,6 +917,7 @@ model EbdQuarter {
   sourceSizeBytes Int?
   status          EbdContentStatus @default(DRAFT)
   publishedAt     DateTime?
+  publishedBy     String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   lessons         EbdLesson[]
@@ -946,6 +947,7 @@ model EbdLesson {
   reviewedBy    String?
   reviewedAt    DateTime?
   publishedAt   DateTime?
+  publishedBy   String?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
@@ -965,6 +967,7 @@ model EbdPdfAsset {
   sha256      String
   sizeBytes   Int
   pageCount   Int
+  uploadedBy  String?
   createdAt   DateTime   @default(now())
 
   @@unique([quarterId, version])

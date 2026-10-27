@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   CalendarClock,
   BookOpen,
+  BookOpenCheck,
   Mail,
   Image,
   Shield,
@@ -62,6 +63,13 @@ const navSections: NavSection[] = [
         icon: BookOpen,
         permission: 'veredas:manage',
         matches: (path) => path.startsWith('/admin/veredas'),
+      },
+      {
+        label: 'EBD Digital',
+        href: '/admin/ebd',
+        icon: BookOpenCheck,
+        permission: 'ebd:manage',
+        matches: (path) => path.startsWith('/admin/ebd'),
       },
       {
         label: 'E-mails das Séries',

@@ -16,6 +16,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { EbdFooter, EbdHeader } from '../../components/ebd/EbdChrome';
+import { EbdLessonContent } from '../../components/ebd/EbdLessonContent';
 import { EbdReaderControls } from '../../components/ebd/EbdReaderControls';
 import '../../components/ebd/ebd-reader.css';
 import { useEbdReaderSettings } from '../../lib/ebd/useEbdReaderSettings.js';
@@ -275,57 +276,13 @@ export default function EbdLessonPage() {
                 className="ebd-card ebd-article min-w-0 p-5 sm:p-8"
                 style={{ fontSize: `${fontScale}rem` }}
               >
-                <div className="ebd-intro ebd-prose-width">
-                  {lesson.introduction.map((paragraph, index) => (
-                    <p key={`intro-${index}`}>{paragraph}</p>
-                  ))}
-                </div>
-
-                {lesson.sections.map((section) => {
-                  const sectionId = `secao-${section.number}`;
-                  return (
-                    <section key={section.number} aria-labelledby={sectionId}>
-                      <h2 id={sectionId}>
-                        {section.number}. {section.title}
-                      </h2>
-                      <div className="ebd-prose-width">
-                        {section.paragraphs.map((paragraph, index) => (
-                          <p key={`${section.number}-${index}`}>{paragraph}</p>
-                        ))}
-                        {section.references && section.references.length > 0 ? (
-                          <p className="text-sm ebd-muted">
-                            <strong>Referências:</strong> {section.references.join('; ')}
-                          </p>
-                        ) : null}
-                      </div>
-                    </section>
-                  );
-                })}
-
-                {lesson.questions.length > 0 ? (
-                  <section aria-labelledby="para-pensar">
-                    <h2 id="para-pensar">Para pensar e agir</h2>
-                    <ol className="ebd-questions ebd-prose-width">
-                      {lesson.questions.map((question) => (
-                        <li key={question.number}>{question.text}</li>
-                      ))}
-                    </ol>
-                  </section>
-                ) : null}
-
-                {lesson.dailyReadings.length > 0 ? (
-                  <section aria-labelledby="leitura-diaria">
-                    <h2 id="leitura-diaria">Leitura diária</h2>
-                    <ul className="ebd-readings ebd-prose-width">
-                      {lesson.dailyReadings.map((reading) => (
-                        <li key={`${reading.day}-${reading.reference}`}>
-                          <span className="ebd-day">{reading.day}</span>
-                          <span>{reading.reference}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                ) : null}
+                <EbdLessonContent
+                  introduction={lesson.introduction}
+                  sections={lesson.sections}
+                  questions={lesson.questions}
+                  dailyReadings={lesson.dailyReadings}
+                  sectionIdPrefix="secao"
+                />
               </article>
 
               <aside aria-labelledby="indice-trimestre" className="ebd-card p-4 lg:sticky lg:top-6">

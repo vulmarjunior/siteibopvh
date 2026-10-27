@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import {
   BookOpen,
+  BookOpenCheck,
   CalendarClock,
   Image,
   LayoutDashboard,
@@ -56,6 +57,16 @@ const moduleCards: ModuleCard[] = [
     permission: 'veredas:manage',
     badge: 'Catálogo',
     badgeColor: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+  },
+  {
+    title: 'EBD Digital',
+    category: 'Editorial & Conteúdo',
+    description: 'Trimestres da revista, upload do PDF original, importação do JSON, revisão e publicação das lições.',
+    href: '/admin/ebd',
+    icon: BookOpenCheck,
+    permission: 'ebd:manage',
+    badge: 'Revista',
+    badgeColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
   },
   {
     title: 'E-mails das Séries',

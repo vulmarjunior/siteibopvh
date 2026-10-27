@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Search,
   BookOpen,
+  BookOpenCheck,
   CalendarClock,
   Image,
   LayoutDashboard,
@@ -47,6 +48,7 @@ export default function AdminCommandPalette({ isOpen, onClose }: AdminCommandPal
       { id: 'p-dash', title: 'Dashboard Geral', category: 'Páginas', icon: LayoutDashboard, href: '/admin' },
       { id: 'p-series', title: 'Séries & Mensagens', category: 'Páginas', icon: CalendarClock, href: '/admin/series', permission: 'series:edit', keywords: 'sermão pregações editorial' },
       { id: 'p-veredas', title: 'Veredas IBO (Curadoria)', category: 'Páginas', icon: BookOpen, href: '/admin/veredas', permission: 'veredas:manage', keywords: 'livros vídeos cursos resenhas relatos' },
+      { id: 'p-ebd', title: 'EBD Digital', category: 'Páginas', icon: BookOpenCheck, href: '/admin/ebd', permission: 'ebd:manage', keywords: 'revista escola bíblica dominical lições pdf trimestre' },
       { id: 'p-emails', title: 'E-mails das Séries', category: 'Páginas', icon: Mail, href: '/admin/emails', permission: 'email:manage', keywords: 'newsletter disparos leitura semanal assinantes' },
       { id: 'p-banners', title: 'Banners da Home', category: 'Páginas', icon: Image, href: '/admin/banners', permission: 'banners:manage', keywords: 'carrossel destaque capa imagens' },
       { id: 'p-relogio', title: 'Relógio de Oração', category: 'Páginas', icon: Shield, href: '/admin/relogio', permission: 'prayer:manage', keywords: 'intercessão escalas reservas 24h' },
