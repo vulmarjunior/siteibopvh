@@ -22,10 +22,11 @@ import '../../components/ebd/ebd-reader.css';
 import { useEbdReaderSettings } from '../../lib/ebd/useEbdReaderSettings.js';
 import { useEbdLessonProgress } from '../../lib/ebd/useEbdLessonProgress.js';
 import {
+  editionLabel,
   formatFileSize,
   formatPageRange,
-  quarterLabel,
 } from '../../lib/ebd/content.js';
+import { formatCivilDateWithWeekday } from '../../lib/ebd/schedule.js';
 import type { EbdLessonDetail, EbdLessonResponse } from '../../types/ebd.js';
 
 const FALLBACK_TITLE = 'EBD Digital | Igreja Batista Olaria';
@@ -172,8 +173,8 @@ export default function EbdLessonPage() {
             <header className="ebd-card p-5 sm:p-8">
               <p className="flex flex-wrap items-center gap-2 text-[0.7rem] font-bold uppercase tracking-[0.18em] ebd-accent">
                 <BookOpen className="h-4 w-4" aria-hidden="true" />
-                Lição {lesson.number} • {quarterLabel(lesson.quarter.year, lesson.quarter.quarter)} •{' '}
-                {lesson.quarter.className}
+                Lição {lesson.number} • {lesson.cycle.periodLabel} •{' '}
+                {lesson.cycle.className}
                 <span className="inline-flex items-center gap-1 rounded-full border ebd-border px-2 py-0.5 text-[0.68rem] tracking-wider ebd-muted">
                   <Lock className="h-3 w-3" aria-hidden="true" />
                   Uso interno
@@ -185,8 +186,14 @@ export default function EbdLessonPage() {
               <p className="mt-3 text-base font-semibold">
                 <span className="ebd-accent">Texto base:</span> {lesson.baseText}
               </p>
+              {lesson.scheduledOn ? (
+                <p className="mt-1 text-sm font-semibold">
+                  Encontro de {formatCivilDateWithWeekday(lesson.scheduledOn)}
+                </p>
+              ) : null}
               <p className="mt-1 text-sm ebd-muted">
-                {lesson.quarter.publisher} • {lesson.quarter.title} •{' '}
+                {lesson.edition.publisher} • {lesson.edition.title} •{' '}
+                {editionLabel(lesson.edition.year, lesson.edition.quarter)} •{' '}
                 {formatPageRange(lesson.startPage, lesson.endPage)}
               </p>
 
@@ -203,13 +210,13 @@ export default function EbdLessonPage() {
                 ) : null}
                 <Link className="ebd-btn" to="/ebd">
                   <List className="h-4 w-4" aria-hidden="true" />
-                  Índice do trimestre
+                  Índice do ciclo
                 </Link>
               </div>
               {lesson.pdf ? (
                 <p className="mt-2 flex items-start gap-1.5 text-xs leading-relaxed ebd-muted">
                   <FileText className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                  O PDF contém a revista completa do trimestre; a lição começa na página {lesson.startPage}.
+                  O PDF contém a revista completa; a lição começa na página {lesson.startPage}.
                 </p>
               ) : null}
             </header>
@@ -283,14 +290,26 @@ export default function EbdLessonPage() {
                   dailyReadings={lesson.dailyReadings}
                   sectionIdPrefix="secao"
                 />
+                <footer className="mt-8 border-t ebd-border pt-4 text-xs leading-relaxed ebd-muted">
+                  <p>
+                    Conteúdo editorial: {lesson.edition.title} • {lesson.edition.publisher} •{' '}
+                    {editionLabel(lesson.edition.year, lesson.edition.quarter)}
+                    {lesson.edition.issue ? ` • Edição ${lesson.edition.issue}` : ''}
+                    {lesson.edition.volume ? ` • Volume ${lesson.edition.volume}` : ''}.
+                  </p>
+                  <p className="mt-1">
+                    Ciclo de estudo da turma {lesson.cycle.className} • {lesson.cycle.periodLabel} • uso
+                    interno da Igreja Batista Olaria.
+                  </p>
+                </footer>
               </article>
 
-              <aside aria-labelledby="indice-trimestre" className="ebd-card p-4 lg:sticky lg:top-6">
-                <h2 id="indice-trimestre" className="font-serif text-lg font-bold">
-                  Índice do trimestre
+              <aside aria-labelledby="indice-ciclo" className="ebd-card p-4 lg:sticky lg:top-6">
+                <h2 id="indice-ciclo" className="font-serif text-lg font-bold">
+                  Índice do ciclo
                 </h2>
                 <p className="mt-1 text-xs ebd-muted">
-                  {quarterLabel(lesson.quarter.year, lesson.quarter.quarter)} • {lesson.index.length}{' '}
+                  {lesson.cycle.periodLabel} • {lesson.index.length}{' '}
                   {lesson.index.length === 1 ? 'lição publicada' : 'lições publicadas'}
                 </p>
                 <ol className="mt-3 space-y-1.5">
@@ -306,7 +325,14 @@ export default function EbdLessonPage() {
                           <span aria-hidden="true" className="w-5 shrink-0 text-center font-bold ebd-accent">
                             {item.number}
                           </span>
-                          <span className="min-w-0">{item.title}</span>
+                          <span className="min-w-0">
+                            <span className="block">{item.title}</span>
+                            {item.scheduledOn ? (
+                              <span className="block text-[0.68rem] ebd-muted">
+                                {formatCivilDateWithWeekday(item.scheduledOn)}
+                              </span>
+                            ) : null}
+                          </span>
                         </Link>
                       </li>
                     );
@@ -325,6 +351,11 @@ export default function EbdLessonPage() {
                   <span className="mt-1 font-serif font-bold leading-snug">
                     {lesson.navigation.previous.number}. {lesson.navigation.previous.title}
                   </span>
+                  {lesson.navigation.previous.scheduledOn ? (
+                    <span className="text-xs ebd-muted">
+                      {formatCivilDateWithWeekday(lesson.navigation.previous.scheduledOn)}
+                    </span>
+                  ) : null}
                 </Link>
               ) : (
                 <span aria-hidden="true" className="hidden sm:block" />
@@ -342,6 +373,11 @@ export default function EbdLessonPage() {
                   <span className="mt-1 font-serif font-bold leading-snug">
                     {lesson.navigation.next.number}. {lesson.navigation.next.title}
                   </span>
+                  {lesson.navigation.next.scheduledOn ? (
+                    <span className="text-xs ebd-muted">
+                      {formatCivilDateWithWeekday(lesson.navigation.next.scheduledOn)}
+                    </span>
+                  ) : null}
                 </Link>
               ) : (
                 <span aria-hidden="true" className="hidden sm:block" />

@@ -18,10 +18,11 @@ import { EbdFooter, EbdHeader } from '../../components/ebd/EbdChrome';
 import '../../components/ebd/ebd-reader.css';
 import { useEbdReaderSettings } from '../../lib/ebd/useEbdReaderSettings.js';
 import { useEbdProgress } from '../../lib/ebd/useEbdProgress.js';
-import { formatPageRange, quarterLabel } from '../../lib/ebd/content.js';
+import { editionLabel, formatPageRange } from '../../lib/ebd/content.js';
+import { formatCivilDateWithWeekday, weekdayLabel } from '../../lib/ebd/schedule.js';
 import type {
-  EbdQuarterSummary,
-  EbdQuartersResponse,
+  EbdCycleSummary,
+  EbdCyclesResponse,
   EbdSearchResponse,
 } from '../../types/ebd.js';
 
@@ -32,7 +33,7 @@ export default function EbdHomePage() {
   const { progress, hasProgress, clearAll } = useEbdProgress();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [quarters, setQuarters] = useState<EbdQuarterSummary[]>([]);
+  const [cycles, setCycles] = useState<EbdCycleSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -55,12 +56,12 @@ export default function EbdHomePage() {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/ebd/quarters', { signal: controller.signal });
+        const response = await fetch('/api/ebd/cycles', { signal: controller.signal });
         if (!response.ok) {
-          throw new Error('Não foi possível carregar os trimestres publicados.');
+          throw new Error('Não foi possível carregar os ciclos publicados.');
         }
-        const data = (await response.json()) as EbdQuartersResponse;
-        if (active) setQuarters(Array.isArray(data.quarters) ? data.quarters : []);
+        const data = (await response.json()) as EbdCyclesResponse;
+        if (active) setCycles(Array.isArray(data.cycles) ? data.cycles : []);
       } catch (loadError) {
         if (!active || controller.signal.aborted) return;
         setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar a EBD Digital.');
@@ -77,7 +78,7 @@ export default function EbdHomePage() {
   }, [reloadKey]);
 
   useEffect(() => {
-    if (activeQuery.length < 2 || quarters.length === 0) {
+    if (activeQuery.length < 2 || cycles.length === 0) {
       setSearchData(null);
       setSearchLoading(false);
       setSearchError(null);
@@ -97,13 +98,13 @@ export default function EbdHomePage() {
         });
         if (!response.ok) {
           const body = (await response.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(body?.error ?? 'Não foi possível buscar no trimestre.');
+          throw new Error(body?.error ?? 'Não foi possível buscar no ciclo.');
         }
         const data = (await response.json()) as EbdSearchResponse;
         if (active) setSearchData(data);
       } catch (loadError) {
         if (!active || controller.signal.aborted) return;
-        setSearchError(loadError instanceof Error ? loadError.message : 'Não foi possível buscar no trimestre.');
+        setSearchError(loadError instanceof Error ? loadError.message : 'Não foi possível buscar no ciclo.');
       } finally {
         if (active) setSearchLoading(false);
       }
@@ -114,7 +115,7 @@ export default function EbdHomePage() {
       active = false;
       controller.abort();
     };
-  }, [activeQuery, quarters.length]);
+  }, [activeQuery, cycles.length]);
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -135,10 +136,7 @@ export default function EbdHomePage() {
 
   const resultCount = searchData?.results.length ?? 0;
   const resultLabel = searchData
-    ? `${resultCount} ${resultCount === 1 ? 'lição encontrada' : 'lições encontradas'} em ${quarterLabel(
-        searchData.quarter.year,
-        searchData.quarter.quarter,
-      )}`
+    ? `${resultCount} ${resultCount === 1 ? 'lição encontrada' : 'lições encontradas'} em ${searchData.cycle.periodLabel}`
     : '';
 
   return (
@@ -183,7 +181,7 @@ export default function EbdHomePage() {
 
         {loading ? (
           <div className="mt-6 space-y-4" aria-live="polite" aria-busy="true">
-            <span className="sr-only">Carregando trimestres publicados…</span>
+            <span className="sr-only">Carregando ciclos publicados…</span>
             <div className="h-28 animate-pulse rounded-2xl ebd-soft" />
             <div className="h-20 animate-pulse rounded-2xl ebd-soft" />
             <div className="h-20 animate-pulse rounded-2xl ebd-soft" />
@@ -201,30 +199,30 @@ export default function EbdHomePage() {
           </div>
         ) : null}
 
-        {!loading && !error && quarters.length === 0 ? (
+        {!loading && !error && cycles.length === 0 ? (
           <div className="ebd-card mt-6 p-6">
-            <h2 className="font-serif text-xl font-bold">Nenhum trimestre publicado ainda</h2>
+            <h2 className="font-serif text-xl font-bold">Nenhum ciclo publicado ainda</h2>
             <p className="mt-2 text-sm leading-relaxed ebd-muted">
-              As lições aparecem aqui depois da revisão do conteúdo e da publicação do trimestre. O PDF
+              As lições aparecem aqui depois da revisão do conteúdo e da publicação do ciclo de estudo. O PDF
               original também será disponibilizado nesta área.
             </p>
           </div>
         ) : null}
 
-        {!loading && !error && quarters.length > 0 ? (
+        {!loading && !error && cycles.length > 0 ? (
           <>
             <section aria-labelledby="busca-titulo" className="ebd-card mt-6 p-5 sm:p-6">
               <h2 id="busca-titulo" className="font-serif text-xl font-bold">
-                Buscar no trimestre
+                Buscar no ciclo
               </h2>
               <p id="busca-dica" className="mt-1 text-sm leading-relaxed ebd-muted">
                 Digite uma palavra ou expressão. A busca ignora acentos e diferenças entre maiúsculas e
-                minúsculas. Ela considera o trimestre publicado mais recente.
+                minúsculas. Ela considera o ciclo publicado mais recente.
               </p>
               <form role="search" aria-labelledby="busca-titulo" onSubmit={submitSearch} noValidate className="mt-3">
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <label htmlFor="ebd-search" className="sr-only">
-                    Buscar no trimestre
+                    Buscar no ciclo
                   </label>
                   <input
                     id="ebd-search"
@@ -319,37 +317,41 @@ export default function EbdHomePage() {
         ) : null}
 
         {!loading && !error
-          ? quarters.map((quarter) => {
-              const headingId = `trimestre-${quarter.id}`;
+          ? cycles.map((cycle) => {
+              const headingId = `ciclo-${cycle.id}`;
               return (
-                <section key={quarter.id} aria-labelledby={headingId} className="mt-8">
+                <section key={cycle.id} aria-labelledby={headingId} className="mt-8">
                   <header className="ebd-card p-5 sm:p-6">
                     <p className="text-[0.7rem] font-bold uppercase tracking-[0.18em] ebd-accent">
-                      {quarterLabel(quarter.year, quarter.quarter)} • {quarter.className}
+                      Ciclo de estudo • {cycle.className}
                     </p>
                     <h2 id={headingId} className="mt-2 font-serif text-2xl font-bold leading-tight sm:text-3xl">
-                      {quarter.title}
+                      {cycle.periodLabel}
                     </h2>
                     <p className="mt-2 text-sm ebd-muted">
-                      {quarter.publisher}
-                      {quarter.issue ? ` • Edição ${quarter.issue}` : ''}
-                      {quarter.volume ? ` • Volume ${quarter.volume}` : ''} • {quarter.lessonCount}{' '}
-                      {quarter.lessonCount === 1 ? 'lição' : 'lições'}
+                      {cycle.lessons.length} {cycle.lessons.length === 1 ? 'lição' : 'lições'} • encontros de{' '}
+                      {weekdayLabel(cycle.weekday).toLowerCase()}
                     </p>
                     <div className="mt-4 flex flex-wrap gap-3">
-                      <a className="ebd-primary-link" href={`/api/ebd/quarters/${quarter.id}/pdf`} download>
+                      <a className="ebd-primary-link" href={`/api/ebd/editions/${cycle.edition.id}/pdf`} download>
                         <Download className="h-4 w-4" aria-hidden="true" />
                         Baixar PDF da revista
                       </a>
                       <span className="inline-flex items-center gap-1.5 text-xs ebd-muted">
                         <FileText className="h-4 w-4" aria-hidden="true" />
-                        O PDF contém a revista completa do trimestre.
+                        O PDF contém a revista completa.
                       </span>
                     </div>
+                    <p className="mt-4 border-t ebd-border pt-3 text-xs leading-relaxed ebd-muted">
+                      Conteúdo editorial: {cycle.edition.title} • {cycle.edition.publisher} •{' '}
+                      {editionLabel(cycle.edition.year, cycle.edition.quarter)}
+                      {cycle.edition.issue ? ` • Edição ${cycle.edition.issue}` : ''}
+                      {cycle.edition.volume ? ` • Volume ${cycle.edition.volume}` : ''}
+                    </p>
                   </header>
 
                   <ol className="mt-4 space-y-3">
-                    {quarter.lessons.map((lesson) => {
+                    {cycle.lessons.map((lesson) => {
                       const entry = progress[lesson.slug];
                       return (
                         <li key={lesson.slug}>
@@ -366,6 +368,9 @@ export default function EbdHomePage() {
                               </span>
                               <span className="mt-1 flex flex-wrap items-center gap-2 text-sm ebd-muted">
                                 <span>
+                                  {lesson.scheduledOn
+                                    ? `${formatCivilDateWithWeekday(lesson.scheduledOn)} • `
+                                    : ''}
                                   Texto base: {lesson.baseText} •{' '}
                                   {formatPageRange(lesson.startPage, lesson.endPage)}
                                 </span>
