@@ -13,6 +13,16 @@
 - **Limpeza da edição órfã (decisão 4):** o responsável removeu a edição **2026/4/Adultos** (`cmvqucvhr00008o0q1h8ikx7v`) e o PDF do bucket `ebd` pelo painel Supabase em 27/10/2026, usando a Opção A do roteiro. Nenhum conteúdo público foi afetado; o script `scripts/ebd/cleanup-orphan-edition.ts` permanece para casos futuros.
 - **Pendente:** homologação manual em produção e generalização do período editorial (decisão 3), que fica para a próxima iteração. A E5 continua **não homologada**.
 
+### 2026-10-27 - EBD Digital: homologação funcional da E5 em produção
+
+- **Fluxo completo:** edição `cmvr6pdrl0000ke0hu6kvcba4` criada a partir do JSON; PDF v1 `cmvr6q8ci0002ke0hdl5veo00` com SHA-256 `5b359ca876e682a25e29b14af0aa2f24b0cea3a7389be635d22f39da38fec204` e 4.850.159 bytes; **13 lições** importadas em rascunho.
+- **Integridade:** JSON de teste com `source.sha256` alterado foi recusado e as 13 lições permaneceram intactas.
+- **Agenda:** ciclo `cmvr6v1iw000wke0hvc4p2qgq`, slug `adultos-2027-09-05`, revisão 2; lição 3 no sábado 18/09/2027, lição 5 sem encontro (regra 03/10, data 10/10), lições 7 e 8 em 07/11/2027 com aviso de mesma data; período Setembro a dezembro de 2027; 13 datas sem duplicidade.
+- **Público:** `/ebd` exibiu período, datas e proveniência editorial; busca por “Pentateuco” retornou 3 lições; PDF abriu por URL assinada do Supabase; progresso local confirmado; `noindex` em meta/header e `/ebd` fora do sitemap.
+- **Lighthouse:** acessibilidade, boas práticas e SEO **1,00** em `/ebd` e na lição; a ferramenta desta sessão não mede performance/LCP mobile.
+- **Estado final:** ciclo **arquivado**; `/api/ebd/cycles` → `{"cycles":[]}`; `/ebd` sem ciclo; edição e lições preservadas no admin.
+- **Pendente:** conferência manual de teclado, reflow 320–360 px, NVDA/TalkBack e LCP mobile. A E5 ainda **não foi declarada homologada**.
+
 ### 2026-10-27 - EBD Digital: E5 - ciclos de estudo e calendário (PR #21, publicado)
 
 - **Modelo (Rev. 2):** `EbdQuarter` deixa de existir. A **edição** (`EbdEdition`) é a revista (editora, ano, trimestre editorial, nº, volume, turma, PDF e hash); o **ciclo** (`EbdCycle`) é o uso (turma, `startsOn`, dia da semana, status, slug permanente); a **agenda** (`EbdCycleLesson`) guarda a posição da lição e a exceção (`RULE`, `RESCHEDULED`, `NO_MEETING`).

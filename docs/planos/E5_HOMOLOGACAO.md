@@ -6,11 +6,14 @@
 > **Deploy de referência:** PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25),
 > squash `7695173` (Rev. 4), sobre a E5 do PR [#21](https://github.com/vulmarjunior/siteibopvh/pull/21)
 > (squash `a66add8`)
-> **Quando usar:** a Rev. 4 já está publicada e a edição órfã foi removida; o
-> guia está pronto para a homologação. Se a tela de criação ainda pedir
-> ano/trimestre/turma manualmente, pare: a Rev. 4 não está publicada.
+> **Quando usar:** este guia foi executado em produção em 27/10/2026; o
+> resultado está na seção **Resultado da execução**. Use-o para repetir a
+> homologação em outro ambiente ou após mudanças. Se a tela de criação ainda
+> pedir ano/trimestre/turma manualmente, pare: a Rev. 4 não está publicada.
 > **Status:** Rev. 4 publicada em produção em 27/10/2026; órfã removida em
-> 27/10/2026; **aguardando a homologação manual**
+> 27/10/2026; **homologação funcional concluída em 27/10/2026**; pendentes as
+> verificações manuais de acessibilidade (teclado, NVDA/TalkBack, 320–360 px) e
+> LCP mobile, que o navegador desta sessão não cobre
 
 ## Como este guia funciona
 
@@ -35,15 +38,16 @@
 - [x] Rev. 4 (PR #25) mergeada e publicada em produção em 27/10/2026.
 - [x] Edição antiga **2026 / 4º trimestre / Adultos** removida com autorização
       (e o PDF do bucket).
-- [ ] Bucket `ebd` criado no Supabase, **privado**.
-- [ ] `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL` e
+- [x] Bucket `ebd` criado no Supabase, **privado** (upload assinado e download
+      por URL assinada funcionaram em 27/10/2026).
+- [x] `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL` e
       `VITE_SUPABASE_ANON_KEY` configuradas em Production na Vercel.
-- [ ] JSON da 1T2022 gerado localmente (13 lições).
-- [ ] JSON de teste com `source.sha256` alterado, para o passo de recusa.
-- [ ] PDF de origem em `materiais/ebd/2022/1T/adultos/PalavraeVida-1T2022-Digital.pdf`
+- [x] JSON da 1T2022 gerado localmente (13 lições; schema 1.0.0).
+- [x] JSON de teste com `source.sha256` alterado, para o passo de recusa.
+- [x] PDF de origem em `materiais/ebd/2022/1T/adultos/PalavraeVida-1T2022-Digital.pdf`
       (SHA-256 `5b359ca876e682a25e29b14af0aa2f24b0cea3a7389be635d22f39da38fec204`,
       4.850.159 bytes).
-- [ ] Conta de admin com permissão `ebd:manage` (`ADMIN_GERAL` ou `EDITOR`).
+- [x] Conta de admin com permissão `ebd:manage` (`ADMIN_GERAL` ou `EDITOR`).
 
 ## Bloco 1 — Conferir o ambiente (5 passos)
 
@@ -124,7 +128,8 @@ inalterada.
 4. Confira a prévia:
    - lição 1 em **05/09/2027** (primeiro domingo ≥ início);
    - **13 datas semanais**;
-   - período **“Setembro a dezembro de 2027”**.
+   - período **“Setembro a novembro de 2027”** antes do “sem encontro”; depois
+     do passo 7, o período passa a **“Setembro a dezembro de 2027”**.
 5. Crie o ciclo.
    **Deve aparecer:** rascunho, slug `adultos-2027-09-05`, âncora revisão **1**.
 6. Ajuste **somente a lição 3** para um **sábado**.
@@ -194,26 +199,57 @@ inalterada.
 **Conferência do bloco 10:** notas de acessibilidade e o relatório do
 Lighthouse.
 
+## Resultado da execução (27/10/2026)
+
+Execução funcional em produção, com o responsável logado no admin e autorização
+para publicar. O ciclo foi arquivado ao final; a edição e as lições permanecem
+no admin.
+
+| Item | Evidência |
+|---|---|
+| Edição criada do JSON | `cmvr6pdrl0000ke0hu6kvcba4` — Revista de Jovens e Adultos, Convenção Batista Fluminense, 1T2022, Adultos, nº 72, vol. 18 |
+| PDF | v1, `cmvr6q8ci0002ke0hdl5veo00`; SHA-256 `5b359ca876e682a25e29b14af0aa2f24b0cea3a7389be635d22f39da38fec204`; 4.850.159 bytes; `ebd/2022/1/adultos/revista-v1.pdf`; 119 páginas após o import |
+| Importação | 13 lições em rascunho; auditoria `IMPORTAR_EDICAO_EBD` |
+| Teste de hash | JSON com SHA-256 `000…` recusado; 13 lições permaneceram |
+| Ciclo | `cmvr6v1iw000wke0hvc4p2qgq`, slug `adultos-2027-09-05`, revisão 2, rascunho → publicado → despublicado → arquivado |
+| Agenda | Lição 1 em 12/09/2027; lição 3 no sábado 18/09/2027 (regra 19/09); lição 5 sem encontro (regra 03/10, data 10/10); lições 7 e 8 em 07/11/2027 com aviso de mesma data; período Setembro a dezembro de 2027; 13 datas sem duplicidade |
+| Público | `/ebd` exibiu o período, as 13 datas e a proveniência editorial; busca por “Pentateuco” retornou 3 lições; PDF abriu pela URL assinada do Supabase; lição 1 marcada como lida no `localStorage` |
+| Indexação | `X-Robots-Tag: noindex, nofollow` em `/ebd` e na lição; `meta name="robots"` no cliente; `/ebd` ausente do sitemap |
+| Lighthouse | Acessibilidade **1,00**, Boas práticas **1,00** e SEO **1,00** em `/ebd` e na lição; a ferramenta não mede performance/LCP mobile |
+| Auditoria | `CRIAR_EDICAO_EBD`, `UPLOAD_PDF_EBD`, `IMPORTAR_EDICAO_EBD`, `CRIAR_CICLO_EBD`, `AJUSTAR_AGENDA_EBD`, `REANCORAR_CICLO_EBD`, `PUBLICAR_CICLO_EBD`, `DESPUBLICAR_CICLO_EBD` e `ARQUIVAR_CICLO_EBD`, com autor e data |
+| Estado final | Ciclo **ARQUIVADO**; `/api/ebd/cycles` → `{"cycles":[]}`; `/ebd` sem ciclo; lição pública sem conteúdo (API 404) |
+
+**Correção do roteiro:** a prévia inicial do bloco 6 mostra
+“Setembro a **novembro** de 2027”; após o “sem encontro” da lição 5, passa a
+“Setembro a **dezembro** de 2027”. O texto do guia foi ajustado.
+
+**Pendente para declarar a E5 homologada:** conferência manual de teclado,
+NVDA/TalkBack, reflow em 320–360 px e LCP mobile. O navegador desta sessão não
+cobre essas verificações; as notas de acessibilidade/SEO acima são 1,00.
+
 ## Como confirmar o resultado
 
-- [ ] RF13 — ciclo criado com edição, turma e data de início; datas exibidas
+- [x] RF13 — ciclo criado com edição, turma e data de início; datas exibidas
       antes de salvar.
-- [ ] RF14 — reancoragem recalcula a regra **sem apagar** exceções; divergência
+- [x] RF14 — reancoragem recalcula a regra **sem apagar** exceções; divergência
       visível.
-- [ ] RF15 — ajuste isolado não move as seguintes; **sem encontro** desloca as
+- [x] RF15 — ajuste isolado não move as seguintes; **sem encontro** desloca as
       seguintes.
-- [ ] RF16 — data em cada lição na leitura e no índice; rótulo público = período
+- [x] RF16 — data em cada lição na leitura e no índice; rótulo público = período
       de uso.
-- [ ] RNF11 — datas em `DATE`, sem deslocamento de fuso (conferir virada de ano
-      e horário de verão).
-- [ ] RNF8 — `noindex` em meta/header/API e fora do sitemap.
-- [ ] RNF10 — upload assinado; PDF não passa pela função serverless.
-- [ ] RNF7 — auditoria de criação, upload, importação, ajuste, reancoragem,
+- [x] RNF11 — datas em `DATE`, sem deslocamento de fuso; virada de ano conferida
+      em dezembro de 2027; Porto Velho não tem horário de verão.
+- [x] RNF8 — `noindex` em meta/header/API e fora do sitemap.
+- [x] RNF10 — upload assinado; PDF servido pelo Supabase, fora da função
+      serverless.
+- [x] RNF7 — auditoria de criação, upload, importação, ajuste, reancoragem,
       publicação e arquivamento.
-- [ ] Sem regressão em reflow, busca com trechos, progresso local, download do
-      PDF e versionamento.
-- [ ] JSON v1.0.0 continua compatível, sem mudança de contrato.
-- [ ] A edição 1T2022 (período editorial) convive com o ciclo de 2027 (período
+- [x] Sem regressão em busca com trechos, progresso local, download do PDF e
+      versionamento.
+- [ ] Reflow em 320–360 px — pendente de conferência manual.
+- [ ] Teclado, NVDA/TalkBack e LCP mobile — pendentes de conferência manual.
+- [x] JSON v1.0.0 continua compatível, sem mudança de contrato.
+- [x] A edição 1T2022 (período editorial) convive com o ciclo de 2027 (período
       de uso) **sem contradição** — essa é a prova central da Rev. 3.
 
 ## O que dizer depois
@@ -233,10 +269,12 @@ Nunca declarar “homologado” sem os prints e a conferência dos critérios ac
 
 ## Registro e governança
 
-1. Anexar prints, contagem de lições, versão da âncora e relatório do Lighthouse
-   ao PR #21.
-2. Se todos os critérios passarem, atualizar a linha da E5 no plano para
-   `homologado` e registrar o aceite do responsável.
+1. A execução funcional de 27/10/2026 está registrada em
+   [E5_PROVENIENCIA_EDITORIAL.md](E5_PROVENIENCIA_EDITORIAL.md) §17.8, com IDs,
+   contagens, agenda, auditoria e relatórios do Lighthouse (acessibilidade, SEO e
+   boas práticas).
+2. Se todos os critérios passarem, incluindo o bloco 10, atualizar a linha da E5
+   no plano para `homologado` e registrar o aceite do responsável.
 3. Atualizar `docs/CONTINUIDADE.md`, `docs/PENDENCIAS.md` e `docs/CHANGELOG.md`
    com o resultado.
 4. Se algo falhar, registrar o passo e a mensagem exata antes de qualquer novo

@@ -4,7 +4,7 @@ Fonte oficial das pendências deste projeto.
 
 ## Em aberto
 
-- **2026-10-27 — EBD Digital: E5 publicada em produção, homologação em andamento.**
+- **2026-10-27 — EBD Digital: E5 publicada em produção; homologação funcional concluída; verificações manuais de acessibilidade/LCP pendentes.**
   E1 concluída na edição real 1T2022; E2, E3 e E4 homologadas em 26/10/2026 e em
   produção. A Revisão 2 (aprovada em 27/10/2026) separou a **edição** (revista)
   do **ciclo de estudo** (uso), com data por lição, regra mais exceções e rótulo
@@ -13,10 +13,11 @@ Fonte oficial das pendências deste projeto.
   publicada em produção em 27/10/2026, com CI verde. O reset do schema foi
   aplicado no primeiro acesso e a produção estava sem conteúdo EBD
   (`/api/ebd/cycles` responde lista vazia; `/api/ebd/quarters` responde 404).
-  Falta a **homologação manual em produção**: criar a edição **a partir do JSON**,
-  enviar o PDF ao bucket `ebd` real, importar as 13 lições, montar a agenda,
-  publicar o ciclo e rodar o Lighthouse. O bucket `ebd` e as credenciais
-  Supabase precisam estar configurados na Vercel. Roteiro em
+  A **homologação funcional em produção** foi concluída em 27/10/2026: edição
+  criada a partir do JSON, PDF no bucket `ebd` real, 13 lições importadas,
+  agenda montada, ciclo publicado, validado no público e arquivado. Restam as
+  verificações manuais de **teclado, reflow 320–360 px, NVDA/TalkBack e LCP
+  mobile** do bloco 10. Roteiro em
   [planos/E5_HOMOLOGACAO.md](planos/E5_HOMOLOGACAO.md). A **E6** (homologação e
   publicação do ciclo) segue pendente e depende do ciclo completo da turma
   Adultos, do aceite do responsável, da autorização da editora referenciada e do
@@ -41,8 +42,10 @@ Fonte oficial das pendências deste projeto.
   sem bloquear. **As decisões 1, 2 e 5 estão implementadas e publicadas em
   27/10/2026 (PR #25, squash `7695173`; 211 testes, lint e build verdes; CI da
   `main` verde; smoke de produção aprovado). A decisão 4 (limpeza da órfã) foi
-  concluída em 27/10/2026.** Próximo passo: concluir a homologação em produção;
-  a generalização (3) fica para a próxima iteração. Detalhes em
+  concluída em 27/10/2026 e a homologação funcional foi executada em
+  produção.** Próximo passo: concluir as verificações manuais de acessibilidade
+  e LCP mobile; depois seguir para a E6. A generalização (3) fica para a próxima
+  iteração. Detalhes em
   [planos/E5_PROVENIENCIA_EDITORIAL.md](planos/E5_PROVENIENCIA_EDITORIAL.md) §17.
 
 ## Concluídas

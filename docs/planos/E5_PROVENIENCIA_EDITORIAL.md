@@ -1,6 +1,6 @@
 # E5 — Proveniência editorial x identidade da edição
 
-> **Status:** análise registrada em 27/10/2026; **decisões tomadas em 27/10/2026 (Rev. 3)**; **decisões 1, 2 e 5 implementadas (Rev. 4) e publicadas em produção em 27/10/2026** (PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25), squash `7695173`); **limpeza da órfã (decisão 4) concluída pelo responsável em 27/10/2026**; E5 **não homologada**.
+> **Status:** análise registrada em 27/10/2026; **decisões tomadas em 27/10/2026 (Rev. 3)**; **decisões 1, 2 e 5 implementadas (Rev. 4) e publicadas em produção em 27/10/2026** (PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25), squash `7695173`); **limpeza da órfã (decisão 4) concluída em 27/10/2026**; **homologação funcional em produção concluída em 27/10/2026**; E5 **não declarada homologada** até as verificações manuais de acessibilidade/LCP.
 > **Origem:** homologação em produção do PR [#21](https://github.com/vulmarjunior/siteibopvh/pull/21)
 > (squash `a66add8`), ao importar o JSON da 1T2022.
 > **Para:** próximo agente que retomar a E5/E6.
@@ -322,7 +322,9 @@ executor.
 > **Situação:** implementado no PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25),
 > com CI verde, **mergeado (squash `7695173`) e publicado em produção em
 > 27/10/2026**. O smoke de produção passou. A limpeza da órfã (decisão 4) foi
-> concluída pelo responsável em 27/10/2026. A E5 continua **não homologada**.
+> concluída em 27/10/2026 e a **homologação funcional** foi executada em
+> produção no mesmo dia (§17.8). A E5 aguarda apenas as verificações manuais de
+> acessibilidade/LCP para ser declarada homologada.
 
 ### 17.1 Decisões
 
@@ -377,19 +379,21 @@ executor.
 
 | Critério | Estado |
 |---|---|
-| Importar JSON com `edition.year`/`quarter`/`class` diferentes conclui | **Coberto por teste de rota** (200, lição gravada, `divergences` preenchido); falta a confirmação manual em produção. |
-| Hash, tamanho e esquema continuam bloqueando | **Coberto por testes de rota** (409, 409 e 422). |
-| Rótulo principal do público continua sendo o período do ciclo | Sem alteração nesta entrega. |
-| Admin exibe a proveniência real, com nota de divergência | **Implementado**; validação visual fica para o roteiro da E5. |
+| Importar JSON com `edition.year`/`quarter`/`class` diferentes conclui | **Coberto por teste de rota** (200, lição gravada, `divergences` preenchido); no fluxo manual de 27/10/2026 a edição nasceu do próprio JSON, sem divergência. |
+| Hash, tamanho e esquema continuam bloqueando | **Hash e esquema confirmados em produção** em 27/10/2026; tamanho coberto por teste de rota (409). |
+| Rótulo principal do público continua sendo o período do ciclo | **Verificado em produção em 27/10/2026:** `/ebd` exibiu “Setembro a dezembro de 2027” e a proveniência editorial no rodapé. |
+| Admin exibe a proveniência real, com nota de divergência | **Implementado**; a proveniência foi exibida no público e a nota de divergência está coberta por testes de rota. |
 | Contrato JSON v1.0.0 continua aceito | **Coberto pelos testes de validação existentes.** |
 | Testes, lint e build verdes | **Aprovado localmente e no CI do PR #25.** |
 
 ### 17.6 Pendências
 
-A limpeza da órfã (decisão 4) foi concluída em 27/10/2026. Restam:
+A limpeza da órfã (decisão 4) e a homologação funcional foram concluídas em
+27/10/2026. Restam:
 
-1. Executar `docs/planos/E5_HOMOLOGACAO.md` em produção, agora sem o cadastro
-   manual e com a nota informativa.
+1. Concluir as verificações manuais do bloco 10 do guia: teclado, reflow em
+   320–360 px, NVDA/TalkBack e LCP mobile. Depois, se passarem, declarar a E5
+   homologada e seguir para a E6.
 2. Planejar a decisão 3 (período editorial generalizado) antes de remover o
    `noindex` ou compartilhar links públicos.
 
@@ -418,3 +422,39 @@ A limpeza da órfã (decisão 4) foi concluída em 27/10/2026. Restam:
   `DATABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` e recusa edição com lições ou
   ciclos). Não foi necessária nesta limpeza. Instruções em
   `scripts/ebd/README.md`.
+
+### 17.8 Homologação funcional em produção (27/10/2026)
+
+Execução do roteiro [E5_HOMOLOGACAO.md](E5_HOMOLOGACAO.md) em produção, com o
+responsável logado no admin e autorização para publicar. O ciclo foi arquivado
+ao final; a edição e as lições permanecem no admin.
+
+- **Edição:** `cmvr6pdrl0000ke0hu6kvcba4` — Revista de Jovens e Adultos,
+  Convenção Batista Fluminense, 1T2022, Adultos, nº 72, vol. 18.
+- **PDF:** v1 `cmvr6q8ci0002ke0hdl5veo00`; hash
+  `5b359ca876e682a25e29b14af0aa2f24b0cea3a7389be635d22f39da38fec204`;
+  4.850.159 bytes; `ebd/2022/1/adultos/revista-v1.pdf`; 119 páginas após o
+  import.
+- **Importação:** 13 lições em rascunho; o JSON de teste com hash `000…` foi
+  recusado e as 13 lições permaneceram intactas.
+- **Ciclo:** `cmvr6v1iw000wke0hvc4p2qgq`, slug `adultos-2027-09-05`, revisão 2.
+  Lição 1 em 12/09/2027; lição 3 no sábado 18/09/2027 (regra 19/09); lição 5 sem
+  encontro (regra 03/10, data 10/10); lições 7 e 8 em 07/11/2027 com aviso de
+  mesma data; período Setembro a dezembro de 2027; 13 datas sem duplicidade.
+- **Público:** `/ebd` exibiu o período, as 13 datas e a proveniência editorial;
+  a busca por “Pentateuco” retornou 3 lições; o PDF abriu pela URL assinada do
+  Supabase; a lição 1 foi marcada como lida no `localStorage`.
+- **Indexação:** `X-Robots-Tag: noindex, nofollow` em `/ebd` e na lição;
+  `meta name="robots"` no cliente; `/ebd` ausente do sitemap.
+- **Lighthouse:** acessibilidade **1,00**, boas práticas **1,00** e SEO **1,00**
+  em `/ebd` e na lição. A ferramenta desta sessão não mede performance/LCP
+  mobile.
+- **Auditoria:** `CRIAR_EDICAO_EBD`, `UPLOAD_PDF_EBD`, `IMPORTAR_EDICAO_EBD`,
+  `CRIAR_CICLO_EBD`, `AJUSTAR_AGENDA_EBD`, `REANCORAR_CICLO_EBD`,
+  `PUBLICAR_CICLO_EBD`, `DESPUBLICAR_CICLO_EBD` e `ARQUIVAR_CICLO_EBD`, com autor
+  e data.
+- **Estado final:** ciclo **ARQUIVADO**; `/api/ebd/cycles` → `{"cycles":[]}`;
+  `/ebd` sem ciclo; a lição pública responde 404 na API.
+- **Pendente:** conferência manual de teclado, reflow em 320–360 px,
+  NVDA/TalkBack e LCP mobile. A E5 não é declarada homologada enquanto essas
+  verificações não passarem.
