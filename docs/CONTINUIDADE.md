@@ -27,15 +27,52 @@ npx prisma generate
 
 Crie `.env.local` a partir de `.env.example`. Os valores secretos não ficam no GitHub; obtenha-os nos projetos Vercel/Supabase/Resend. Para a EBD, o bucket `ebd` do Supabase Storage e as variáveis `SUPABASE_SERVICE_ROLE_KEY`/`VITE_SUPABASE_*` precisam estar configurados — ver `docs/planos/E4_STORAGE_SETUP.md`.
 
-O banco local desta máquina usa Postgres na porta `55432`; o `.env.local` atual está **sem `DATABASE_URL`**, então migração, importação e validação manual do admin não rodam aqui. Não invente credenciais nem aponte para produção: peça ao responsável o valor local ou use o projeto Supabase de desenvolvimento.
+**Atenção ao estado deste checkout:** o `.env.local` da máquina anterior aponta para o projeto de homologação `nvjxhfdoxpcdraovgsuu`, que não responde (`tenant/user not found`), e o `.env.production.local` tem os valores sensíveis redigidos (`[SENSITIVE]`). Não reutilize esses arquivos como se fossem produção. No novo PC, obtenha `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_*` e `RESEND_API_KEY` no Vercel/Supabase; nunca comite esses valores. O sandbox local opcional usa `.env.ebd-local` com Postgres em `127.0.0.1:55432` e Storage em `127.0.0.1:5555`.
 
-O PDF de origem **não é versionado**. Para retomar, copie `PalavraeVida-1T2022-Digital.pdf` para `materiais/ebd/2022/1T/adultos/` e confira o SHA-256 `5b359ca876e682a25e29b14af0aa2f24b0cea3a7389be635d22f39da38fec204`. O JSON completo das 13 lições é local e ignorado pelo Git.
+O PDF de origem **não é versionado**. Para retomar, copie `PalavraeVida-1T2022-Digital.pdf` para `materiais/ebd/2022/1T/adultos/` e confira o SHA-256 `5b359ca876e682a25e29b14af0aa2f24b0cea3a7389be635d22f39da38fec204` e o tamanho `4.850.159` bytes. O JSON completo das 13 lições (`importacao-1t2022-completo.json`) e o JSON de teste com hash alterado são locais e ignorados pelo Git. Se não existirem no novo PC, gere o JSON completo com `scripts/ebd/extract-quarter.py` e crie o JSON de teste alterando `source.sha256` para 64 zeros.
 
 Validação local:
 
 ```bash
 npm test
+npm run lint
 npm run build
+```
+
+## Retomada em 28/10/2026 (outro PC)
+
+**Onde paramos:** E5 homologada e E6 publicada em 27/10/2026. O ciclo oficial
+`cmvrhwa1e0002x7g1r8d2m5yw` (`adultos-2026-11-29`) está no ar: início
+29/11/2026, domingo, sem exceções, 13 lições até 21/02/2027, período
+**Novembro de 2026 a fevereiro de 2027**. O ciclo de homologação
+`adultos-2027-09-05` permanece arquivado.
+
+**Referência Git:** `main` em `8e77de0` (commit documental da E6), árvore limpa,
+CI verde e deploy Vercel Production concluído. Antes de começar, rode
+`git pull --ff-only origin main`.
+
+**Próxima entrega:** decisão 3 — generalização do período editorial (opção D):
+`editorialPeriod`, ano/trimestre opcionais, slug e caminho do PDF desacoplados,
+JSON v1.1 aceitando v1.0.0. Não remover o `noindex` nem compartilhar links
+públicos antes dessa entrega.
+
+**Leitura mínima:** `AGENTS.md`, `agente.md`, `docs/MASTER_PLAN.md`,
+`docs/PENDENCIAS.md`, `docs/planos/INDEX.md`,
+`docs/planos/PLANO_EBD_DIGITAL.md`, `docs/planos/E5_PROVENIENCIA_EDITORIAL.md`
+§17 e `docs/planos/E5_HOMOLOGACAO.md`.
+
+**Acesso necessário:** login de admin com `ebd:manage` e credenciais
+Vercel/Supabase para operações de produção. O navegador desta sessão estava
+desconectado no encerramento; no novo PC, use um navegador ou a API admin com
+sessão válida. A limpeza da edição órfã já foi concluída; o script
+`scripts/ebd/cleanup-orphan-edition.ts` permanece apenas para casos futuros.
+
+**Conferência rápida de produção:**
+
+```bash
+curl -s https://www.ibopvh.com.br/api/ebd/cycles
+curl -s -o /dev/null -w "%{http_code}\n" https://www.ibopvh.com.br/ebd
+curl -s -o /dev/null -w "%{http_code}\n" https://www.ibopvh.com.br/api/ebd/quarters
 ```
 
 ## Veredas IBO
