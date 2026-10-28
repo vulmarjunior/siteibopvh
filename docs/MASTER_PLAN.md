@@ -10,7 +10,7 @@ hotsites, inscrições e área administrativa.
 - Ciclo de vida: produção
 - Publicação: Vercel, `https://www.ibopvh.com.br`
 - Banco: PostgreSQL (Supabase)
-- Homologação: EBD Digital — E2, E3 e E4 homologadas; E5 publicada em 27/10/2026, **homologação funcional concluída em 27/10/2026** e pendentes as verificações manuais de acessibilidade/LCP; Rev. 4 da proveniência editorial publicada (PR #25, squash `7695173`) e edição órfã removida em 27/10/2026
+- Homologação: EBD Digital — E2, E3 e E4 homologadas; **E5 homologada em 27/10/2026**, com Rev. 4 da proveniência publicada (PR #25, squash `7695173`) e edição órfã removida; **E6 (publicação do ciclo oficial) pendente**
 - Verificado em: 2026-10-27
 
 ## Princípios e limites
@@ -23,11 +23,9 @@ hotsites, inscrições e área administrativa.
 
 ## Próximo passo
 
-A **Rev. 4 da proveniência editorial da E5** (decisões 1, 2 e 5) foi publicada
-em 27/10/2026 pelo PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25)
-(squash `7695173`), com CI verde e smoke aprovado; a edição órfã foi removida e
-a **homologação funcional em produção** foi concluída em 27/10/2026. Falta
-concluir as verificações manuais de teclado, reflow 320–360 px,
-NVDA/TalkBack e LCP mobile do bloco 10 de `docs/planos/E5_HOMOLOGACAO.md`,
-declarar a E5 homologada e seguir para a E6. A generalização do período
-editorial (decisão 3) fica para a iteração seguinte, antes de links públicos.
+A **E5 foi homologada em 27/10/2026**, com a Rev. 4 da proveniência publicada
+(PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25), squash `7695173`)
+e a edição órfã removida. Agora começa a **E6**: definir o calendário real da
+turma Adultos (início, dia da semana e exceções), revisar o conteúdo e publicar
+o ciclo oficial. A generalização do período editorial (decisão 3) fica para a
+iteração seguinte, antes de links públicos.

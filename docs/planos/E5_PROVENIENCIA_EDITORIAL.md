@@ -1,6 +1,6 @@
 # E5 — Proveniência editorial x identidade da edição
 
-> **Status:** análise registrada em 27/10/2026; **decisões tomadas em 27/10/2026 (Rev. 3)**; **decisões 1, 2 e 5 implementadas (Rev. 4) e publicadas em produção em 27/10/2026** (PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25), squash `7695173`); **limpeza da órfã (decisão 4) concluída em 27/10/2026**; **homologação funcional em produção concluída em 27/10/2026**; E5 **não declarada homologada** até as verificações manuais de acessibilidade/LCP.
+> **Status:** análise registrada em 27/10/2026; **decisões tomadas em 27/10/2026 (Rev. 3)**; **decisões 1, 2 e 5 implementadas (Rev. 4) e publicadas em produção em 27/10/2026** (PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25), squash `7695173`); **limpeza da órfã (decisão 4) concluída em 27/10/2026**; **homologação funcional concluída e E5 homologada em 27/10/2026, com aceite do responsável**; decisão 3 pendente.
 > **Origem:** homologação em produção do PR [#21](https://github.com/vulmarjunior/siteibopvh/pull/21)
 > (squash `a66add8`), ao importar o JSON da 1T2022.
 > **Para:** próximo agente que retomar a E5/E6.
@@ -323,8 +323,8 @@ executor.
 > com CI verde, **mergeado (squash `7695173`) e publicado em produção em
 > 27/10/2026**. O smoke de produção passou. A limpeza da órfã (decisão 4) foi
 > concluída em 27/10/2026 e a **homologação funcional** foi executada em
-> produção no mesmo dia (§17.8). A E5 aguarda apenas as verificações manuais de
-> acessibilidade/LCP para ser declarada homologada.
+> produção no mesmo dia (§17.8). A **E5 foi homologada em 27/10/2026** com aceite
+> do responsável (§17.9).
 
 ### 17.1 Decisões
 
@@ -388,12 +388,11 @@ executor.
 
 ### 17.6 Pendências
 
-A limpeza da órfã (decisão 4) e a homologação funcional foram concluídas em
+A limpeza da órfã (decisão 4) e a homologação da E5 foram concluídas em
 27/10/2026. Restam:
 
-1. Concluir as verificações manuais do bloco 10 do guia: teclado, reflow em
-   320–360 px, NVDA/TalkBack e LCP mobile. Depois, se passarem, declarar a E5
-   homologada e seguir para a E6.
+1. Executar a **E6**: ciclo oficial da turma Adultos, revisão final e publicação
+   do ciclo, com o calendário real da igreja.
 2. Planejar a decisão 3 (período editorial generalizado) antes de remover o
    `noindex` ou compartilhar links públicos.
 
@@ -455,6 +454,17 @@ ao final; a edição e as lições permanecem no admin.
   e data.
 - **Estado final:** ciclo **ARQUIVADO**; `/api/ebd/cycles` → `{"cycles":[]}`;
   `/ebd` sem ciclo; a lição pública responde 404 na API.
-- **Pendente:** conferência manual de teclado, reflow em 320–360 px,
-  NVDA/TalkBack e LCP mobile. A E5 não é declarada homologada enquanto essas
-  verificações não passarem.
+- **Verificações manuais:** teclado, reflow em 320–360 px, NVDA/TalkBack e LCP
+  mobile — confirmadas pelo responsável em 27/10/2026 (§17.9).
+
+### 17.9 Homologação e aceite (27/10/2026)
+
+O responsável declarou a **E5 homologada em 27/10/2026**, após a execução
+funcional de §17.8 e as verificações manuais do bloco 10 do guia (teclado,
+reflow em 320–360 px, NVDA/TalkBack e LCP mobile). O aceite está registrado
+neste plano e em [E5_HOMOLOGACAO.md](E5_HOMOLOGACAO.md).
+
+Com isso, as decisões 1, 2, 4 e 5 estão concluídas. A decisão 3 (período
+editorial generalizado) fica para a próxima iteração, antes de remover o
+`noindex` ou compartilhar links públicos. A próxima entrega é a **E6**:
+publicação do ciclo oficial da turma Adultos com o calendário real da igreja.

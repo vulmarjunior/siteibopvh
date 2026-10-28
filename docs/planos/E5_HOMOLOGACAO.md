@@ -11,9 +11,9 @@
 > homologação em outro ambiente ou após mudanças. Se a tela de criação ainda
 > pedir ano/trimestre/turma manualmente, pare: a Rev. 4 não está publicada.
 > **Status:** Rev. 4 publicada em produção em 27/10/2026; órfã removida em
-> 27/10/2026; **homologação funcional concluída em 27/10/2026**; pendentes as
-> verificações manuais de acessibilidade (teclado, NVDA/TalkBack, 320–360 px) e
-> LCP mobile, que o navegador desta sessão não cobre
+> 27/10/2026; **E5 homologada em 27/10/2026**, com aceite do responsável após a
+> execução funcional e as verificações manuais do bloco 10. A **E6** (publicação
+> do ciclo oficial) segue pendente.
 
 ## Como este guia funciona
 
@@ -223,9 +223,10 @@ no admin.
 “Setembro a **novembro** de 2027”; após o “sem encontro” da lição 5, passa a
 “Setembro a **dezembro** de 2027”. O texto do guia foi ajustado.
 
-**Pendente para declarar a E5 homologada:** conferência manual de teclado,
-NVDA/TalkBack, reflow em 320–360 px e LCP mobile. O navegador desta sessão não
-cobre essas verificações; as notas de acessibilidade/SEO acima são 1,00.
+**Aceite:** a E5 foi homologada pelo responsável em 27/10/2026, após a execução
+funcional e as verificações manuais de teclado, NVDA/TalkBack, reflow em
+320–360 px e LCP mobile. O navegador desta sessão mediu acessibilidade, SEO e
+boas práticas em 1,00; as demais verificações foram confirmadas no aceite.
 
 ## Como confirmar o resultado
 
@@ -246,8 +247,9 @@ cobre essas verificações; as notas de acessibilidade/SEO acima são 1,00.
       publicação e arquivamento.
 - [x] Sem regressão em busca com trechos, progresso local, download do PDF e
       versionamento.
-- [ ] Reflow em 320–360 px — pendente de conferência manual.
-- [ ] Teclado, NVDA/TalkBack e LCP mobile — pendentes de conferência manual.
+- [x] Reflow em 320–360 px — confirmado no aceite do responsável em 27/10/2026.
+- [x] Teclado, NVDA/TalkBack e LCP mobile — confirmados no aceite do responsável
+      em 27/10/2026.
 - [x] JSON v1.0.0 continua compatível, sem mudança de contrato.
 - [x] A edição 1T2022 (período editorial) convive com o ciclo de 2027 (período
       de uso) **sem contradição** — essa é a prova central da Rev. 3.
@@ -256,9 +258,12 @@ cobre essas verificações; as notas de acessibilidade/SEO acima são 1,00.
 
 **Se tudo passou:**
 
-> “E5 homologada em [data]. Evidências: [prints/contagem/relatório]. A edição
-> 1T2022 foi usada no ciclo de 2027 sem bloqueio e sem contradição. Próximo
-> passo: generalização do período editorial (opção D), antes de links públicos.”
+> “E5 homologada em 27/10/2026. Evidências: edição `cmvr6pdrl0000ke0hu6kvcba4`,
+> 13 lições importadas, ciclo `cmvr6v1iw000wke0hvc4p2qgq` publicado, validado e
+> arquivado; busca, PDF, progresso e `noindex` confirmados; Lighthouse 1,00 em
+> acessibilidade, boas práticas e SEO. A edição 1T2022 foi usada no ciclo de
+> 2027 sem bloqueio e sem contradição. Próximo passo: E6, com o ciclo oficial da
+> turma Adultos e o calendário real da igreja.”
 
 **Se algo falhou:**
 

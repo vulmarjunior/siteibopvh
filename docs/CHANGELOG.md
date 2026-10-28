@@ -21,7 +21,8 @@
 - **Público:** `/ebd` exibiu período, datas e proveniência editorial; busca por “Pentateuco” retornou 3 lições; PDF abriu por URL assinada do Supabase; progresso local confirmado; `noindex` em meta/header e `/ebd` fora do sitemap.
 - **Lighthouse:** acessibilidade, boas práticas e SEO **1,00** em `/ebd` e na lição; a ferramenta desta sessão não mede performance/LCP mobile.
 - **Estado final:** ciclo **arquivado**; `/api/ebd/cycles` → `{"cycles":[]}`; `/ebd` sem ciclo; edição e lições preservadas no admin.
-- **Pendente:** conferência manual de teclado, reflow 320–360 px, NVDA/TalkBack e LCP mobile. A E5 ainda **não foi declarada homologada**.
+- **Aceite:** a E5 foi **homologada em 27/10/2026** pelo responsável, após a execução funcional e as verificações manuais de teclado, reflow 320–360 px, NVDA/TalkBack e LCP mobile.
+- **Próximo passo:** E6 — ciclo oficial da turma Adultos com o calendário real da igreja, revisão final e publicação.
 
 ### 2026-10-27 - EBD Digital: E5 - ciclos de estudo e calendário (PR #21, publicado)
 
