@@ -4,6 +4,7 @@
 > **Status:** aprovado
 > **Homologação:** pendente
 > **Aprovado por:** Vulmar Junior em 2026-10-28
+> **Autorização de schema/banco:** Vulmar Junior em 2026-10-28 — sem drop de tabela ou dados
 > **Revisão do plano:** 2 — refinamento técnico em 2026-10-28, após leitura de
 > `ebd-schema.ts`, `provenance.ts`, tipos e chamadas do admin; escopo e objetivo
 > inalterados
@@ -216,8 +217,8 @@ homologação). Entrega sem evidência não sobe de status.
 ## 9. Gates
 
 1. **Plano aprovado** — aprovação datada registrada em 28/10/2026.
-2. **Autorização de schema/banco** — `AGENTS.md` exige autorização explícita e
-   específica para migration e alteração de banco; registrar antes da E7.1.
+2. **Autorização de schema/banco** — autorizada por Vulmar Junior em 28/10/2026,
+   sem drop de tabela ou dados; registrar o SQL revisado antes de aplicar.
 3. **Implementação** — uma entrega por branch, começando pela E7.1.
 4. **Teste** — CI verde, testes de compatibilidade e upgrade em banco com o
    schema atual, não apenas banco vazio.
@@ -233,6 +234,7 @@ homologação). Entrega sem evidência não sobe de status.
 | 2026-10-28 | E7 (planejamento) | PRD e plano propostos pelo OIKOS a partir da decisão 3 da proveniência editorial; nenhum código alterado | Este documento; `E5_PROVENIENCIA_EDITORIAL.md` §16–17 | Aguardando aprovação do responsável |
 | 2026-10-28 | E7 (aprovação) | Plano aprovado pelo responsável; E7.1 passa a ser a próxima entrega, ainda sem código | Este documento; aprovação registrada no cabeçalho | Implementação não iniciada |
 | 2026-10-28 | E7 (revisão de lacunas) | Leitura de `AGENTS.md`, `agente.md`, `ebd-schema.ts`, `provenance.ts`, tipos e chamadas do admin; corrigido o caminho real de schema (runtime), preservado o índice composto para rollback e ampliado o mapa de arquivos; escopo inalterado | Este documento; commit de revisão | Nenhum código alterado |
+| 2026-10-28 | E7.1 (autorização) | Responsável autorizou a alteração de schema/banco sem drop; E7.1 permanece não iniciada | Este documento; autorização no cabeçalho | Nenhum código alterado |
 
 ## 11. Verificações do OIKOS (append-only)
 
