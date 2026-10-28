@@ -10,7 +10,7 @@ hotsites, inscrições e área administrativa.
 - Ciclo de vida: produção
 - Publicação: Vercel, `https://www.ibopvh.com.br`
 - Banco: PostgreSQL (Supabase)
-- Homologação: EBD Digital — E2, E3 e E4 homologadas; **E5 homologada em 27/10/2026**, com Rev. 4 da proveniência publicada (PR #25, squash `7695173`) e edição órfã removida; **E6 (publicação do ciclo oficial) pendente**
+- Homologação: EBD Digital — E2, E3 e E4 homologadas; **E5 homologada em 27/10/2026**; **E6 publicada em 27/10/2026** com o ciclo oficial `adultos-2026-11-29` (29/11/2026, domingo, sem exceções, 13 lições até 21/02/2027); decisão 3 pendente
 - Verificado em: 2026-10-27
 
 ## Princípios e limites
@@ -23,9 +23,8 @@ hotsites, inscrições e área administrativa.
 
 ## Próximo passo
 
-A **E5 foi homologada em 27/10/2026**, com a Rev. 4 da proveniência publicada
-(PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25), squash `7695173`)
-e a edição órfã removida. Agora começa a **E6**: definir o calendário real da
-turma Adultos (início, dia da semana e exceções), revisar o conteúdo e publicar
-o ciclo oficial. A generalização do período editorial (decisão 3) fica para a
-iteração seguinte, antes de links públicos.
+A **E6 foi publicada em 27/10/2026**: ciclo `adultos-2026-11-29`, início
+29/11/2026, domingo, sem exceções, 13 lições até 21/02/2027, período Novembro de
+2026 a fevereiro de 2027. A **E5** também está homologada. A próxima decisão é a
+**decisão 3** — generalização do período editorial (opção D) — antes de remover
+o `noindex` ou compartilhar links públicos.

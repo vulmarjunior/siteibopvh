@@ -391,8 +391,9 @@ executor.
 A limpeza da órfã (decisão 4) e a homologação da E5 foram concluídas em
 27/10/2026. Restam:
 
-1. Executar a **E6**: ciclo oficial da turma Adultos, revisão final e publicação
-   do ciclo, com o calendário real da igreja.
+1. ~~Executar a E6~~ — **concluída em 27/10/2026**: ciclo oficial
+   `adultos-2026-11-29`, início 29/11/2026, sem exceções, 13 lições até
+   21/02/2027, período Novembro de 2026 a fevereiro de 2027.
 2. Planejar a decisão 3 (período editorial generalizado) antes de remover o
    `noindex` ou compartilhar links públicos.
 
@@ -466,5 +467,6 @@ neste plano e em [E5_HOMOLOGACAO.md](E5_HOMOLOGACAO.md).
 
 Com isso, as decisões 1, 2, 4 e 5 estão concluídas. A decisão 3 (período
 editorial generalizado) fica para a próxima iteração, antes de remover o
-`noindex` ou compartilhar links públicos. A próxima entrega é a **E6**:
-publicação do ciclo oficial da turma Adultos com o calendário real da igreja.
+`noindex` ou compartilhar links públicos. A **E6 foi publicada em 27/10/2026**
+com o ciclo oficial `adultos-2026-11-29`, início 29/11/2026, sem exceções, 13
+lições até 21/02/2027 e período Novembro de 2026 a fevereiro de 2027.

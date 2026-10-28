@@ -12,8 +12,8 @@
 > pedir ano/trimestre/turma manualmente, pare: a Rev. 4 não está publicada.
 > **Status:** Rev. 4 publicada em produção em 27/10/2026; órfã removida em
 > 27/10/2026; **E5 homologada em 27/10/2026**, com aceite do responsável após a
-> execução funcional e as verificações manuais do bloco 10. A **E6** (publicação
-> do ciclo oficial) segue pendente.
+> execução funcional e as verificações manuais do bloco 10. **E6 publicada em
+> 27/10/2026** com o ciclo `adultos-2026-11-29`.
 
 ## Como este guia funciona
 
@@ -262,8 +262,9 @@ boas práticas em 1,00; as demais verificações foram confirmadas no aceite.
 > 13 lições importadas, ciclo `cmvr6v1iw000wke0hvc4p2qgq` publicado, validado e
 > arquivado; busca, PDF, progresso e `noindex` confirmados; Lighthouse 1,00 em
 > acessibilidade, boas práticas e SEO. A edição 1T2022 foi usada no ciclo de
-> 2027 sem bloqueio e sem contradição. Próximo passo: E6, com o ciclo oficial da
-> turma Adultos e o calendário real da igreja.”
+> 2027 sem bloqueio e sem contradição. E6 publicada em 27/10/2026 com o ciclo
+> `adultos-2026-11-29` (29/11/2026 a 21/02/2027, sem exceções). Próxima decisão:
+> generalização do período editorial.”
 
 **Se algo falhou:**
 

@@ -22,7 +22,13 @@
 - **Lighthouse:** acessibilidade, boas práticas e SEO **1,00** em `/ebd` e na lição; a ferramenta desta sessão não mede performance/LCP mobile.
 - **Estado final:** ciclo **arquivado**; `/api/ebd/cycles` → `{"cycles":[]}`; `/ebd` sem ciclo; edição e lições preservadas no admin.
 - **Aceite:** a E5 foi **homologada em 27/10/2026** pelo responsável, após a execução funcional e as verificações manuais de teclado, reflow 320–360 px, NVDA/TalkBack e LCP mobile.
-- **Próximo passo:** E6 — ciclo oficial da turma Adultos com o calendário real da igreja, revisão final e publicação.
+
+### 2026-10-27 - EBD Digital: E6 - ciclo oficial publicado
+
+- **Ciclo oficial:** `cmvrhwa1e0002x7g1r8d2m5yw`, slug `adultos-2026-11-29`, turma Adultos, início **29/11/2026** (domingo), **sem exceções**, 13 lições até **21/02/2027**. Período público: **Novembro de 2026 a fevereiro de 2027**.
+- **Edição:** 1T2022 — Revista de Jovens e Adultos, Convenção Batista Fluminense, nº 72, vol. 18; PDF v1 com hash e tamanho conferidos.
+- **Validação em produção:** `/api/ebd/cycles` 200, detalhe do ciclo 200, busca “Pentateuco” com 3 resultados, PDF 200 `application/pdf`, `X-Robots-Tag: noindex, nofollow` e sitemap sem `/ebd`.
+- **Estado:** E5 homologada e E6 publicada em 27/10/2026. O ciclo de homologação `adultos-2027-09-05` permanece arquivado. Próxima decisão: **decisão 3** (período editorial generalizado).
 
 ### 2026-10-27 - EBD Digital: E5 - ciclos de estudo e calendário (PR #21, publicado)
 

@@ -4,7 +4,7 @@ Fonte oficial das pendências deste projeto.
 
 ## Em aberto
 
-- **2026-10-27 — EBD Digital: E5 homologada; E6 (publicação do ciclo oficial) pendente.**
+- **2026-10-27 — EBD Digital: E5 homologada e E6 publicada; decisão 3 (período editorial generalizado) pendente.**
   E1 concluída na edição real 1T2022; E2, E3 e E4 homologadas em 26/10/2026 e em
   produção. A Revisão 2 (aprovada em 27/10/2026) separou a **edição** (revista)
   do **ciclo de estudo** (uso), com data por lição, regra mais exceções e rótulo
@@ -16,11 +16,12 @@ Fonte oficial das pendências deste projeto.
   A **E5 foi homologada em 27/10/2026**, após a execução funcional em produção
   (edição criada do JSON, PDF no bucket `ebd` real, 13 lições importadas, agenda
   montada, ciclo publicado, validado no público e arquivado) e as verificações
-  manuais do bloco 10. Roteiro em
-  [planos/E5_HOMOLOGACAO.md](planos/E5_HOMOLOGACAO.md). A **E6** (homologação e
-  publicação do ciclo oficial) segue pendente e depende do calendário real da
-  turma Adultos, da revisão final do conteúdo e da autorização da editora
-  referenciada (confirmada em 26/10/2026 para uso interno não comercial). A extração das 13 lições é
+  manuais do bloco 10. A **E6 foi publicada em 27/10/2026** com o ciclo
+  `cmvrhwa1e0002x7g1r8d2m5yw`, slug `adultos-2026-11-29`, início 29/11/2026,
+  domingo, sem exceções, 13 lições até 21/02/2027, período **Novembro de 2026 a
+  fevereiro de 2027**; `/api/ebd/cycles`, busca, PDF, `noindex` e sitemap foram
+  verificados. Roteiro da E5 em
+  [planos/E5_HOMOLOGACAO.md](planos/E5_HOMOLOGACAO.md). A extração das 13 lições é
   reproduzível por `scripts/ebd/extract-quarter.py`; o PDF e o JSON não são
   versionados. `/ebd` nasce com `noindex` em meta/header e fora do sitemap. A
   Rev. 3 da proveniência editorial foi implementada e publicada em 27/10/2026
@@ -41,10 +42,10 @@ Fonte oficial das pendências deste projeto.
   sem bloquear. **As decisões 1, 2 e 5 estão implementadas e publicadas em
   27/10/2026 (PR #25, squash `7695173`; 211 testes, lint e build verdes; CI da
   `main` verde; smoke de produção aprovado). A decisão 4 (limpeza da órfã) foi
-  concluída em 27/10/2026 e a E5 foi homologada com aceite do responsável.**
-  Próximo passo: E6 — definir o calendário real da turma Adultos, revisar o
-  conteúdo e publicar o ciclo oficial. A generalização (3) fica para a próxima
-  iteração. Detalhes em
+  concluída em 27/10/2026 e a E5 foi homologada com aceite do responsável. A E6
+  foi publicada no mesmo dia com o ciclo `adultos-2026-11-29`.** Próximo passo:
+  decisão 3 — generalização do período editorial, antes de remover o `noindex`
+  ou compartilhar links públicos. Detalhes em
   [planos/E5_PROVENIENCIA_EDITORIAL.md](planos/E5_PROVENIENCIA_EDITORIAL.md) §17.
 
 ## Concluídas
