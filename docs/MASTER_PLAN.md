@@ -27,4 +27,5 @@ A **E6 foi publicada em 27/10/2026**: ciclo `adultos-2026-11-29`, início
 29/11/2026, domingo, sem exceções, 13 lições até 21/02/2027, período Novembro de
 2026 a fevereiro de 2027. A **E5** também está homologada. A próxima decisão é a
 **decisão 3** — generalização do período editorial (opção D) — antes de remover
-o `noindex` ou compartilhar links públicos.
+o `noindex` ou compartilhar links públicos. Plano E7 aprovado em 28/10/2026 em
+`docs/planos/E7_PERIODO_EDITORIAL.md`; implementação pendente.

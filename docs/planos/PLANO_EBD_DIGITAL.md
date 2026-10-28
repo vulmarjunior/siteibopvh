@@ -2,10 +2,10 @@
 
 > **Projeto:** siteibopvh (módulo `ebd`)
 > **Status:** em execução
-> **Revisão:** 2 — aprovada em 27/10/2026 (ver [histórico de revisões](#histórico-de-revisões))
-> **Estado:** E2, E3 e E4 homologadas em 26/10/2026; E5 (ciclos e calendário) mergeada e publicada em 27/10/2026 (squash `a66add8`) e **homologada em 27/10/2026**; **E6 (publicação do ciclo oficial) publicada em 27/10/2026**
-> **Homologação:** E2, E3 e E4 aprovadas pelo responsável em 26/10/2026; **E5 aprovada em 27/10/2026**; **E6 publicada em 27/10/2026**
-> **Aprovado por:** Vulmar Junior em 2026-10-26 (Rev. 1) e em 2026-10-27 (Rev. 2)
+> **Revisão:** 3 — aprovada em 28/10/2026 (ver [histórico de revisões](#histórico-de-revisões))
+> **Estado:** E2, E3 e E4 homologadas em 26/10/2026; E5 (ciclos e calendário) mergeada e publicada em 27/10/2026 (squash `a66add8`) e **homologada em 27/10/2026**; **E6 (publicação do ciclo oficial) publicada em 27/10/2026**; **E7 aprovada**
+> **Homologação:** E2, E3 e E4 aprovadas pelo responsável em 26/10/2026; **E5 aprovada em 27/10/2026**; **E6 publicada em 27/10/2026**; E7 pendente
+> **Aprovado por:** Vulmar Junior em 2026-10-26 (Rev. 1), em 2026-10-27 (Rev. 2) e em 2026-10-28 (Rev. 3)
 > **Planejado por:** OIKOS
 > **Executor:** agente do projeto `siteibopvh`
 > **Documento:** fonte da intenção; o fato é verificado no GitHub (commits, PRs, CI, deploy)
@@ -16,6 +16,7 @@
 |---|---|---|---|
 | 1 | 2026-10-26 | Plano original: edição, extração local, leitura pública, admin, publicação | Vulmar Junior |
 | 2 | 2026-10-27 | Separa **edição** (revista) de **ciclo de estudo** (uso); o calendário passa a ter data por lição, com regra e exceções explícitas; a publicação deixa de ser E5 e passa a E6 | Vulmar Junior |
+| 3 | 2026-10-28 | Generaliza o período editorial (E7): `editorialPeriod`, ano/trimestre opcionais, slug e caminho do PDF desacoplados e JSON v1.1 aceitando v1.0.0 | Vulmar Junior |
 
 A Rev. 2 nasce da [REVISAO_2_CICLOS.md](REVISAO_2_CICLOS.md): a revista traz o
 próprio trimestre editorial (`1T2022`), mas a igreja estuda suas lições em outro
@@ -201,6 +202,7 @@ novo ciclo substitui).
 | E4 | Importação e publicação no admin | RF7, RF8, RF11 e RF12 com permissão `ebd:manage`; importação de PDF + JSON de uma lição real em ambiente de teste; hash divergente recusado; upload direto ao Storage por URL assinada (PDF acima de 4,5 MB funciona); versão anterior preservada; rascunho inacessível no público; auditoria registrada | homologado | Branch `feat/ebd-e4-admin-importacao`, commits `1264dee`, `425048c` e `d4812ee`; [E4_STORAGE_SETUP.md](E4_STORAGE_SETUP.md); admin, upload assinado, importação, revisão, publicação/despublicação, versionamento e auditoria validados localmente; 179 testes, lint e build verdes; Lighthouse 1,00 nas páginas públicas; aceite do responsável em 26/10/2026. O bucket `ebd` real deve ser exercitado na E6 |
 | E5 | Ciclos de estudo e calendário | RF13 a RF16: edição separada do ciclo; data de início define as datas; ajuste isolado não é sobrescrito por reancoragem; domingo sem encontro desloca as seguintes; mesma edição reutilizável em ciclos e turmas distintos; rótulo público por período de uso; datas gravadas como `DATE` (RNF11) | homologado | Branch `feat/ebd-e5-ciclos`, PR [#21](https://github.com/vulmarjunior/siteibopvh/pull/21) com CI verde, squash `a66add8` e deploy em produção em 27/10/2026; Rev. 4 no PR [#25](https://github.com/vulmarjunior/siteibopvh/pull/25) (squash `7695173`); [REVISAO_2_CICLOS.md](REVISAO_2_CICLOS.md); schema `EbdEdition`/`EbdCycle`/`EbdCycleLesson` + reset de migração; `src/lib/ebd/schedule.ts` com 16 testes; 211 testes, lint e build verdes; homologação funcional em produção em 27/10/2026 (edição `cmvr6pdrl0000ke0hu6kvcba4`, 13 lições, ciclo `cmvr6v1iw000wke0hvc4p2qgq`), Lighthouse 1,00 em acessibilidade/boas práticas/SEO e **aceite do responsável em 27/10/2026**; roteiro [E5_HOMOLOGACAO.md](E5_HOMOLOGACAO.md) |
 | E6 | Homologação e publicação do ciclo | Ciclo da turma Adultos completo no ar com as datas de encontro; aceite do responsável registrado; autorização da editora referenciada; RF9 e RNF8 verificados (`noindex` em meta/header, fora do sitemap); bucket `ebd` real exercitado | publicado | Ciclo oficial `cmvrhwa1e0002x7g1r8d2m5yw`, slug `adultos-2026-11-29`, início **29/11/2026**, domingo, **sem exceções**, 13 lições até **21/02/2027**; período **Novembro de 2026 a fevereiro de 2027**; edição 1T2022; publicado em 27/10/2026. Verificado em produção: `/api/ebd/cycles` 200, ciclo detail 200, busca “Pentateuco” com 3 resultados, PDF 200 `application/pdf`, `X-Robots-Tag: noindex, nofollow` e sitemap sem `/ebd` |
+| E7 | Período editorial generalizado | Edição identificada por período livre quando não houver ano/trimestre; slug e caminho do PDF desacoplados; 1T2022 mantém URLs e PDF; JSON v1.1 aceitando v1.0.0 | planejado | [E7_PERIODO_EDITORIAL.md](E7_PERIODO_EDITORIAL.md) |
 
 **Vocabulário de status:** `planejado` → `em execução` → `implementado` → `testado` → `homologado` → `publicado`. Também `bloqueado` e `abandonado`.
 
@@ -262,6 +264,7 @@ novo ciclo substitui).
 | 2026-10-27 | E5 (homologação funcional) | Execução do roteiro em produção: edição `cmvr6pdrl0000ke0hu6kvcba4` criada do JSON, PDF v1 `cmvr6q8ci0002ke0hdl5veo00` (SHA-256 `5b359ca876e682a25e29b14af0aa2f24b0cea3a7389be635d22f39da38fec204`, 4.850.159 bytes, 119 páginas), 13 lições importadas; JSON de teste com hash alterado recusado; ciclo `cmvr6v1iw000wke0hvc4p2qgq` (`adultos-2027-09-05`, revisão 2) com lição 3 no sábado, lição 5 sem encontro e lições 7/8 na mesma data, período Setembro a dezembro de 2027; publicado, validado no público e arquivado | `/ebd` com período, datas e proveniência; busca “Pentateuco” com 3 resultados; PDF por URL assinada; progresso local; `noindex` em meta/header; sitemap sem `/ebd`; Lighthouse 1,00 em acessibilidade, boas práticas e SEO em `/ebd` e na lição; auditoria completa com autor e data | Pendentes teclado, reflow 320–360 px, NVDA/TalkBack e LCP mobile; E5 ainda não declarada homologada |
 | 2026-10-27 | E5 (aceite) | Responsável homologou a E5 após a execução funcional e as verificações manuais do bloco 10 | Aceite em 27/10/2026; [E5_PROVENIENCIA_EDITORIAL.md](E5_PROVENIENCIA_EDITORIAL.md) §17.9; [E5_HOMOLOGACAO.md](E5_HOMOLOGACAO.md) | E6 passa a ser a próxima entrega; decisão 3 (período generalizado) fica para a iteração seguinte |
 | 2026-10-27 | E6 (publicação) | Responsável criou e publicou o ciclo oficial da turma Adultos com início em **29/11/2026**, domingo, sem exceções; 13 lições até **21/02/2027** | Ciclo `cmvrhwa1e0002x7g1r8d2m5yw`, slug `adultos-2026-11-29`; período “Novembro de 2026 a fevereiro de 2027”; `/api/ebd/cycles` 200, busca “Pentateuco” 3 resultados, PDF 200 `application/pdf`, `noindex` em header e sitemap sem `/ebd`; edição 1T2022 | Nenhuma alteração de código; ciclo de homologação `adultos-2027-09-05` permanece arquivado. Decisão 3 pendente para a próxima iteração |
+| 2026-10-28 | E7 (planejamento) | PRD e plano da decisão 3 propostos pelo OIKOS: período editorial livre, ano/trimestre opcionais, slug persistido e caminho de PDF desacoplado, JSON v1.1 aceitando v1.0.0 | [E7_PERIODO_EDITORIAL.md](E7_PERIODO_EDITORIAL.md) | Nenhum código alterado; plano aguarda aprovação datada antes da E7.1 |
 
 ## 10. Verificações do OIKOS (append-only)
 

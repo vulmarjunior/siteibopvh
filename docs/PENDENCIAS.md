@@ -47,6 +47,8 @@ Fonte oficial das pendências deste projeto.
   decisão 3 — generalização do período editorial, antes de remover o `noindex`
   ou compartilhar links públicos. Detalhes em
   [planos/E5_PROVENIENCIA_EDITORIAL.md](planos/E5_PROVENIENCIA_EDITORIAL.md) §17.
+  O plano da E7 está aprovado em 28/10/2026 e ainda não implementado:
+  [planos/E7_PERIODO_EDITORIAL.md](planos/E7_PERIODO_EDITORIAL.md).
 
 ## Concluídas
 
