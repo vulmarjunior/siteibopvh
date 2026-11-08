@@ -4,6 +4,9 @@ Fonte oficial das pendências deste projeto.
 
 ## Em aberto
 
+- **2026-11-08 — EBD Digital: lentidão no primeiro acesso e na troca de lições (diagnóstico OIKOS).**
+  Medições em produção: primeiro `/api/ebd/cycles` em **24,2 s** (1,5–1,6 s depois de aquecido); `/api/ebd/lessons/:slug` em **3,3–3,9 s**; conteúdo da lição com apenas 11,5 KB. Causas principais: cold start com **41 comandos de schema** em `ensureEbdSchema`, função em `iad1` (EUA) com banco em `sa-east-1` (São Paulo), `Cache-Control: no-store` nas rotas públicas e consultas sequenciais na rota da lição. **Risco:** `ensureEbdSchema` e a migration `20261027120000_ebd_editions_cycles` contêm `DROP TABLE`; não executar a migration existente em produção, que já tem 13 lições publicadas. Diagnóstico completo, medições e ordem de correção em [DIAGNOSTICO_PERFORMANCE_EBD.md](DIAGNOSTICO_PERFORMANCE_EBD.md). Próximo passo: decidir o plano de correção (região `gru1`, remoção do schema em runtime, cache de CDN e redução de consultas).
+
 - **2026-10-27 — EBD Digital: E5 homologada e E6 publicada; decisão 3 (período editorial generalizado) pendente.**
   E1 concluída na edição real 1T2022; E2, E3 e E4 homologadas em 26/10/2026 e em
   produção. A Revisão 2 (aprovada em 27/10/2026) separou a **edição** (revista)
