@@ -44,6 +44,11 @@ async function ensureHistoryTables(prisma: PrismaClient) {
     await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "ChurchHistoryItem_year_category_idx" ON "ChurchHistoryItem"("year", "category");`);
     await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "ChurchHistoryItem_active_idx" ON "ChurchHistoryItem"("active");`);
 
+    // As tabelas são acessadas apenas pelo backend Prisma (role dona).
+    // RLS sem políticas bloqueia anon/authenticated no PostgREST.
+    await prisma.$executeRawUnsafe(`ALTER TABLE "ChurchPastorate" ENABLE ROW LEVEL SECURITY;`);
+    await prisma.$executeRawUnsafe(`ALTER TABLE "ChurchHistoryItem" ENABLE ROW LEVEL SECURITY;`);
+
     historyTablesEnsured = true;
   } catch (e) {
     console.error('[History] Auto-schema ensure error:', e);

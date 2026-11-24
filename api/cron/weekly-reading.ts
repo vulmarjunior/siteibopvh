@@ -64,6 +64,12 @@ const DDL_STATEMENTS = [
   );`,
   `CREATE INDEX IF NOT EXISTS "PrayerPraise_active_order_idx" ON "PrayerPraise"("active", "order");`,
 
+  // RLS sem políticas: acesso exclusivo pelo backend Prisma (role dona).
+  `ALTER TABLE "PrayerSentinel" ENABLE ROW LEVEL SECURITY;`,
+  `ALTER TABLE "PrayerHandover" ENABLE ROW LEVEL SECURITY;`,
+  `ALTER TABLE "PrayerTopic" ENABLE ROW LEVEL SECURITY;`,
+  `ALTER TABLE "PrayerPraise" ENABLE ROW LEVEL SECURITY;`,
+
   // 2. Veredas
   `ALTER TYPE "CuradoriaTipoItem" ADD VALUE IF NOT EXISTS 'CURSO';`,
   `ALTER TYPE "CuradoriaTipoItem" ADD VALUE IF NOT EXISTS 'CONFERENCIA';`,
@@ -132,6 +138,13 @@ const DDL_STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS "CuradoriaItemRelacionado_origemId_ordem_idx" ON "CuradoriaItemRelacionado"("origemId", "ordem");`,
   `CREATE INDEX IF NOT EXISTS "CuradoriaItemRelacionado_destinoId_idx" ON "CuradoriaItemRelacionado"("destinoId");`,
 
+  // RLS sem políticas: acesso exclusivo pelo backend Prisma (role dona).
+  `ALTER TABLE "CuradoriaCurso" ENABLE ROW LEVEL SECURITY;`,
+  `ALTER TABLE "CuradoriaCursoAula" ENABLE ROW LEVEL SECURITY;`,
+  `ALTER TABLE "CuradoriaCursoMaterial" ENABLE ROW LEVEL SECURITY;`,
+  `ALTER TABLE "CuradoriaCursoPessoa" ENABLE ROW LEVEL SECURITY;`,
+  `ALTER TABLE "CuradoriaItemRelacionado" ENABLE ROW LEVEL SECURITY;`,
+
   // 3. História dos Batistas e Memorial
   `CREATE TABLE IF NOT EXISTS "ChurchPastorate" (
     "id" TEXT NOT NULL,
@@ -167,6 +180,10 @@ const DDL_STATEMENTS = [
   );`,
   `CREATE INDEX IF NOT EXISTS "ChurchHistoryItem_year_category_idx" ON "ChurchHistoryItem"("year", "category");`,
   `CREATE INDEX IF NOT EXISTS "ChurchHistoryItem_active_idx" ON "ChurchHistoryItem"("active");`,
+
+  // RLS sem políticas: acesso exclusivo pelo backend Prisma (role dona).
+  `ALTER TABLE "ChurchPastorate" ENABLE ROW LEVEL SECURITY;`,
+  `ALTER TABLE "ChurchHistoryItem" ENABLE ROW LEVEL SECURITY;`,
 ];
 
 function getHeader(req: IncomingMessage, name: string): string {

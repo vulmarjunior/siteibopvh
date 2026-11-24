@@ -2,6 +2,16 @@
 
 ## [Em Desenvolvimento]
 
+### 2026-11-24 - Segurança: RLS nas tabelas públicas sem proteção
+
+- **Advisor crítico:** `RLS Disabled in Public` em `public.PrayerSentinel`. A varredura encontrou o mesmo estado em `PrayerHandover`, `PrayerTopic` e `PrayerPraise`, todas criadas por `20260827180000_add_relogio_sentinelas.sql` sem `ENABLE ROW LEVEL SECURITY`.
+- **Risco:** com RLS desabilitada, a chave anônima pública permitia ler, inserir, alterar e apagar sentinelas via PostgREST, expondo nome, e-mail, telefone e `cancelToken` dos intercessores.
+- **Correção:** migrations `20261124120000_enable_rls_prayer_tables` em `prisma/migrations/` e `supabase/migrations/` habilitam RLS sem políticas nas quatro tabelas. O Prisma (role dona) continua operando; `anon`/`authenticated` ficam bloqueadas. Sem `FORCE ROW LEVEL SECURITY`.
+- **Defesa contra regressão:** o auto-schema de runtime (`src/api/public/prayerSentinel.ts` e `src/api/admin/prayer.ts`) e o cron (`api/cron/weekly-reading.ts`) passam a habilitar RLS de forma idempotente ao criar as tabelas.
+- **Igreja/história:** os advisors seguintes apontaram `ChurchPastorate` e `ChurchHistoryItem`. A migration `20260904123500_add_church_history` já tinha RLS, mas o auto-schema de `/api/historia` criou as tabelas em produção sem ela. As duas passaram a ser protegidas no runtime (`src/api/public/history.ts` e cron) e na migration `20261124130000_enable_rls_church_tables`.
+- **Veredas:** o cron também cria `CuradoriaCurso`, `CuradoriaCursoAula`, `CuradoriaCursoMaterial`, `CuradoriaCursoPessoa` e `CuradoriaItemRelacionado`; o RLS idempotente foi incluído no mesmo DDL para evitar regressão em banco novo.
+- **Aplicação em produção (24/11/2026):** SQL executado manualmente no SQL Editor do Supabase; verificação retornou `relrowsecurity = true` nas tabelas e os advisors críticos de RLS foram removidos.
+
 ### 2026-10-27 - EBD Digital: Rev. 3 da proveniência editorial (PR #25)
 
 - **Edição nasce do JSON:** `POST /api/ebd/admin/editions` passou a validar o JSON v1.0.0 e criar a edição com `edition.*` e `source.*`. O formulário manual de ano/trimestre/turma foi removido de `/admin/ebd`; a tela lê o JSON, mostra a proveniência e só então cria a edição.
