@@ -1,6 +1,6 @@
 # Continuidade do projeto
 
-Atualizado em 2026-10-27.
+Atualizado em 2026-11-24.
 
 ## Estado atual
 
@@ -14,6 +14,7 @@ Atualizado em 2026-10-27.
 - Banco e autenticação: Supabase
 - E-mail: Resend; registros do Google Workspace permanecem preservados no DNS
 - DNS autoritativo: Vercel (`ns1.vercel-dns.com` e `ns2.vercel-dns.com`)
+- **Segurança (24/11/2026):** RLS habilitada nas tabelas do Relógio de Oração (`PrayerSentinel`, `PrayerHandover`, `PrayerTopic`, `PrayerPraise`) e da história da igreja (`ChurchPastorate`, `ChurchHistoryItem`); advisors críticos do Supabase removidos. Correção versionada no PR [#26](https://github.com/vulmarjunior/siteibopvh/pull/26), squash `6c05b87`, com CI e deploy Vercel Production verdes.
 
 ## Retomar em outro computador
 
@@ -74,6 +75,39 @@ curl -s https://www.ibopvh.com.br/api/ebd/cycles
 curl -s -o /dev/null -w "%{http_code}\n" https://www.ibopvh.com.br/ebd
 curl -s -o /dev/null -w "%{http_code}\n" https://www.ibopvh.com.br/api/ebd/quarters
 ```
+
+## Encerramento em 24/11/2026 (segurança/RLS)
+
+**Onde paramos:** correção de segurança concluída e publicada. Os advisors do
+Supabase apontavam `RLS Disabled in Public` em tabelas criadas pelo auto-schema
+de runtime. Foram protegidas com RLS sem políticas:
+
+- `PrayerSentinel`, `PrayerHandover`, `PrayerTopic` e `PrayerPraise`
+  (Relógio de Oração);
+- `ChurchPastorate` e `ChurchHistoryItem` (história da igreja).
+
+O runtime (`src/api/public/prayerSentinel.ts`, `src/api/admin/prayer.ts`,
+`src/api/public/history.ts`) e o cron (`api/cron/weekly-reading.ts`) agora
+aplicam `ENABLE ROW LEVEL SECURITY` de forma idempotente; as migrations
+`20261124120000_enable_rls_prayer_tables` e
+`20261124130000_enable_rls_church_tables` foram espelhadas em
+`prisma/migrations/` e `supabase/migrations/`. O cron também passou a proteger
+as tabelas de Veredas que ele cria (`CuradoriaCurso`, `CuradoriaCursoAula`,
+`CuradoriaCursoMaterial`, `CuradoriaCursoPessoa` e `CuradoriaItemRelacionado`).
+
+**Referência Git:** `main` em `6c05b87` (PR
+[#26](https://github.com/vulmarjunior/siteibopvh/pull/26), squash), árvore
+limpa, CI verde (47 s) e deploy **Vercel Production** concluído. Antes de
+começar, rode `git pull --ff-only origin main`.
+
+**Produção:** o SQL foi aplicado manualmente no SQL Editor do Supabase em
+24/11/2026 pelo responsável; a verificação retornou `relrowsecurity = true` e
+os advisors críticos de RLS foram removidos. Neste checkout não havia
+credenciais de produção (`DATABASE_URL`/`DIRECT_URL` redigidas, Vercel CLI
+deslogado e sem token do Supabase), por isso a aplicação não foi feita por CLI.
+
+**Próxima entrega:** inalterada — decisão 3 / E7, generalização do período
+editorial, antes de remover o `noindex` ou compartilhar links públicos do EBD.
 
 ## Veredas IBO
 

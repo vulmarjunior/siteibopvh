@@ -55,6 +55,20 @@ Fonte oficial das pendências deste projeto.
 
 ## Concluídas
 
+- **2026-11-24 — RLS nas tabelas públicas expostas ao PostgREST.**
+  Os advisors do Supabase apontavam `RLS Disabled in Public` em
+  `PrayerSentinel`; a mesma falha existia em `PrayerHandover`, `PrayerTopic`,
+  `PrayerPraise`, `ChurchPastorate` e `ChurchHistoryItem`. A causa foi o
+  auto-schema de runtime, que criava as tabelas sem `ENABLE ROW LEVEL
+  SECURITY`. As seis tabelas foram protegidas com RLS sem políticas (o Prisma
+  acessa como dono) e o runtime/cron passaram a aplicar a proteção de forma
+  idempotente. Migrations `20261124120000_enable_rls_prayer_tables` e
+  `20261124130000_enable_rls_church_tables` espelhadas em `prisma/migrations/`
+  e `supabase/migrations/`. Produção corrigida em 24/11/2026 pelo SQL Editor;
+  PR [#26](https://github.com/vulmarjunior/siteibopvh/pull/26) mergeado em
+  squash (`6c05b87`), CI verde e deploy Vercel Production concluído. Detalhes
+  em [CHANGELOG.md](CHANGELOG.md) e [CONTINUIDADE.md](CONTINUIDADE.md).
+
 - **2026-10-25 → decidida em 2026-10-27 — Migração do portal para a VPS
   (Coolify).** Decidido manter **Vercel + Supabase** (opção A do comparativo
   [AVALIACAO_MIGRACAO_VPS.md](AVALIACAO_MIGRACAO_VPS.md)). Reavaliar o Vercel

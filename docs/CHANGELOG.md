@@ -10,7 +10,8 @@
 - **Defesa contra regressão:** o auto-schema de runtime (`src/api/public/prayerSentinel.ts` e `src/api/admin/prayer.ts`) e o cron (`api/cron/weekly-reading.ts`) passam a habilitar RLS de forma idempotente ao criar as tabelas.
 - **Igreja/história:** os advisors seguintes apontaram `ChurchPastorate` e `ChurchHistoryItem`. A migration `20260904123500_add_church_history` já tinha RLS, mas o auto-schema de `/api/historia` criou as tabelas em produção sem ela. As duas passaram a ser protegidas no runtime (`src/api/public/history.ts` e cron) e na migration `20261124130000_enable_rls_church_tables`.
 - **Veredas:** o cron também cria `CuradoriaCurso`, `CuradoriaCursoAula`, `CuradoriaCursoMaterial`, `CuradoriaCursoPessoa` e `CuradoriaItemRelacionado`; o RLS idempotente foi incluído no mesmo DDL para evitar regressão em banco novo.
-- **Aplicação em produção (24/11/2026):** SQL executado manualmente no SQL Editor do Supabase; verificação retornou `relrowsecurity = true` nas tabelas e os advisors críticos de RLS foram removidos.
+- **Aplicação em produção (24/11/2026):** SQL executado manualmente no SQL Editor do Supabase; verificação retornou `relrowsecurity = true` nas seis tabelas e os advisors críticos de RLS foram removidos.
+- **Publicação:** PR [#26](https://github.com/vulmarjunior/siteibopvh/pull/26) mergeado em squash (`6c05b87`) em 24/11/2026; CI da `main` verde (47 s) e deploy **Vercel Production** concluído.
 
 ### 2026-10-27 - EBD Digital: Rev. 3 da proveniência editorial (PR #25)
 
