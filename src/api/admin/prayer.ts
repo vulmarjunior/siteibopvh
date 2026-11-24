@@ -66,6 +66,11 @@ async function ensurePrayerTables(prisma: PrismaClient) {
     await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrayerHandover_date_dayOfWeek_idx" ON "PrayerHandover"("date", "dayOfWeek");`);
     await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrayerHandover_completedAt_idx" ON "PrayerHandover"("completedAt");`);
 
+    // As tabelas são acessadas apenas pelo backend Prisma (role dona).
+    // RLS sem políticas bloqueia anon/authenticated no PostgREST.
+    await prisma.$executeRawUnsafe(`ALTER TABLE "PrayerSentinel" ENABLE ROW LEVEL SECURITY;`);
+    await prisma.$executeRawUnsafe(`ALTER TABLE "PrayerHandover" ENABLE ROW LEVEL SECURITY;`);
+
     adminPrayerTablesEnsured = true;
   } catch (e) {
     console.error('[AdminPrayer] Auto-schema ensure error:', e);
